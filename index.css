@@ -1,0 +1,214 @@
+* {
+  background-color: #f8fafc;
+  border: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+.navbar-left img {
+  height: 60px;
+  width: 140px;
+}
+.navbar {
+  padding-top: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0px 2px 2px rgb(182, 179, 179);
+  padding-right: 5px;
+}
+.navbar-left {
+  height: 60px;
+  width: 180px;
+  border: 2px sold #4f46e5;
+  justify-content: left;
+  object-fit: fill;
+}
+.navbar-centre {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.navbarItem {
+  height: auto;
+  width: auto;
+  padding: 5px;
+  border-radius: 2px;
+}
+.navbarItem:hover {
+  transition: none;
+  color: white;
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  box-shadow: 2px 2px 5px #4f46e5;
+  transition: all 0.3 ease;
+}
+.navbar-right {
+  display: flex;
+  gap: 3px;
+}
+.searchbar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  border: 2px solid #b4b1f6;
+}
+.searchbar svg {
+  color: #4f46e5;
+  margin: 5px;
+}
+.searchbar input {
+  width: none;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.navbar-right button {
+  font-size: 15px;
+  border: 2px solid #4f46e5;
+  height: 40px;
+  width: 70px;
+  border-radius: 5px;
+}
+#login:hover {
+  color: white;
+  background-color: #4f46e5;
+  transition: all 0.3 ease;
+}
+#register {
+  color: white;
+  background-color: #4f46e5;
+}
+#register:hover {
+  color: #4f46e5;
+  background-color: #f8fafc;
+  transition: all 0.3 ease;
+}
+
+.navbarItem {
+  font-size: 15px;
+  color: #3a3b3d;
+  margin-left: 50px;
+}
+
+.navbarRItem {
+  padding: 10px;
+  padding-top: 0px;
+}
+/*ABOUT SECTION*/
+.about {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.about .textcontent {
+  height: 400px;
+  width: 600px;
+  padding-left: 150px;
+  line-height: 70px;
+}
+.about .textcontent h1 {
+  font-size: 70px;
+  margin: 0%;
+}
+.about .textcontent h2 {
+  font-size: 65px;
+  margin: 0%;
+}
+.about .textcontent h3 {
+  font-size: 60px;
+  margin: 0%;
+  color: #4f46e5;
+}
+.about .textcontent h4 {
+  line-height: normal;
+  font-size: 18px;
+}
+.about img {
+  height: 400px;
+  width: 600px;
+}
+.about button {
+  display: flex;
+  font-weight: 600;
+  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  align-items: center;
+  justify-content: center;
+  color: #f8fafc;
+  gap: 10px;
+  height: 50px;
+  width: 170px;
+  border: 2px solid;
+  background-color: #4f46e5;
+  border-radius: 10px;
+}
+
+.about button svg {
+  padding: 0%;
+  height: 24px;
+  width: 24px;
+  color: white;
+  background-color: #4f46e5;
+}
+.about button:hover {
+  box-shadow: 2px 2px 2px #4f46e5;
+  transition: all 0.3 ease;
+}
+.about .btn {
+  display: flex;
+  gap: 10px;
+}
+#join {
+  width: fit-content;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+}
+/*Overview Section*/
+.overview {
+  margin-top: 80px;
+  display: flex;
+  list-style: none;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid #b4b1f6;
+}
+.ovItem {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-right: 2px solid #b4b1f6;
+  background-blend-mode: color;
+}
+.ovItem svg {
+  border-radius: 5px;
+  align-items: center;
+  background-color: #b4b1f6;
+  color: #000000;
+  padding: 8px;
+}
+.ovItem h1 {
+  font-weight: 700;
+  font-size: 25px;
+  padding: 0px;
+  margin: 3pxpx;
+  text-align: center;
+}
+.ovItem p {
+  padding: 0%;
+  margin: 0%;
+  color: dimgrey;
+  justify-content: center;
+  text-align: center;
+}
