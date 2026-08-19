@@ -34,6 +34,10 @@ body {
   justify-content: center;
   gap: 5px;
 }
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
 .navbarItem {
   height: auto;
   width: auto;

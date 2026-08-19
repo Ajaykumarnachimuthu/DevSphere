@@ -2,7 +2,9 @@
   border: 0;
   padding: 0;
 }
-
+body {
+  font-family: "Inter", sans-serif;
+}
 .navbar-left img {
   height: 60px;
   width: 140px;
@@ -22,6 +24,10 @@
   border: 2px sold #4f46e5;
   justify-content: left;
   object-fit: fill;
+}
+.navbar a {
+  text-decoration: none;
+  color: inherit;
 }
 .navbar-centre {
   list-style: none;
@@ -102,14 +108,16 @@
 main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 40px;
 }
 
 .blogsHeader {
   text-align: center;
   margin-bottom: 35px;
 }
-
+button a {
+  color: white;
+  font-family: "Inter", sans-serif;
+}
 .blogsHeader h1 {
   font-size: 40px;
   color: #111827;

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write a Blog</title>
+    <link rel="stylesheet" href="writeBlog.css">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-left"><img src="./images/logo1.png"></div>
+            <ul class="navbar-centre">
+                <li class="navbarItem"><a href="./index.html">Home</a></li>
+                <li class="navbarItem"><a href="./BlogPage.html">Blog</a></li>
+                <li class="navbarItem">Developers<a href="#developers"></a></li>
+                <li class="navbarItem">Projects<a href="#Projects"></a></li>
+                <li class="navbarItem">About<a href="#about"></a></li>
+
+            </ul>
+
+            <div class="navbar-right">
+                <div class="searchbar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                        <path d="M21 21l-6 -6" />
+                    </svg>
+                    <input type="text" placeholder="search...">
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+
+    <main class="write-container">
+
+        <section class="page-heading">
+
+            <h1>Write Your Story</h1>
+            <p>Share your thoughts, experiences and ideas with the community.</p>
+        </section>
+
+        <section class="editor-card">
+            <form>
+
+                <div class="form-group">
+                    <label for="blog-title">Blog Title</label>
+                    <input type="text" id="blog-title" name="blog-title"
+                        placeholder="Give your blog a meaningful title...">
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category">
+                            <option value="">Select a category</option>
+                            <option>Technology</option>
+                            <option>Travel</option>
+                            <option>Education</option>
+                            <option>Personal</option>
+                            <option>Lifestyle</option>
+                            <option>Programming</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" id="author" name="author" placeholder="Your name">
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Featured Image</label>
+
+                    <div class="image-upload">
+                        <div class="upload-icon">+</div>
+
+                        <div>
+                            <strong>Choose a featured image</strong>
+                            <p>Add an image that represents your blog</p>
+                        </div>
+
+                        <input type="file" id="image" name="image" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Your Story</label>
+
+                    <textarea id="content" name="content" placeholder="Start writing your story here..."></textarea>
+
+                    <div class="editor-info">
+                        <span>Write freely. Share your ideas.</span>
+                        <span>0 words</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+
+                    <input type="text" id="tags" name="tags" placeholder="e.g. coding, technology, web development">
+
+                    <small>Add a few keywords to help readers discover your blog.</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn secondary-btn">Save Draft</button>
+                    <button type="button" class="btn preview-btn">Preview</button>
+                    <button type="submit" class="btn publish-btn">Publish Blog</button>
+                </div>
+
+            </form>
+        </section>
+
+
+    </main>
+
+    <footer>
+        <p>© 2026 BlogSphere. Share your story with the world.</p>
+    </footer>
+
+</body>
+
+</html>
