@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Paget</title>
+    <link rel="stylesheet" href="./BlogPage.css">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-left"><img src="./images/logo1.png"></div>
+            <ul class="navbar-centre">
+                <li class="navbarItem">Home<a href="#home"></a></li>
+                <li class="navbarItem">Blog<a href="./BlogPage.html"></a></li>
+                <li class="navbarItem">Developers<a href="#developers"></a></li>
+                <li class="navbarItem">Projects<a href="#Projects"></a></li>
+                <li class="navbarItem">About<a href="#about"></a></li>
+
+            </ul>
+
+            <div class="navbar-right">
+                <div class="searchbar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                        <path d="M21 21l-6 -6" />
+                    </svg>
+                    <input type="text" placeholder="search...">
+                </div>
+                <button id="login">Login</button>
+                <button id="register">Register</button>
+            </div>
+        </nav>
+    </header>
+    <main>
+
+        <section class="blogsHeader">
+            <h1>Explore Developer Blogs</h1>
+            <p>Learn from developers, share knowledge and grow together.</p>
+        </section>
+
+        <section class="blogActions">
+            <div class="blogSearch">
+                <input type="text" placeholder="Search blogs...">
+            </div>
+
+            <button class="write">Write a Blog</button>
+        </section>
+
+        <section class="categories">
+            <button class="active">All</button>
+            <button>Web Development</button>
+            <button>Mobile</button>
+            <button>AI / ML</button>
+            <button>DevOps</button>
+        </section>
+
+        <section class="blogGrid">
+
+            <article class="blogCard">
+                <div class="blogImage">JavaScript</div>
+                <div class="blogContent">
+                    <span class="tech">JavaScript</span>
+                    <h2>Understanding JavaScript Closures</h2>
+                    <p>Learn how closures work and why they are useful in modern JavaScript.</p>
+                    <small>Ajay Kumar · 5 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">React</div>
+                <div class="blogContent">
+                    <span class="tech">React</span>
+                    <h2>Getting Started with React Hooks</h2>
+                    <p>A simple introduction to useState, useEffect and React Hooks.</p>
+                    <small>Arun Kumar · 6 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">SQL</div>
+                <div class="blogContent">
+                    <span class="tech">Database</span>
+                    <h2>Understanding SQL Joins</h2>
+                    <p>Learn the basics of INNER, LEFT and RIGHT joins with examples.</p>
+                    <small>Ravi Kumar · 4 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">Python</div>
+                <div class="blogContent">
+                    <span class="tech">Python</span>
+                    <h2>Python for Beginners</h2>
+                    <p>Start your Python journey with variables, functions and data types.</p>
+                    <small>Priya · 7 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">AI</div>
+                <div class="blogContent">
+                    <span class="tech">AI / ML</span>
+                    <h2>Introduction to Machine Learning</h2>
+                    <p>Understand the basic concepts behind machine learning.</p>
+                    <small>Vishal · 8 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">Git</div>
+                <div class="blogContent">
+                    <span class="tech">Development</span>
+                    <h2>Git and GitHub Basics</h2>
+                    <p>Learn how developers use Git and GitHub to manage projects.</p>
+                    <small>Rahul · 5 min read</small>
+                </div>
+            </article>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
