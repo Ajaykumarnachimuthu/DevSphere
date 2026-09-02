@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
     <link rel="stylesheet" href="signup.css">
+    <script src="./signup.js" defer></script>
 </head>
 
 <body>
@@ -18,10 +19,11 @@
             <div class="input-container"><label for="email">Email</label><input type="email" name="email" id="email"
                     required placeholder="Enter your email address"></div>
             <div class="input-container"><label for="password">Password</label><input type="password" name="password"
-                    id="password" required placeholder="Enter your password"></div>
+                    id="password" required placeholder="Enter your password"><button type="button"
+                    id="toggle-password">Show</button><small id="password-strength"></small></div>
             <div class="input-container"><label for="confirmPassword">Confirm Password</label><input type="password"
                     name="confirmPassword" id="confirmPassword" required placeholder="Re-Enter your password"></div>
-            <button type="submit">Register<a href="./login.html"></a></button>
+            <button type="submit">Register</button>
         </form>
         <br>
         <p>Already have account ? <a href="./login.html">login here</a></p>

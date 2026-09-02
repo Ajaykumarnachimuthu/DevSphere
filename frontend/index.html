@@ -5,19 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./index.css">
+    <script src="./index.js" defer></script>
     <title>Document</title>
 </head>
 
 <body>
     <header>
         <nav class="navbar">
-            <div class="navbar-left"><img src="./images/logo1.png"></div>
+            <div class="navbar-left"><a href="./index.html"><img src="./images/logo1.png"></a></div>
             <ul class="navbar-centre">
-                <li class="navbarItem">Home<a href="#home"></a></li>
+                <li class="navbarItem"><a href="./index.html">Home</a></li>
                 <li class="navbarItem"><a href="./BlogPage.html">Blog</a></li>
-                <li class="navbarItem">Developers<a href="#developers"></a></li>
-                <li class="navbarItem">Projects<a href="#Projects"></a></li>
-                <li class="navbarItem">About<a href="#about"></a></li>
+                <li class="navbarItem"><a href="./Developers.html">Developers</a></li>
+                <li class="navbarItem"><a href="./Projects.html">Projects</a></li>
+                <li class="navbarItem"><a href="./About.html">About</a></li>
 
             </ul>
 
@@ -32,8 +33,8 @@
                     </svg>
                     <input type="text" placeholder="search...">
                 </div>
-                <button id="login">Login</button>
-                <button id="register">Register</button>
+                <button id="login" type="button">Login</button>
+                <button id="register" type="button">Register</button>
             </div>
         </nav>
     </header>

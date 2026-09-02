@@ -1,0 +1,803 @@
+# Phase 2 JavaScript Implementation Analysis
+
+## Part 1: Page-by-Page Analysis
+
+### PAGE: Index
+
+**JavaScript File:** [index.js](frontend/index.js)
+
+**Purpose:** Adds navigation, search feedback, welcome messaging, and hero-button interactions to the landing page.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| DOM selection | `document.querySelector()` | Navigation and search | Selects buttons and inputs |
+| Page-load event | `DOMContentLoaded` | Entire page | Runs code after HTML loads |
+| Events | `addEventListener("click")` | Login, Register, Start, Join buttons | Handles navigation |
+| Navigation | `window.location.href` | Navigation buttons | Opens other HTML pages |
+| Input event | `addEventListener("input")` | Navbar search | Displays dynamic search feedback |
+| DOM creation | `document.createElement("small")` | Search message | Creates a message element |
+| DOM update | `textContent` | Search and welcome message | Updates visible text |
+| Browser storage | `localStorage.getItem()` | Welcome message | Reads the logged-in email |
+| Template literal | `` `Welcome to DevSphere, ...` `` | Welcome message | Creates dynamic text |
+
+The landing page routes users to Login, Signup, Blog, and Signup pages. The search field displays a message such as “Searching DevSphere for …” but does not perform backend searching.
+
+---
+
+### PAGE: Login
+
+**JavaScript File:** [login.js](frontend/login.js)
+
+**Purpose:** Validates login form input, displays feedback, stores the entered email, and provides password visibility control.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| DOM selection | `document.querySelector()` | Form, email, password, toggle | Selects form controls |
+| Form event | `addEventListener("submit")` | Login form | Handles login submission |
+| Prevent submission | `event.preventDefault()` | Form handler | Prevents page reload |
+| Conditions | `if`, `else if`, `else` | Validation | Checks email and password |
+| String method | `trim()` | Email | Removes surrounding spaces |
+| Regular expression | `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` | Email | Performs basic email validation |
+| DOM creation | `document.createElement("p")` | Validation feedback | Creates a message element |
+| DOM update | `textContent` and `style.color` | Feedback message | Displays errors or success |
+| Password toggle | `.type` | Password input | Switches between password and text |
+| Storage | `localStorage.setItem()` | Successful login | Stores `loggedInUser` |
+| Timer | `window.setTimeout()` | Successful login | Delays redirect |
+| Navigation | `window.location.href` | Successful login | Returns to `index.html` |
+
+The login implementation validates format and length, but it does not compare the credentials against the registered `users` array. Any valid email and six-character password is accepted.
+
+---
+
+### PAGE: Signup
+
+**JavaScript File:** [signup.js](frontend/signup.js)
+
+**Purpose:** Validates registration fields, measures password strength, prevents duplicate emails, and stores user objects.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| DOM selection | `document.querySelector()` | Form fields | Selects registration controls |
+| Input event | `addEventListener("input")` | Password field | Updates strength indicator |
+| Submit event | `addEventListener("submit")` | Signup form | Handles registration |
+| Conditions | `if`, `else if`, `else` | Validation | Checks all user inputs |
+| String methods | `trim()`, `toLowerCase()` | Username and email | Normalizes input |
+| Regular expression | Email regex | Email field | Checks email format |
+| Password comparison | `password.value !== confirmPassword.value` | Confirmation | Detects mismatched passwords |
+| Array reading | `JSON.parse()` | `users` storage | Loads existing users |
+| Loop | `for...of` | Duplicate detection | Searches for an existing email |
+| Array method | `push()` | New registration | Adds a user object |
+| Storage | `localStorage.setItem()` | Registration | Saves the users array |
+| Form reset | `form.reset()` | Successful registration | Clears form controls |
+| Password toggle | `.type` | Password field | Shows or hides password |
+| Ternary operator | `condition ? value : value` | Strength indicator | Produces Weak, Medium, or Strong |
+
+Stored user structure:
+
+```js
+{
+    username: name,
+    email: address,
+    password: password.value
+}
+```
+
+Passwords are stored as plain text in browser storage. This is suitable only for an educational prototype.
+
+---
+
+### PAGE: Blog
+
+**JavaScript File:** [BlogPage.js](frontend/BlogPage.js)
+
+**Purpose:** Converts the static blog layout into a searchable and filterable dynamic blog listing.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| Array of objects | `const blogs = [...]` | Blog data | Stores six blog records |
+| DOM selection | `querySelector()` and `querySelectorAll()` | Grid, search, categories | Selects page controls |
+| Filtering | `blogs.filter()` | Search and category filtering | Selects matching blogs |
+| String methods | `trim()`, `toLowerCase()`, `includes()` | Search | Performs case-insensitive search |
+| Rendering | `map()` and `join()` | Blog grid | Generates HTML cards |
+| Template literals | `` `<article>...</article>` `` | Card rendering | Inserts blog data into markup |
+| DOM update | `grid.innerHTML` | Blog grid | Replaces visible cards |
+| Events | `input`, `click` | Search and categories | Updates results |
+| Conditions | Ternary expression | Results rendering | Shows cards or empty state |
+| Navigation | `window.location.href` | Write, Login, Register | Opens related pages |
+| CSS state | `classList.add()` and `classList.remove()` | Category buttons | Updates active category |
+
+The six blog objects contain title, category, description, author, reading time, and technology.
+
+The original static cards are replaced by JavaScript-generated cards when `render()` executes.
+
+---
+
+### PAGE: Write Blog
+
+**JavaScript File:** [writeBlog.js](frontend/writeBlog.js)
+
+**Purpose:** Provides frontend blog creation, validation, preview, draft storage, publishing, and character counting.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| DOM selection | `querySelector()` | Form fields and buttons | Selects editor controls |
+| Form event | `addEventListener("submit")` | Blog form | Handles publishing |
+| Prevent submission | `event.preventDefault()` | Publish handler | Prevents page reload |
+| Input event | `addEventListener("input")` | Content textarea | Updates character count |
+| Conditions | `if` | Validation and length limit | Checks required values |
+| Character cap | `slice(0, 5000)` | Content field | Limits content length |
+| Object creation | `read()` | Draft and publish actions | Builds a blog object |
+| String methods | `trim()`, `split()`, `filter()` | Blog fields and tags | Cleans and processes input |
+| Array method | `map()` | Tags | Trims individual tags |
+| Date API | `new Date().toISOString()` | Blog object | Records creation time |
+| DOM creation | `document.createElement()` | Feedback, counter, preview | Creates runtime elements |
+| DOM update | `textContent`, `innerHTML` | Feedback and preview | Displays results |
+| Storage | `JSON.parse()` and `JSON.stringify()` | Drafts and published blogs | Persists blog objects |
+| Timer | `window.setTimeout()` | Publish success | Redirects to Blog page |
+
+Storage keys:
+
+- `drafts`
+- `publishedBlogs`
+
+The featured image input is present in HTML but is not processed by JavaScript. The existing word counter is also not updated; only the dynamically added character counter is updated.
+
+---
+
+### PAGE: Developers
+
+**JavaScript File:** [Developers.js](frontend/Developers.js)
+
+**Purpose:** Dynamically displays developers and supports searching and profile selection.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| Array of objects | `const developers = [...]` | Developer data | Stores six developer records |
+| DOM selection | `querySelector()` | Grid and search | Selects page controls |
+| Search event | `addEventListener("input")` | Developer search | Updates results while typing |
+| Filtering | `developers.filter()` | Search | Matches names, roles, and skills |
+| String methods | `trim()`, `toLowerCase()`, `join()` | Search text | Creates searchable text |
+| Array iteration | `map()` | Card rendering | Generates developer cards |
+| Array iteration | `forEach()` | Profile links | Adds click listeners |
+| Array lookup | `find()` | Profile selection | Finds selected developer |
+| String splitting | `split(" ")` | Avatar initials | Creates initials |
+| DOM update | `grid.innerHTML` | Developer grid | Replaces cards |
+| Storage | `localStorage.setItem()` | Profile link | Saves `selectedDeveloper` |
+| Empty condition | Ternary operator | Search results | Shows “No developers found” |
+
+Each developer object contains:
+
+- `name`
+- `role`
+- `description`
+- `skills`
+- `location`
+
+---
+
+### PAGE: Developer Profile
+
+**JavaScript File:** [DeveloperProfile.js](frontend/DeveloperProfile.js)
+
+**Purpose:** Loads the selected developer, updates profile information, handles connection actions, and renders a Chart.js chart.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| Storage read | `localStorage.getItem()` | Profile loading | Retrieves selected developer |
+| JSON parsing | `JSON.parse()` | Profile data | Converts stored text to an object |
+| Fallback object | `|| { ... }` | Direct page access | Provides default developer |
+| DOM selection | `querySelector()` | Profile fields | Selects display elements |
+| DOM update | `textContent` | Name, role, bio, location | Updates profile content |
+| Array rendering | `map()` | Skills | Creates skill tags |
+| DOM replacement | `innerHTML` | Skills container | Displays dynamic skills |
+| Button selection | `querySelectorAll("button")` | Connect and Message | Selects profile actions |
+| Click event | `addEventListener("click")` | Connect and Message | Handles profile actions |
+| Storage state | `localStorage.setItem()` | Connection | Persists connection state |
+| Conditional state | `if` | Connection logic | Prevents repeated connection |
+| DOM creation | `document.createElement("canvas")` | Statistics chart | Creates chart canvas |
+| Library check | `window.Chart` | Chart initialization | Ensures Chart.js exists |
+| Third-party API | `new Chart(...)` | Statistics section | Creates a bar chart |
+
+The chart displays:
+
+- Projects: `12`
+- Blogs: `24`
+- Connections: `186`
+
+The profile falls back to Ajay Kumar when no developer has been selected.
+
+---
+
+### PAGE: Projects
+
+**JavaScript File:** [Projects.js](frontend/Projects.js)
+
+**Purpose:** Dynamically renders projects and supports searching, filtering, sorting, and liking.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| Array of objects | `const projects = [...]` | Project data | Stores six project records |
+| DOM selection | `querySelector()` and `querySelectorAll()` | Controls and grid | Selects page elements |
+| Search event | `addEventListener("input")` | Project search | Filters while typing |
+| Change event | `addEventListener("change")` | Select controls | Applies category and sorting |
+| Click event | `addEventListener("click")` | Category and Like buttons | Handles interactions |
+| Filtering | `projects.filter()` | Search and category | Selects matching projects |
+| Sorting | `results.sort()` | Most Liked and Most Viewed | Orders results |
+| Lookup | `find()` | Like button | Finds selected project |
+| Rendering | `map()` and `join()` | Project grid | Generates project cards |
+| Conditions | `if` and ternary | Sorting and empty state | Controls behavior |
+| CSS state | `classList.add()` and `classList.remove()` | Categories and likes | Updates visual state |
+| Alert | `window.alert()` | Submit Project | Explains backend is not connected |
+
+Project fields include:
+
+- `title`
+- `category`
+- `description`
+- `technologies`
+- `author`
+- `likes`
+- `views`
+
+Likes are updated in memory only and are not saved to localStorage.
+
+---
+
+### PAGE: About
+
+**JavaScript File:** [About.js](frontend/About.js)
+
+**Purpose:** Animates statistics, adds the Get Started action, handles community navigation, and reacts to scrolling.
+
+| JavaScript Feature | Actual Code/Method | Where Used | Purpose |
+|---|---|---|---|
+| Array | `const values = [...]` | Statistics | Stores target counter values |
+| DOM selection | `querySelectorAll()` | Statistics cards | Selects statistic elements |
+| Iteration | `forEach()` | Statistics | Processes all counters |
+| Timer | `window.setInterval()` | Statistics | Animates numbers |
+| Timer control | `window.clearInterval()` | Statistics | Stops completed counters |
+| Math methods | `Math.max()`, `Math.ceil()`, `Math.min()` | Counter animation | Controls increments |
+| DOM update | `textContent` | Statistics | Displays animated values |
+| DOM creation | `document.createElement("a")` | Get Started link | Adds missing action dynamically |
+| Click event | `addEventListener("click")` | Join and Get Started | Navigates to signup |
+| Scroll event | `window.addEventListener("scroll")` | About page | Detects scrolling |
+| Window property | `window.scrollY` | Scroll handler | Determines scroll position |
+| CSS state | `classList.toggle("seen")` | Numbers section | Toggles the visible state |
+
+The counters animate to:
+
+- `10K+`
+- `2.5K+`
+- `1.2K+`
+- `50+`
+
+---
+
+## Part 2: Syllabus Mapping
+
+| Syllabus Topic | DevSphere Implementation | File | JavaScript Used | Purpose |
+|---|---|---|---|---|
+| Understanding JavaScript | Interactive page behavior | All JS files | Variables, functions, events | Adds behavior to static HTML |
+| Dynamic Websites and HTML5 Applications | Dynamic cards and live filtering | Blog, Developers, Projects | Arrays, `filter()`, `map()`, `innerHTML` | Updates content without reloading |
+| Getting Started with JavaScript | Basic application logic | All JS files | `const`, `let`, functions, operators | Implements page behavior |
+| DOM | Runtime page manipulation | All JS files | `querySelector()`, `createElement()`, `textContent`, `innerHTML` | Reads and changes HTML |
+| Variables, Strings, and Arrays | Application data and input processing | Signup, Blog, Developers, Projects | Arrays, objects, `trim()`, `toLowerCase()` | Stores and processes data |
+| Conditions and Loops | Validation, filtering, and states | Login, Signup, Blog, Projects | `if`, `else`, ternary, `for...of` | Controls application decisions |
+| Events and Windows | User actions and browser APIs | All JS files | `addEventListener()`, `window.location`, timers | Responds to user and browser events |
+| JavaScript Best Practices | Modular page scripts | All JS files | `const`, `let`, named variables, event listeners | Keeps code organized and maintainable |
+| Third-Party Libraries | Developer activity chart | DeveloperProfile.js | Chart.js and `new Chart()` | Produces a statistics visualization |
+
+---
+
+## Part 3: Important Variables
+
+| Variable | File | Type/Value | Purpose |
+|---|---|---|---|
+| `blogs` | BlogPage.js | Array of objects | Stores blog data |
+| `developers` | Developers.js | Array of objects | Stores developer data |
+| `projects` | Projects.js | Array of objects | Stores project data |
+| `users` | signup.js | Array of objects | Stores registered users |
+| `selected` | DeveloperProfile.js | Object | Represents selected developer |
+| `category` | BlogPage.js / Projects.js | String | Stores active category |
+| `query` | BlogPage.js / Developers.js / Projects.js | String | Stores normalized search text |
+| `emailValue` | login.js | String | Stores entered login email |
+| `passwordValue` | login.js | String | Stores entered password |
+| `name` | signup.js | String | Stores normalized username |
+| `address` | signup.js | String | Stores normalized email |
+| `target` | About.js | Number | Counter destination value |
+| `current` | About.js | Number | Current animated counter value |
+| `form` | login.js / signup.js / writeBlog.js | DOM element | References a form |
+| `grid` | BlogPage.js / Developers.js / Projects.js | DOM element | Holds dynamic cards |
+| `search` | Several files | DOM element | References search input |
+| `preview` | writeBlog.js | DOM element | Holds blog preview |
+| `connectionKey` | DeveloperProfile.js | String | Builds a storage key |
+| `canvas` | DeveloperProfile.js | DOM element | Holds Chart.js output |
+
+The project primarily uses `const` for stable references and data, and `let` for values that change, such as categories, counters, and result collections.
+
+---
+
+## Part 4: String Operations
+
+| String Feature | File | Actual Usage | Purpose |
+|---|---|---|---|
+| `trim()` | login.js | `email.value.trim()` | Removes extra email spaces |
+| `trim()` | signup.js | `username.value.trim()` | Cleans username input |
+| `trim()` | writeBlog.js | Blog title and content | Removes unnecessary whitespace |
+| `toLowerCase()` | signup.js | Email normalization | Makes duplicate checking consistent |
+| `toLowerCase()` | BlogPage.js | Search query and blog text | Enables case-insensitive search |
+| `toLowerCase()` | Developers.js | Developer search | Enables case-insensitive search |
+| `toLowerCase()` | Projects.js | Project search | Enables case-insensitive search |
+| `includes()` | BlogPage.js | Search matching | Detects search text |
+| `includes()` | Developers.js | Search matching | Searches name, role, and skills |
+| `includes()` | Projects.js | Search matching | Searches title, category, technology, and author |
+| `split()` | Developers.js | `name.split(" ")` | Separates name parts |
+| `split()` | writeBlog.js | `tags.split(",")` | Separates comma-delimited tags |
+| `join()` | Developers.js | Skills and initials | Combines array values |
+| Template literals | Multiple files | Dynamic HTML and messages | Inserts variable values into strings |
+
+No actual use of `toUpperCase()` or `replace()` was found.
+
+---
+
+## Part 5: Arrays and Objects
+
+### Important Arrays and Objects
+
+| Array/Object | File | Contains | Purpose |
+|---|---|---|---|
+| `blogs` | BlogPage.js | Six blog objects | Dynamic blog listing |
+| `developers` | Developers.js | Six developer objects | Dynamic developer listing |
+| `projects` | Projects.js | Six project objects | Dynamic project listing |
+| `users` | signup.js | User objects | Registered prototype users |
+| `skills` | Developers.js / DeveloperProfile.js | Skill strings | Developer skills |
+| `values` | About.js | Four numbers | Statistics targets |
+| `drafts` | writeBlog.js | Blog objects | Saved drafts |
+| `published` | writeBlog.js | Blog objects | Published prototype blogs |
+
+### Actual Array Methods
+
+| Array Method | File | Where Used | Purpose |
+|---|---|---|---|
+| `push()` | signup.js | New user | Adds a registered user |
+| `push()` | writeBlog.js | Draft and publish | Adds a blog object |
+| `filter()` | BlogPage.js | Blog search/filter | Returns matching blogs |
+| `filter()` | Developers.js | Developer search | Returns matching developers |
+| `filter()` | Projects.js | Project search/filter | Returns matching projects |
+| `find()` | Developers.js | Profile selection | Finds selected developer |
+| `find()` | DeveloperProfile.js | Not used for collections | No `find()` usage in this file |
+| `find()` | Projects.js | Like action | Finds selected project |
+| `forEach()` | BlogPage.js | Category buttons | Adds category listeners |
+| `forEach()` | Developers.js | Profile links | Adds profile listeners |
+| `forEach()` | Projects.js | Category and like buttons | Adds interaction listeners |
+| `forEach()` | About.js | Statistic elements | Animates counters |
+| `map()` | BlogPage.js | Blog cards | Generates blog cards |
+| `map()` | Developers.js | Developer cards and skills | Generates card and skill HTML |
+| `map()` | Projects.js | Project cards and technologies | Generates card HTML |
+| `map()` | writeBlog.js | Tags | Creates cleaned tag array |
+| `sort()` | Projects.js | Project results | Sorts by likes or views |
+| `join()` | Several files | Search strings and markup | Combines array values |
+
+`pop()` and array `.includes()` were not used.
+
+---
+
+## Part 6: Conditions
+
+| Condition | File | What It Checks | Purpose |
+|---|---|---|---|
+| `if (!emailValue)` | login.js | Empty email | Displays required-field error |
+| `else if (!email format)` | login.js | Invalid email | Displays format error |
+| `else if (passwordValue.length < 6)` | login.js | Short password | Enforces minimum length |
+| `if (name.length < 3)` | signup.js | Short username | Validates username |
+| `else if (!email format)` | signup.js | Invalid email | Validates email |
+| `else if (password.length < 6)` | signup.js | Short password | Validates password |
+| `else if (password !== confirmPassword)` | signup.js | Password mismatch | Validates confirmation |
+| `if (duplicate)` | signup.js | Existing email | Prevents duplicate registration |
+| `category === "All"` | BlogPage.js | Active blog category | Shows all blogs |
+| `results.length` | BlogPage.js | Search results | Displays cards or empty state |
+| `category === "All"` | Projects.js | Active project category | Shows all projects |
+| `sortSelect.value === "Most Liked"` | Projects.js | Sort selection | Sorts by likes |
+| `sortSelect.value === "Most Viewed"` | Projects.js | Sort selection | Sorts by views |
+| `!button.classList.contains("liked")` | Projects.js | Existing like state | Prevents repeated likes |
+| `localStorage... === "true"` | DeveloperProfile.js | Connection state | Prevents repeated connection |
+| `stats && window.Chart` | DeveloperProfile.js | Chart availability | Prevents chart error |
+| `current === target` | About.js | Counter completion | Stops interval |
+| `window.scrollY > 120` | About.js | Scroll position | Toggles About section state |
+
+---
+
+## Part 7: Loops and Iteration
+
+| Loop/Iteration | File | Where Used | Purpose |
+|---|---|---|---|
+| `for...of` | signup.js | User duplicate detection | Checks every stored user |
+| `forEach()` | BlogPage.js | Category buttons | Adds click handlers |
+| `forEach()` | Developers.js | Profile links | Adds profile handlers |
+| `forEach()` | Projects.js | Categories and likes | Adds event handlers |
+| `forEach()` | About.js | Counters | Animates each statistic |
+| `map()` | BlogPage.js | Blog rendering | Generates blog cards |
+| `map()` | Developers.js | Developer and skill rendering | Generates developer cards |
+| `map()` | Projects.js | Project and technology rendering | Generates project cards |
+| `map()` | writeBlog.js | Tag processing | Creates cleaned tag array |
+
+Iteration is used for blog cards, developer cards, project cards, skill tags, technologies, category controls, and statistics.
+
+---
+
+## Part 8: DOM Operations
+
+| DOM Method/Property | File | Actual Use |
+|---|---|---|
+| `document.addEventListener()` | All files | Waits for `DOMContentLoaded` |
+| `document.querySelector()` | All files | Selects forms, buttons, inputs, and containers |
+| `document.querySelectorAll()` | Blog, Projects, About, Profile | Selects groups of elements |
+| `element.querySelector()` | DeveloperProfile.js | Selects fields inside the profile |
+| `document.createElement()` | Index, Login, Signup, WriteBlog, Profile, About | Creates messages, counters, canvas, and links |
+| `appendChild()` | Signup, WriteBlog, Profile, About | Adds generated elements |
+| `prepend()` | Login, Signup, WriteBlog | Adds feedback before form content |
+| `innerHTML` | Blog, Developers, Projects, Profile, WriteBlog | Renders dynamic markup |
+| `textContent` | All major files | Updates messages, labels, counters, and profile text |
+| `.value` | Form/search files | Reads input values |
+| `.type` | Login and Signup | Switches password visibility |
+| `.style.color` | Login, Signup, WriteBlog | Displays success/error colors |
+| `classList.add()` | Blog, Projects, Developers | Applies active or liked states |
+| `classList.remove()` | Blog, Projects | Removes previous active states |
+| `classList.toggle()` | About | Toggles the `.seen` class |
+| `classList.contains()` | Projects | Checks whether a project was liked |
+| `.dataset` | Developers, Projects | Reads selected developer/project identifiers |
+| `form.reset()` | Signup | Clears registration controls |
+
+---
+
+## Part 9: Events
+
+| Event | File | Element | Result |
+|---|---|---|---|
+| `DOMContentLoaded` | All files | Document | Initializes page logic |
+| `click` | index.js | Navigation and hero buttons | Navigates to other pages |
+| `input` | index.js | Navbar search | Displays search feedback |
+| `submit` | login.js | Login form | Validates and stores login data |
+| `click` | login.js | Password toggle | Shows or hides password |
+| `input` | signup.js | Password field | Updates strength indicator |
+| `submit` | signup.js | Signup form | Validates and stores user |
+| `input` | BlogPage.js | Blog search | Filters blogs |
+| `click` | BlogPage.js | Category buttons | Filters by category |
+| `click` | BlogPage.js | Write button | Opens write page |
+| `input` | writeBlog.js | Content textarea | Updates character counter |
+| `click` | writeBlog.js | Preview button | Displays preview |
+| `click` | writeBlog.js | Save Draft | Stores a draft |
+| `submit` | writeBlog.js | Publish form | Stores and publishes blog |
+| `input` | Developers.js | Developer search | Filters developers |
+| `click` | Developers.js | Profile links | Saves selected developer |
+| `input` | Projects.js | Project search | Filters projects |
+| `change` | Projects.js | Category/sort selects | Changes filter or order |
+| `click` | Projects.js | Category buttons | Filters projects |
+| `click` | Projects.js | Like buttons | Increments likes |
+| `click` | DeveloperProfile.js | Connect | Stores connection state |
+| `click` | DeveloperProfile.js | Message | Adds a message notice |
+| `click` | About.js | Join/Get Started | Navigates to signup |
+| `scroll` | About.js | Window | Toggles About statistics state |
+
+No `keydown` event was found.
+
+---
+
+## Part 10: Window Object
+
+| Window Feature | File | Purpose |
+|---|---|---|
+| `window.location.href` | index.js | Page navigation |
+| `window.location.href` | login.js | Redirect after login |
+| `window.location.href` | BlogPage.js | Navigation to related pages |
+| `window.location.href` | writeBlog.js | Redirect after publishing |
+| `window.location.href` | About.js | Signup navigation |
+| `window.localStorage` | Multiple files | Browser-side persistence |
+| `window.setTimeout()` | login.js, writeBlog.js | Delayed redirects |
+| `window.setInterval()` | About.js | Animated counters |
+| `window.clearInterval()` | About.js | Stops completed counters |
+| `window.addEventListener()` | About.js | Listens for scroll |
+| `window.scrollY` | About.js | Reads scroll position |
+| `window.alert()` | Projects.js | Reports unavailable project submission |
+
+---
+
+## Part 11: Local Storage
+
+| Storage Key | File | Data Stored | Purpose |
+|---|---|---|---|
+| `users` | signup.js | Array of user objects | Stores prototype registrations |
+| `loggedInUser` | login.js, index.js | Email string | Stores and displays login identity |
+| `selectedDeveloper` | Developers.js, DeveloperProfile.js | Developer object | Transfers selected profile |
+| `connection:<name>` | DeveloperProfile.js | `"true"` | Persists connection state |
+| `drafts` | writeBlog.js | Array of blog objects | Stores drafts |
+| `publishedBlogs` | writeBlog.js | Array of blog objects | Stores published blogs |
+
+Actual storage methods include:
+
+```js
+localStorage.getItem(...)
+localStorage.setItem(...)
+JSON.parse(...)
+JSON.stringify(...)
+```
+
+`removeItem()` is not used.
+
+> This is frontend/browser storage for the prototype and is not a replacement for secure backend authentication or database storage.
+
+Important limitations:
+
+- Login does not verify the `users` array.
+- Passwords are stored in plain text.
+- Published blogs are saved but not loaded into `BlogPage.js`.
+- Project likes are not persisted.
+- Malformed JSON in storage can cause `JSON.parse()` errors.
+
+---
+
+## Part 12: Forms and Validation
+
+| Form | File | Validation | Purpose |
+|---|---|---|---|
+| Login | login.js | Required email, email regex, six-character password | Provides client-side login validation |
+| Signup | signup.js | Username length, email format, password length, confirmation match, duplicate email | Validates registration |
+| Write Blog | writeBlog.js | Required title, category, and content | Validates blog creation |
+| Project submission | Projects.js | No form implemented | Displays a backend placeholder alert |
+
+The forms use:
+
+```js
+event.preventDefault()
+```
+
+This prevents normal browser submission and allows JavaScript to handle validation and storage.
+
+---
+
+## Part 13: Dynamic Website Features
+
+| Dynamic Feature | Page | JavaScript Functionality | Purpose |
+|---|---|---|---|
+| Welcome message | Index | Reads logged-in user | Personalizes landing page |
+| Search feedback | Index | Input event and DOM update | Demonstrates dynamic interaction |
+| Blog cards | Blog | Array and `map()` | Generates blog content |
+| Blog search | Blog | `filter()` and `includes()` | Finds matching blogs |
+| Blog categories | Blog | Category click listeners | Filters blog results |
+| Developer cards | Developers | Array and `map()` | Generates developer content |
+| Developer search | Developers | `filter()` | Searches developer data |
+| Profile selection | Developers | `find()` and localStorage | Transfers selected developer |
+| Project cards | Projects | Array and `map()` | Generates project content |
+| Project sorting | Projects | `sort()` | Orders projects |
+| Project likes | Projects | Click listener and object mutation | Updates likes immediately |
+| Blog preview | Write Blog | `innerHTML` | Shows entered blog content |
+| Draft storage | Write Blog | JSON localStorage | Saves incomplete blogs |
+| Published storage | Write Blog | JSON localStorage | Saves published blogs |
+| Statistics counters | About | `setInterval()` | Animates numerical statistics |
+| Developer chart | Profile | Chart.js | Visualizes profile statistics |
+
+---
+
+## Part 14: Third-Party Library
+
+| Library | File | Where Used | Purpose |
+|---|---|---|---|
+| Chart.js | DeveloperProfile.html / DeveloperProfile.js | Developer statistics | Creates a bar chart |
+
+Chart.js is loaded from the CDN in [DeveloperProfile.html](frontend/DeveloperProfile.html):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+```
+
+The chart is created in [DeveloperProfile.js](frontend/DeveloperProfile.js):
+
+```js
+new Chart(canvas, {
+    type: 'bar',
+    data: {
+        labels: ['Projects', 'Blogs', 'Connections'],
+        datasets: [{ data: [12, 24, 186] }]
+    }
+});
+```
+
+Chart.js was selected because it provides responsive chart rendering, axes, bars, labels, and canvas management without manually implementing drawing logic.
+
+The chart currently uses sample values and is not connected to dynamic storage data.
+
+No JavaScript framework such as React, Vue, or Angular is used.
+
+---
+
+## Part 15: JavaScript Best Practices
+
+| Best Practice | Evidence in Code | File | Purpose |
+|---|---|---|---|
+| Modular files | One script per page | All pages | Keeps page logic separated |
+| `const` and `let` | Data and changing state | All files | Uses modern declarations |
+| Meaningful names | `selectedDeveloper`, `passwordValue`, `published` | Multiple files | Improves readability |
+| Functions | `render()`, `read()`, `showMessage()` | Several files | Groups reusable logic |
+| Event listeners | `addEventListener()` | All files | Separates behavior from HTML |
+| Strict equality | `===` | Multiple files | Avoids type coercion |
+| Input validation | Form conditions and regex | Login, Signup, Write Blog | Handles invalid input |
+| Safe empty storage reads | `getItem(...) || '[]'` | Signup and Write Blog | Handles missing storage |
+| Fallback data | Default developer object | DeveloperProfile.js | Supports direct page access |
+| JSON serialization | `JSON.stringify()` and `JSON.parse()` | Storage features | Stores structured objects |
+| DOM-only feedback | `textContent` messages | Forms and profile | Avoids excessive alerts |
+| Iteration | `forEach()`, `map()`, `for...of` | Dynamic pages | Handles collections |
+
+### Improvements or Violations
+
+- Login accepts any valid email/password combination and does not authenticate against registered users.
+- Passwords are stored in plain text.
+- `JSON.parse()` is not protected with `try...catch`.
+- User-entered content is inserted using `innerHTML`, which could create an injection risk in a real application.
+- Project likes are not stored in localStorage.
+- Published blogs are not displayed on the blog page.
+- Pagination controls are visible but have no JavaScript behavior.
+- The featured image is not processed.
+- The original word counter is not updated.
+- The code contains very long single-line functions in several scripts, which reduces readability.
+- `window.alert()` is used for project submission rather than a DOM message.
+
+---
+
+## Part 16: Report-Ready Summary
+
+### JavaScript Implementation Summary
+
+DevSphere uses JavaScript to convert the Phase 1 static HTML and CSS website into an interactive frontend application. Each page has a separate JavaScript file, allowing page-specific functionality to remain modular and understandable.
+
+JavaScript adds navigation, form validation, password visibility controls, dynamic search, category filtering, project sorting, project likes, blog previews, draft storage, publishing, developer profile selection, animated statistics, and Chart.js data visualization.
+
+The DOM is manipulated using methods such as `querySelector()`, `querySelectorAll()`, `createElement()`, `innerHTML`, `textContent`, and `appendChild()`. Arrays and objects represent users, blogs, developers, projects, skills, and statistics.
+
+Browser events such as `click`, `input`, `submit`, `change`, `scroll`, and `DOMContentLoaded` connect user actions to application behavior. Window APIs provide navigation, timers, scrolling information, alerts, and localStorage access.
+
+The project uses localStorage as temporary browser storage for users, login identity, selected developers, connections, drafts, and published blogs. Chart.js is used on the developer profile page to display project, blog, and connection statistics.
+
+---
+
+## Part 17: Important Code References
+
+### DOM
+
+```js
+document.querySelector('.loginForm')
+```
+
+```js
+document.createElement('p')
+```
+
+```js
+grid.innerHTML = ...
+```
+
+```js
+element.textContent = ...
+```
+
+### Events
+
+```js
+element.addEventListener('click', ...)
+```
+
+```js
+form.addEventListener('submit', ...)
+```
+
+```js
+document.addEventListener('DOMContentLoaded', ...)
+```
+
+### Arrays
+
+```js
+blogs.filter(...)
+```
+
+```js
+developers.map(...)
+```
+
+```js
+projects.sort(...)
+```
+
+```js
+users.push(...)
+```
+
+### Strings
+
+```js
+value.trim().toLowerCase()
+```
+
+```js
+text.includes(query)
+```
+
+```js
+tags.split(',').map(...)
+```
+
+### Conditions
+
+```js
+if (...) { ... } else if (...) { ... } else { ... }
+```
+
+```js
+condition ? valueOne : valueTwo
+```
+
+### Storage
+
+```js
+localStorage.setItem('users', JSON.stringify(users))
+```
+
+```js
+JSON.parse(localStorage.getItem('selectedDeveloper') || 'null')
+```
+
+### Window APIs
+
+```js
+window.location.href = './signup.html'
+```
+
+```js
+window.setTimeout(...)
+```
+
+```js
+window.addEventListener('scroll', ...)
+```
+
+### Chart.js
+
+```js
+new Chart(canvas, {
+    type: 'bar',
+    data: { ... }
+})
+```
+
+---
+
+## Part 18: Final Implementation Matrix
+
+| # | Syllabus Topic | Page | JS File | Actual Feature | JavaScript Concept | Purpose |
+|---|---|---|---|---|---|---|
+| 1 | Understanding JavaScript | All pages | All JS files | Page interactions | Variables, functions, events | Adds behavior to static HTML |
+| 2 | Dynamic Websites and HTML5 Applications | Blog, Developers, Projects | BlogPage.js, Developers.js, Projects.js | Dynamic cards and filtering | Arrays, objects, DOM | Updates content without reload |
+| 3 | Getting Started with JavaScript Programming | All pages | All JS files | Basic application logic | `const`, `let`, operators | Implements frontend behavior |
+| 4 | Working with the DOM | All interactive pages | All JS files | Dynamic messages, cards, previews, counters | `querySelector()`, `innerHTML`, `textContent` | Manipulates page content |
+| 5 | Variables, Strings, and Arrays | Signup, Blog, Developers, Projects | signup.js, BlogPage.js, Developers.js, Projects.js | User and application data | Arrays, objects, string methods | Stores and processes information |
+| 6 | Controlling Flow with Conditions and Loops | Login, Signup, Blog, Projects | login.js, signup.js, BlogPage.js, Projects.js | Validation, filtering, sorting, empty states | `if`, `else`, ternary, loops | Controls application decisions |
+| 7 | Responding to Events and Using Windows | All pages | All JS files | Navigation, forms, search, scroll, timers | `addEventListener()`, `window.location`, timers | Responds to users and browser state |
+| 8 | JavaScript Best Practices | All pages | All JS files | Modular scripts and validation | `const`, `let`, functions, JSON, strict equality | Keeps implementation maintainable |
+| 9 | Third-Party Libraries and Frameworks | Developer Profile | DeveloperProfile.js | Developer statistics chart | Chart.js | Provides reusable chart rendering |
+
+### Current Backend Requirements
+
+The following features still require backend implementation in a production version:
+
+- Secure authentication
+- Password hashing
+- Database-backed users
+- Server-side sessions
+- Blog persistence for all users
+- Image upload and storage
+- Project submission
+- Persistent likes
+- Messaging
+- Real developer activity statistics
+- Authorization and protected routes
+
+The current implementation is a frontend educational prototype. Static validation and diagnostics were clean, but a browser runtime session would still be required to independently verify console behavior with the Chart.js CDN available.

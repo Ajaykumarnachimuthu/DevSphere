@@ -33,6 +33,7 @@ body {
   width: 180px;
   border: 2px sold #4f46e5;
   justify-content: left;
+  
   object-fit: fill;
 }
 .navbar-centre {

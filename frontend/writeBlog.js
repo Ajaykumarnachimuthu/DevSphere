@@ -1,0 +1,24 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.editor-card form');
+    const title = document.querySelector('#blog-title');
+    const category = document.querySelector('#category');
+    const author = document.querySelector('#author');
+    const content = document.querySelector('#content');
+    const tags = document.querySelector('#tags');
+    const info = document.querySelector('.editor-info');
+    const feedback = document.createElement('p');
+    form?.prepend(feedback);
+    const show = (text, success = false) => { feedback.textContent = text; feedback.style.color = success ? 'green' : 'crimson'; };
+    const counter = document.createElement('span');
+    counter.textContent = 'Characters: 0 / 5000';
+    info?.appendChild(counter);
+    content?.addEventListener('input', () => { if (content.value.length > 5000) content.value = content.value.slice(0, 5000); counter.textContent = `Characters: ${content.value.length} / 5000`; });
+    const read = () => ({ title: title.value.trim(), category: category.value, content: content.value.trim(), author: author.value.trim() || 'Anonymous', tags: tags.value.split(',').map(tag => tag.trim()).filter(Boolean), createdAt: new Date().toISOString() });
+    const valid = blog => { if (!blog.title || !blog.category || !blog.content) { show('Title, category and content are required.'); return false; } return true; };
+    const preview = document.createElement('section');
+    preview.className = 'blog-preview';
+    form?.appendChild(preview);
+    document.querySelector('.preview-btn')?.addEventListener('click', () => { const blog = read(); if (valid(blog)) preview.innerHTML = `<h2>${blog.title}</h2><b>${blog.category}</b><p>${blog.content}</p>`; });
+    document.querySelector('.secondary-btn')?.addEventListener('click', () => { const blog = read(); if (valid(blog)) { const drafts = JSON.parse(localStorage.getItem('drafts') || '[]'); drafts.push(blog); localStorage.setItem('drafts', JSON.stringify(drafts)); show('Draft saved.', true); } });
+    form?.addEventListener('submit', event => { event.preventDefault(); const blog = read(); if (valid(blog)) { const published = JSON.parse(localStorage.getItem('publishedBlogs') || '[]'); published.push(blog); localStorage.setItem('publishedBlogs', JSON.stringify(published)); show('Blog published successfully.', true); window.setTimeout(() => { window.location.href = './BlogPage.html'; }, 900); } });
+});
