@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages chart and interactive actions
+    if (document.getElementById('profile-interactive-root')) return;
     const selected = JSON.parse(localStorage.getItem('selectedDeveloper') || 'null') || { name: 'Ajay Kumar', role: 'Full Stack Developer', description: 'Passionate about building useful web applications, APIs and developer-focused products.', skills: ['HTML', 'CSS', 'JavaScript', 'React', 'Node.js'], location: 'India' };
     const profile = document.querySelector('.profile');
     const heading = profile?.querySelector('h1');

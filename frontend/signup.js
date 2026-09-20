@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages the signup form
+    if (document.getElementById('signup-island-root')) return;
     const form = document.querySelector('.signup');
     const username = document.querySelector('#username');
     const email = document.querySelector('#email');

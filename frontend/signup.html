@@ -6,31 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
     <link rel="stylesheet" href="signup.css">
-    <script src="./signup.js" defer></script>
+    <script type="module" src="./signup.js"></script>
 </head>
 
 <body>
     <div class="signup-container">
         <h1>DevSphere</h1>
         <h2>Create Your Account</h2>
-        <form class="signup">
-            <div class="input-container"><label for="username">Username</label><input type="text" id="username"
-                    name="username" required placeholder="Enter your Username"></div>
-            <div class="input-container"><label for="email">Email</label><input type="email" name="email" id="email"
-                    required placeholder="Enter your email address"></div>
-            <div class="input-container"><label for="password">Password</label><input type="password" name="password"
-                    id="password" required placeholder="Enter your password"><button type="button"
-                    id="toggle-password">Show</button><small id="password-strength"></small></div>
-            <div class="input-container"><label for="confirmPassword">Confirm Password</label><input type="password"
-                    name="confirmPassword" id="confirmPassword" required placeholder="Re-Enter your password"></div>
-            <button type="submit">Register</button>
-        </form>
+        <div id="signup-island-root">
+            <form class="signup">
+                <div class="input-container"><label for="username">Username</label><input type="text" id="username"
+                        name="username" required placeholder="Enter your Username"></div>
+                <div class="input-container"><label for="email">Email</label><input type="email" name="email" id="email"
+                        required placeholder="Enter your email address"></div>
+                <div class="input-container"><label for="password">Password</label><input type="password" name="password"
+                        id="password" required placeholder="Enter your password"><button type="button"
+                        id="toggle-password">Show</button><small id="password-strength"></small></div>
+                <div class="input-container"><label for="confirmPassword">Confirm Password</label><input type="password"
+                        name="confirmPassword" id="confirmPassword" required placeholder="Re-Enter your password"></div>
+                <button type="submit">Register</button>
+            </form>
+        </div>
         <br>
         <p>Already have account ? <a href="./login.html">login here</a></p>
 
 
     </div>
 
+    <script type="module" src="/src/islands/SignupForm.jsx"></script>
 </body>
 
 </html>

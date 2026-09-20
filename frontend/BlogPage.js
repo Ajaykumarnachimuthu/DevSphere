@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages this region
+    if (document.getElementById('blog-island-root')) return;
     const blogs = [
         { title: 'Understanding JavaScript Closures', category: 'Web Development', description: 'Learn how closures work and why they are useful in modern JavaScript.', author: 'Ajay Kumar', readTime: '5 min read', tech: 'JavaScript' },
         { title: 'Getting Started with React Hooks', category: 'Web Development', description: 'A simple introduction to useState, useEffect and React Hooks.', author: 'Arun Kumar', readTime: '6 min read', tech: 'React' },

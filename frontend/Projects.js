@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages this region
+    if (document.getElementById('projects-island-root')) return;
     const projects = [
         { title: 'Personal Finance Tracker', category: 'Web Development', description: 'A full-stack web app to track income, expenses, budgets and financial insights.', technologies: ['React', 'Node.js', 'MongoDB', 'Tailwind CSS'], author: 'Ajaykumar N', likes: 128, views: 2400 },
         { title: 'Railway Ticket Booking System', category: 'Web Development', description: 'A comprehensive railway ticket booking system with seat reservation and secure payments.', technologies: ['Java', 'JSP', 'MySQL', 'Bootstrap'], author: 'Varnika S', likes: 96, views: 1800 },

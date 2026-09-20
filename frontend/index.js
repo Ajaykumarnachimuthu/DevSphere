@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const value = search.value.trim();
         message.textContent = value ? `Searching DevSphere for “${value}”…` : '';
     });
-    const welcome = document.createElement('p');
-    welcome.textContent = `Welcome to DevSphere, ${localStorage.getItem('loggedInUser') || 'developer'}!`;
-    document.querySelector('.textcontent')?.appendChild(welcome);
+    if (!document.getElementById('home-island-root')) {
+        const welcome = document.createElement('p');
+        welcome.textContent = `Welcome to DevSphere, ${localStorage.getItem('loggedInUser') || 'developer'}!`;
+        document.querySelector('.textcontent')?.appendChild(welcome);
+    }
 });

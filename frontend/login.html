@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./login.css">
-    <script src="./login.js" defer></script>
+    <script type="module" src="./login.js"></script>
     <title>Login</title>
 </head>
 
@@ -16,27 +16,26 @@
         <h1>Login to DevSphere</h1>
 
 
-        <form class="loginForm">
-            <div class="input-container">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
-            </div>
-            <div class="input-container">
-                <label for="password">Password</label>
-                <input type="password" id="PASSWORD" name="password" required placeholder="Enter your password">
-                <button type="button" id="toggle-password">Show</button>
-            </div>
+        <div id="login-island-root">
+            <form class="loginForm">
+                <div class="input-container">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
+                <div class="input-container">
+                    <label for="password">Password</label>
+                    <input type="password" id="PASSWORD" name="password" required placeholder="Enter your password">
+                    <button type="button" id="toggle-password">Show</button>
+                </div>
 
-            <button type="submit" class="btn-submit">Sign In</button>
-        </form>
+                <button type="submit" class="btn-submit">Sign In</button>
+            </form>
+        </div>
         <br>
         <p class="signup-text">Dont have an account ? <a href="./signup.html">Sign up</a></p>
     </div>
 
-
-
-
-
+    <script type="module" src="/src/islands/LoginForm.jsx"></script>
 </body>
 
 </html>

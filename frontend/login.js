@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages the login form
+    if (document.getElementById('login-island-root')) return;
     const form = document.querySelector('.loginForm');
     const email = document.querySelector('#email');
     const password = document.querySelector('#PASSWORD');

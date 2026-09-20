@@ -1,0 +1,2188 @@
+﻿DevSphere React Migration Source
+================================
+Generated from the current static DevSphere project. This document is an inspection record for a future React migration. No existing application file was changed, deleted, or migrated while creating this report.
+
+1. PROJECT STRUCTURE
+====================
+Full relevant structure:
+
+Full Stack Proojects/
+|-- DevSphere_JavaScript_Report.txt                 Existing JavaScript analysis (reference only)
+|-- DevSphere_React_Migration_Source.txt            This migration source dossier
+|-- .vscode/
+  `-- settings.json                               Live Server port 5501
+|-- frontend/
+    |-- index.html
+    |-- index.css
+    |-- index.js
+    |-- login.html
+    |-- login.css
+    |-- login.js
+    |-- signup.html
+    |-- signup.css
+    |-- signup.js
+    |-- BlogPage.html
+    |-- BlogPage.css
+    |-- BlogPage.js
+    |-- writeBlog.html
+    |-- writeBlog.css
+    |-- writeBlog.js
+    |-- Developers.html
+    |-- Developers.css
+    |-- Developers.js
+    |-- DeveloperProfile.html
+    |-- DeveloperProfile.css
+    |-- DeveloperProfile.js
+    |-- Projects.html
+    |-- Projects.css
+    |-- Projects.js
+    |-- About.html
+    |-- About.css
+    |-- About.js
+    `-- images/
+        |-- ChatGPT Image Aug 7, 2026, 07_58_30 PM.png
+        |-- Gemini_Generated_Image_gvpjj9gvpjj9gvpj.png
+        |-- ilustartion.png
+        |-- image 1 [Vectorized] 1.png
+        |-- image.png
+        |-- logo1.png
+        `-- Pair programming-amico.svg
+
+The only workspace configuration found is .vscode/settings.json, which sets liveServer.settings.port to 5501. No package.json, build configuration, JavaScript module configuration, backend, database configuration, or application font files were found. The .git directory is workspace metadata and is not an application runtime file.
+
+2. HTML FILES
+=============
+The complete current HTML source is reproduced in the COMPLETE SOURCE APPENDIX. Page-level structure:
+- index.html: header/navbar with logo, five navigation links, search input, Login/Register buttons; hero/about section with three headline lines, description, Start Writing and Join Community buttons, illustration image; four-item overview section with inline SVG icons.
+- login.html: centered login container, email and password inputs, show-password button, submit button, signup link.
+- signup.html: centered registration container, username/email/password/confirm-password inputs, password strength output, show-password button, submit button, login link.
+- BlogPage.html: header/navbar, blog heading, blog search, Write a Blog button, category filter buttons, six initial static blog cards.
+- writeBlog.html: header/navbar, blog editor form with title, category, author, image file input, story textarea, tags, Save Draft/Preview/Publish buttons, footer.
+- Developers.html: compact one-line HTML document with header/navbar, breadcrumb, developer search, six initial developer cards, footer.
+- DeveloperProfile.html: compact one-line HTML document with header/navbar, breadcrumb, profile actions, about/skills card, statistics card, Chart.js CDN script, footer.
+- Projects.html: compact one-line HTML document with header/navbar, breadcrumb, search/category/sort controls, category buttons, six initial project cards, pagination buttons, footer.
+- About.html: compact one-line HTML document with header/navbar, breadcrumb, hero copy and Join link, illustration/code/people block, animated numbers section, footer.
+
+Common semantic elements actually present: html, head, meta, title, link, script, body, header, nav, ul/li, main, section, article, aside, footer, form, label, input, select, option, textarea, button, a, img, svg, h1-h4, h2, p, small, strong, b, span, div.
+
+3. CSS FILES
+============
+Complete CSS is reproduced verbatim in the appendix. Actual style findings:
+- index.css: global reset-like selector, Inter body font, navbar flex layout, search and auth buttons, hero flex layout, inline SVG/button styling, overview flex list. Main colors include #f8fafc, #4f46e5, #b4b1f6, #3a3b3d, dimgrey, and #000000. No media query.
+- login.css: reset, centered full viewport indigo background, 400px login card, flex form, 300px inputs, focus ring using #eef2ff, button hover state, violet border and 20px card radius. No media query.
+- signup.css: centered full viewport indigo background, 400px white card, stacked form, 300px inputs, focus ring, button hover state, 20px card radius. No media query.
+- BlogPage.css: shared navbar, 1200px main, heading/actions/search/category controls, three-column blog grid, cards with hover translate/shadow, #f8fafc/#4f46e5/#eef2ff/#111827/#6b7280/#9ca3af palette. No media query.
+- writeBlog.css: reset and editor styles, navbar, 90% container, 40px editor padding, two-column form row, file upload surface, textarea, actions, buttons, footer. Includes @media (max-width: 768px): navbar padding, attempted navbar nav hiding, 94% container, smaller heading, reduced card padding, one-column form, stacked full-width actions, top-aligned writing tip.
+- Developers.css: compact modern navbar, logo/nav/auth controls, 1280px main, centered search, three-column card grid, avatar/tag/card/footer styles, and a responsive rule if present in the exact appendix source. The file is minified to two physical lines.
+- DeveloperProfile.css: profile navbar, 1120px main, profile card, circular avatar, two-column content/stats cards, action buttons, tags, footer. The file is minified to two physical lines.
+- Projects.css: project navbar, 1280px main, top filters, category controls, three-column project grid, image-color classes, tags, pagination, footer. The file is minified to two physical lines.
+- About.css: about navbar, 1280px main, three-column hero, illustration/code/people area, number cards and footer. The file is minified to two physical lines.
+
+Actual CSS system values found across files: primary indigo #4f46e5; pale indigo #eef2ff; body backgrounds #f8fafc, #f7f8fa, and #4f46e5 on auth pages; white card/background; text #111827, #202124, #374151, #4b5563, #536078, #6b7280, #9ca3af, #334155; border colors #e5e7eb, #d1d5db, #dbe1ea, #b4b1f6, #c4b5fd, #c7c9d1; Inter font; rounded controls from 2px to 20px; card shadows using rgba(17,24,39,.04/.06), rgba(0,0,0,.05/.08/.15); common gaps/padding as preserved in source. No CSS custom properties were found.
+
+4. JAVASCRIPT FILES AND ACTUAL FUNCTIONALITY
+============================================
+- index.js: waits for DOMContentLoaded; defines a navigation helper using querySelector, click listeners, and window.location.href for Login, Register, Start, and Join; adds a search feedback small element and input listener using trim and a template literal; appends a welcome paragraph using localStorage.getItem('loggedInUser') or developer fallback.
+- login.js: selects login form fields; prepends a feedback paragraph; toggles password input type and button text; prevents submit; trims email; validates email with a regular expression and password length >= 6; writes loggedInUser; shows success; redirects to index.html after 900ms with setTimeout. It does not validate against users.
+- signup.js: selects registration controls; creates/uses password strength small; prepends feedback; toggles password visibility; updates Weak/Medium/Strong on password input; prevents submit; trims username, lowercases email, validates username/email/password/confirmation; reads users JSON; scans users with for...of for duplicate email; pushes { username, email, password }; writes users JSON; resets form after success.
+- BlogPage.js: defines six blog objects; filters by selected category and normalized search query; renders cards with filter/map/join and innerHTML; handles search input and category clicks/class state; routes Write a Blog, Login, and Register; renders at initialization. It does not read publishedBlogs.
+- writeBlog.js: reads editor fields; creates feedback, dynamic character counter, and preview section; limits content to 5000 characters using slice; creates blog objects with title/category/content/author/tags/createdAt; validates required title/category/content; previews HTML; reads/pushes/writes drafts; reads/pushes/writes publishedBlogs; publishes and redirects after 900ms. The image input is not read, and the existing 0 words display is not updated.
+- Developers.js: defines six developer objects; filters name/role/skills with trim, lowercase, join, includes; renders cards and initials with map/join; attaches profile click listeners with forEach; finds selected developer; stores selectedDeveloper JSON.
+- DeveloperProfile.js: reads selectedDeveloper JSON with Ajay Kumar fallback; updates profile text and skills; builds connection:<name> key; reads/writes connection state and changes Connect to Connected; appends a backend-later message on Message click; if window.Chart exists, creates a canvas and initializes a bar chart with Projects 12, Blogs 24, Connections 186.
+- Projects.js: defines six project objects; filters by category and search; sorts results by likes or views; renders cards and like buttons; finds project on like and increments in-memory likes once per rendered button; handles search, select changes, category clicks, active classes, and alert for Submit Project. Likes are not persisted.
+- About.js: animates four number cards with setInterval, Math.max/ceil/min, and clearInterval; routes Join and dynamically added Get Started link to signup; toggles numbers seen class on scroll based on window.scrollY.
+
+5. LOCAL STORAGE
+=================
+Key: users
+File: frontend/signup.js
+Data stored: JSON array of objects { username, email, password }
+Purpose: prototype registration storage and duplicate-email check
+Read/Write: read and write
+Code reference: JSON.parse(localStorage.getItem('users') || '[]'); localStorage.setItem('users', JSON.stringify(users));
+
+Key: loggedInUser
+Files: frontend/login.js, frontend/index.js
+Data stored: entered login email string
+Purpose: welcome message after login
+Read/Write: login.js writes; index.js reads
+Code reference: localStorage.setItem('loggedInUser', emailValue); localStorage.getItem('loggedInUser')
+
+Key: drafts
+File: frontend/writeBlog.js
+Data stored: JSON array of blog objects with title, category, content, author, tags, createdAt
+Purpose: saved draft blogs
+Read/Write: read and write
+Code reference: JSON.parse(localStorage.getItem('drafts') || '[]'); localStorage.setItem('drafts', JSON.stringify(drafts));
+
+Key: publishedBlogs
+File: frontend/writeBlog.js
+Data stored: JSON array of published blog objects with title, category, content, author, tags, createdAt
+Purpose: published prototype blogs
+Read/Write: read and write
+Code reference: JSON.parse(localStorage.getItem('publishedBlogs') || '[]'); localStorage.setItem('publishedBlogs', JSON.stringify(published));
+
+Key: selectedDeveloper
+File: frontend/Developers.js and frontend/DeveloperProfile.js
+Data stored: selected developer object JSON
+Purpose: pass a developer selection to the profile page
+Read/Write: Developers.js writes; DeveloperProfile.js reads
+Code reference: localStorage.setItem('selectedDeveloper', JSON.stringify(selected)); JSON.parse(localStorage.getItem('selectedDeveloper') || 'null')
+
+Key pattern: connection:<name>
+File: frontend/DeveloperProfile.js
+Data stored: string 'true'
+Purpose: persist Connect button state per selected developer
+Read/Write: read and write
+Code reference: const connectionKey = `connection:${selected.name}`; localStorage.getItem(connectionKey); localStorage.setItem(connectionKey, 'true')
+
+6. DATA STRUCTURES
+==================
+Name: blogs; File: BlogPage.js; Structure: six objects; Fields: title, category, description, author, readTime, tech; Purpose: in-memory blog listing; Used by: search, category filter, renderer.
+Name: developers; File: Developers.js; Structure: six objects; Fields: name, role, description, skills array, location; Purpose: in-memory directory; Used by: search, cards, selected profile storage.
+Name: projects; File: Projects.js; Structure: six objects; Fields: title, category, description, technologies array, author, likes, views; Purpose: in-memory project directory; Used by: search, filters, sorting, likes.
+Name: users; File: signup.js; Structure: persisted array of user objects; Fields: username, email, password; Purpose: prototype registration data.
+Name: drafts/published; File: writeBlog.js; Structure: persisted arrays of blog objects; Fields: title, category, content, author, tags array, createdAt; Purpose: draft and publish storage.
+Name: values; File: About.js; Structure: [10000, 2500, 1200, 50]; Purpose: animated number targets.
+
+Actual methods include querySelector/querySelectorAll, addEventListener, createElement, textContent, innerHTML, classList, trim, toLowerCase, includes, split, join, filter, map, forEach, find, sort, push, JSON.parse/stringify, setTimeout, setInterval, clearInterval, Math.max/ceil/min, window.location.href, window.alert, window.scrollY, and Chart constructor. No pop or array includes method was found.
+
+7. PAGE-BY-PAGE FUNCTIONALITY
+=============================
+PAGE: HOME
+HTML: index.html | CSS: index.css | JavaScript: index.js
+UI Features: Logo/nav, search feedback field, login/register controls, hero text, illustration, overview feature list.
+Interactive Features: Login/Register/Start/Join navigation; search message; logged-in welcome text.
+Navigation: Home, BlogPage.html, Developers.html, Projects.html, About.html; buttons route to login.html, signup.html, BlogPage.html.
+Storage: reads loggedInUser.
+External Libraries: none.
+
+PAGE: LOGIN
+HTML: login.html | CSS: login.css | JavaScript: login.js
+UI Features: Email/password form and show-password button.
+Interactive Features: client-side validation, feedback, visibility toggle, delayed redirect.
+Navigation: signup link to signup.html; success redirects index.html.
+Storage: writes loggedInUser.
+External Libraries: none.
+
+PAGE: SIGNUP
+HTML: signup.html | CSS: signup.css | JavaScript: signup.js
+UI Features: registration fields, password strength, visibility toggle.
+Interactive Features: validation, duplicate check, account creation, reset.
+Navigation: login link to login.html.
+Storage: reads/writes users.
+External Libraries: none.
+
+PAGE: BLOGS
+HTML: BlogPage.html | CSS: BlogPage.css | JavaScript: BlogPage.js
+UI Features: heading, search, category buttons, dynamic cards.
+Interactive Features: search/category filtering and empty state.
+Navigation: shared nav; Write a Blog to writeBlog.html; auth buttons to login/signup.
+Storage: none.
+External Libraries: none.
+
+PAGE: WRITE BLOG
+HTML: writeBlog.html | CSS: writeBlog.css | JavaScript: writeBlog.js
+UI Features: editor form, category select, image input, story textarea, tags, actions.
+Interactive Features: validation, character cap/counter, preview, draft save, publish.
+Navigation: shared nav; publish redirects BlogPage.html.
+Storage: drafts and publishedBlogs.
+External Libraries: none.
+
+PAGE: DEVELOPERS
+HTML: Developers.html | CSS: Developers.css | JavaScript: Developers.js
+UI Features: developer search and six-card directory.
+Interactive Features: live search and profile selection.
+Navigation: shared nav; each View Profile links DeveloperProfile.html.
+Storage: writes selectedDeveloper.
+External Libraries: Google Fonts Inter stylesheet.
+
+PAGE: DEVELOPER PROFILE
+HTML: DeveloperProfile.html | CSS: DeveloperProfile.css | JavaScript: DeveloperProfile.js
+UI Features: profile, skills, stats, Connect/Message actions, chart.
+Interactive Features: selected profile loading, connection persistence, message note, Chart.js bar chart.
+Navigation: shared nav; breadcrumb to Developers.html.
+Storage: selectedDeveloper and connection:<name>.
+External Libraries: Chart.js CDN and Google Fonts Inter.
+
+PAGE: PROJECTS
+HTML: Projects.html | CSS: Projects.css | JavaScript: Projects.js
+UI Features: project search, category/sort selects, category chips, cards, pagination controls.
+Interactive Features: filtering, sorting, in-memory likes, submit alert.
+Navigation: shared nav.
+Storage: none.
+External Libraries: Google Fonts Inter stylesheet.
+
+PAGE: ABOUT
+HTML: About.html | CSS: About.css | JavaScript: About.js
+UI Features: mission hero, illustration, number cards.
+Interactive Features: animated counters, Join/Get Started signup navigation, scroll class toggle.
+Navigation: shared nav; Join links signup.html.
+Storage: none.
+External Libraries: Google Fonts Inter stylesheet.
+
+8. NAVIGATION MAP
+=================
+Home: index.html
+-> Blog: BlogPage.html
+-> Developers: Developers.html
+-> Projects: Projects.html
+-> About: About.html
+-> Login: login.html
+-> Signup: signup.html
+-> Write Blog: writeBlog.html from BlogPage.js (the home Start Writing button actually routes to BlogPage.html).
+
+Actual navigation links also include logo/home links, login/signup links, Developers.html -> DeveloperProfile.html profile links, DeveloperProfile.html breadcrumb -> Developers.html, and About.html Join links -> signup.html. JavaScript navigation uses window.location.href in index.js, login.js, BlogPage.js, writeBlog.js, and About.js.
+
+9. COMPONENT CANDIDATES
+=======================
+Potential Component: Navbar. Currently Used In: index, BlogPage, writeBlog, Developers, DeveloperProfile, Projects, About. Why reusable: repeated logo/navigation/search/auth structure.
+Potential Component: AuthButtons. Currently Used In: index and directory/content pages. Why reusable: repeated Login/Signup controls.
+Potential Component: SearchBar. Currently Used In: Home, BlogPage, writeBlog, Developers, DeveloperProfile, Projects. Why reusable: repeated search input pattern, though behavior differs.
+Potential Component: BlogCard. Currently Used In: BlogPage. Why reusable: repeated dynamic article card.
+Potential Component: CategoryFilter. Currently Used In: BlogPage and Projects. Why reusable: repeated active category controls.
+Potential Component: BlogEditor/FormInput. Currently Used In: writeBlog, login, signup. Why reusable: labeled controlled form fields and validation feedback.
+Potential Component: DeveloperCard. Currently Used In: Developers. Why reusable: repeated profile directory item.
+Potential Component: ProfileActions/StatsCard. Currently Used In: DeveloperProfile. Why reusable: profile actions and statistics presentation.
+Potential Component: ProjectCard. Currently Used In: Projects. Why reusable: repeated project result item.
+Potential Component: Pagination. Currently Used In: Projects. Why reusable: page-number control structure, although current buttons have no behavior.
+Potential Component: Footer. Currently Used In: writeBlog, Developers, DeveloperProfile, Projects, About. Why reusable: repeated footer treatment.
+
+10. REACT STATE CANDIDATES
+===========================
+Current Variable: search/query; Current File: index.js, BlogPage.js, Developers.js, Projects.js; Current Purpose: track normalized input for feedback/filtering; Potential React State: searchQuery; Reason: changes on input.
+Current Variable: category; Current File: BlogPage.js, Projects.js; Current Purpose: selected category filter; Potential React State: selectedCategory.
+Current Variable: sortSelect.value; Current File: Projects.js; Current Purpose: current sort mode; Potential React State: sortMode.
+Current Variable: login form values; Current File: login.js; Current Purpose: email/password validation; Potential React State: loginForm.
+Current Variable: signup form values/strength; Current File: signup.js; Current Purpose: registration and strength feedback; Potential React State: signupForm/passwordStrength.
+Current Variable: title/category/author/content/tags; Current File: writeBlog.js; Current Purpose: editor data; Potential React State: blogForm.
+Current Variable: preview.innerHTML; Current File: writeBlog.js; Current Purpose: preview visibility/content; Potential React State: previewBlog/previewVisible.
+Current Variable: selected; Current File: DeveloperProfile.js; Current Purpose: selected developer profile; Potential React State: selectedDeveloper.
+Current Variable: connectionKey state; Current File: DeveloperProfile.js; Current Purpose: connected/not connected; Potential React State: isConnected.
+Current Variable: project.likes; Current File: Projects.js; Current Purpose: in-memory likes; Potential React State: projects or likedProjects.
+Current Variable: current/target; Current File: About.js; Current Purpose: counter animation progress; Potential React State: animatedStats.
+
+11. REACT EFFECT CANDIDATES
+===========================
+- Load selectedDeveloper from localStorage when DeveloperProfile mounts.
+- Load/write users, drafts, publishedBlogs, loggedInUser, and connection state around storage-backed workflows.
+- Initialize Chart.js after profile/stats DOM is available.
+- Run About counter animation on page initialization and clean up timers.
+- Attach/remove scroll handling for the About numbers reveal.
+- Render filtered blog/developer/project results when query/category/sort state changes.
+- Redirect after login/publish success timers.
+
+12. ROUTING
+===========
+Home -> index.html
+Login -> login.html
+Signup -> signup.html
+Blogs -> BlogPage.html
+Write Blog -> writeBlog.html
+Developers -> Developers.html
+Developer Profile -> DeveloperProfile.html
+Projects -> Projects.html
+About -> About.html
+All current routing is file-based through relative href attributes and window.location.href. No router library exists.
+
+13. EXTERNAL LIBRARIES
+======================
+Library: Chart.js
+Version: not pinned in source
+CDN: https://cdn.jsdelivr.net/npm/chart.js
+File: frontend/DeveloperProfile.html
+Purpose: bar chart for developer activity.
+
+Library: Google Fonts Inter
+Version: stylesheet requests weights 400,500,600,700
+CDN: https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap
+Files: frontend/About.html, Developers.html, DeveloperProfile.html, Projects.html
+Purpose: external Inter font.
+
+Inline SVG icon markup is used in index.html, BlogPage.html, and writeBlog.html; those SVGs are not external libraries. No other CDN/library reference was found.
+
+14. ASSETS
+===========
+Asset: logo1.png | Path: frontend/images/logo1.png | Page: index.html, BlogPage.html, writeBlog.html | Purpose: navbar logo image.
+Asset: ilustartion.png | Path: frontend/images/ilustartion.png | Page: index.html | Purpose: hero illustration.
+Asset: ChatGPT Image Aug 7, 2026, 07_58_30 PM.png | Path: frontend/images/ChatGPT Image Aug 7, 2026, 07_58_30 PM.png | Page: no source reference found | Purpose: stored image asset; unused by current HTML/JS.
+Asset: Gemini_Generated_Image_gvpjj9gvpjj9gvpj.png | Path: frontend/images/Gemini_Generated_Image_gvpjj9gvpjj9gvpj.png | Page: no source reference found | Purpose: stored image asset; unused by current HTML/JS.
+Asset: image 1 [Vectorized] 1.png | Path: frontend/images/image 1 [Vectorized] 1.png | Page: no source reference found | Purpose: stored image asset; unused by current HTML/JS.
+Asset: image.png | Path: frontend/images/image.png | Page: no source reference found | Purpose: stored image asset; unused by current HTML/JS.
+Asset: Pair programming-amico.svg | Path: frontend/images/Pair programming-amico.svg | Page: no source reference found | Purpose: stored image asset; unused by current HTML/JS.
+Asset: inline SVG icons | Path: embedded in index.html, BlogPage.html, writeBlog.html | Page: those pages | Purpose: search, writing, community, book, project, and chat icons.
+
+15. DESIGN SYSTEM
+=================
+Primary color: #4f46e5.
+Background colors: #f8fafc, #f7f8fa, #4f46e5, #eef2ff, #ffffff/white, whitesmoke, #fafafa.
+Card colors: #ffffff/white/whitesmoke.
+Text colors: #111827, #202124, #374151, #4b5563, #536078, #6b7280, #9ca3af, #334155, #3a3b3d, dimgrey, #000000.
+Borders: #e5e7eb, #d1d5db, #dbe1ea, #b4b1f6, #c4b5fd, #c7c9d1, #4f46e5, violet.
+Focus colors: #4f46e5 border and #eef2ff / rgba(99,102,241,.1) ring.
+Font: Inter, with Poppins specified for some Home buttons; Inter is loaded externally only on four pages.
+Border radius: 2px navbar items; 5px buttons; 8px inputs/cards/buttons; 9px auth links; 10px controls/cards; 12px tip; 14px navbar bottom; 15px search/cards; 16px editor; 20px auth cards and category pills; circular avatar.
+Button styles: indigo filled or white outlined controls, 40-50px heights in legacy pages, 42px/variable modern page controls, hover transitions preserved in CSS.
+Shadows: navbar 0px 2px 2px rgb(182,179,179), modern navbar 0 4px 16px rgba(17,24,39,.06), cards/editor/auth shadows as in appendix.
+Spacing/dimensions: 60px logo area; 140x60 logo; 300px form inputs; 400px auth card width; 1200/1280/1120px page max widths; 3-column content grids where defined; exact values are in appendix.
+
+16. RESPONSIVE DESIGN
+=====================
+Breakpoint: max-width: 768px
+File: frontend/writeBlog.css
+Changes: navbar gets 0 5% padding; .navbar nav is set to display:none; write container changes to 94% width and 40px vertical margin; page heading h1 drops to 32px; editor card padding drops to 25px; form row changes from two columns to one; form actions become a column and buttons become 100% width; writing tip aligns items at flex-start.
+Affected elements: .navbar, .navbar nav, .write-container, .page-heading h1, .editor-card, .form-row, .form-actions, .btn, .writing-tip.
+
+No other @media breakpoint was found in the application CSS. Other pages have fixed desktop-oriented widths/grids and no explicit responsive CSS.
+
+17. KNOWN LIMITATIONS
+=====================
+- Authentication is frontend-only; login accepts any valid-format email and six-character password and does not compare users.
+- Signup stores passwords in plain text in localStorage.
+- No backend, database, API, or server-side authentication exists.
+- BlogPage.js renders its own six in-memory blogs and does not load publishedBlogs.
+- Featured image selection is present in HTML but not processed.
+- Existing word count text is not updated; a separate character counter is dynamically added.
+- Project likes are in-memory only and reset on reload.
+- Project pagination buttons have no JavaScript behavior.
+- Project submission only shows an alert.
+- Developer Profile Message only appends a backend-later note.
+- Home search only displays feedback and does not search content.
+- Some pages contain static cards that are immediately replaced by JavaScript-rendered results.
+- No explicit responsive CSS exists for most pages.
+- Several source documents contain visibly mojibake characters in icon/copyright text as currently stored.
+
+18. CURRENT TECHNOLOGY STACK
+============================
+HTML5
+CSS3
+Vanilla JavaScript
+DOM APIs and browser events
+localStorage
+Chart.js via CDN
+Google Fonts Inter via CDN
+Inline SVG
+
+19. COMPLETE SOURCE APPENDIX
+============================
+The following sections contain the complete current source of every HTML, CSS, and JavaScript file. Content is copied from the workspace without rewriting or correction.
+
+========================================
+FILE: frontend/index.html
+========================================
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
+    <script src="./index.js" defer></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-left"><a href="./index.html"><img src="./images/logo1.png"></a></div>
+            <ul class="navbar-centre">
+                <li class="navbarItem"><a href="./index.html">Home</a></li>
+                <li class="navbarItem"><a href="./BlogPage.html">Blog</a></li>
+                <li class="navbarItem"><a href="./Developers.html">Developers</a></li>
+                <li class="navbarItem"><a href="./Projects.html">Projects</a></li>
+                <li class="navbarItem"><a href="./About.html">About</a></li>
+
+            </ul>
+
+            <div class="navbar-right">
+                <div class="searchbar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                        <path d="M21 21l-6 -6" />
+                    </svg>
+                    <input type="text" placeholder="search...">
+                </div>
+                <button id="login" type="button">Login</button>
+                <button id="register" type="button">Register</button>
+            </div>
+        </nav>
+    </header>
+    <section class="about">
+
+        <div class="textcontent">
+            <h1>
+                Share.
+
+            </h1>
+            <h2>
+                Build Together.
+            </h2>
+            <h3>
+                Grow Forever.
+            </h3>
+            <h4>
+                DevSphere is a Community for developers,creators and tech enthusiasts -where Ideas turn into impact.
+            </h4>
+            <div class="btn"><button id="start">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                        <path
+                            d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z" />
+                        <path
+                            d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
+                    </svg>Start writting
+
+                </button><button id="join"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        fill="currentColor" class="size-6">
+                        <path fill-rule="evenodd"
+                            d="M8.25 6.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM15.75 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM2.25 9.75a3 3 0 1 1 6 0 3 3 0 0 1-6 0ZM6.31 15.117A6.745 6.745 0 0 1 12 12a6.745 6.745 0 0 1 6.709 7.498.75.75 0 0 1-.372.568A12.696 12.696 0 0 1 12 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 0 1-.372-.568 6.787 6.787 0 0 1 1.019-4.38Z"
+                            clip-rule="evenodd" />
+                        <path
+                            d="M5.082 14.254a8.287 8.287 0 0 0-1.308 5.135 9.687 9.687 0 0 1-1.764-.44l-.115-.04a.563.563 0 0 1-.373-.487l-.01-.121a3.75 3.75 0 0 1 3.57-4.047ZM20.226 19.389a8.287 8.287 0 0 0-1.308-5.135 3.75 3.75 0 0 1 3.57 4.047l-.01.121a.563.563 0 0 1-.373.486l-.115.04c-.567.2-1.156.349-1.764.441Z" />
+                    </svg>
+                    Join Community</button></div>
+        </div>
+        </div>
+        <div class="illustration"><img src="images/ilustartion.png"></div>
+    </section>
+    <section class="overviewSection">
+        <ul class="overview">
+            <li class="ovItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
+                    class="icon icon-tabler icons-tabler-filled icon-tabler-book">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M21.5 5.134a1 1 0 0 1 .493 .748l.007 .118v13a1 1 0 0 1 -1.5 .866a8 8 0 0 0 -7.5 -.266v-15.174a10 10 0 0 1 8.5 .708m-10.5 -.707l.001 15.174a8 8 0 0 0 -7.234 .117l-.327 .18l-.103 .044l-.049 .016l-.11 .026l-.061 .01l-.117 .006h-.042l-.11 -.012l-.077 -.014l-.108 -.032l-.126 -.056l-.095 -.056l-.089 -.067l-.06 -.056l-.073 -.082l-.064 -.089l-.022 -.036l-.032 -.06l-.044 -.103l-.016 -.049l-.026 -.11l-.01 -.061l-.004 -.049l-.002 -13.068a1 1 0 0 1 .5 -.866a10 10 0 0 1 8.5 -.707" />
+                </svg>
+                <h1>Learn from Blogs</h1>
+                <p>Read insightful blogs on programming,frameworks,career and more</p>
+            </li>
+            <li class="ovItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256">
+                    <path
+                        d="M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z">
+                    </path>
+                </svg>
+                <h1>Connect with Developers</h1>
+                <p>Follow developers,view their profiles and learn from their experience</p>
+            </li>
+            <li class="ovItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256">
+                    <path
+                        d="M231.73,221.94A8,8,0,0,1,224,232H160A8,8,0,0,1,152.27,222a40,40,0,0,1,17.11-23.33,32,32,0,1,1,45.24,0A40,40,0,0,1,231.73,221.94ZM232,88v32a8,8,0,0,1-16,0V88H40V200h80.56a8,8,0,0,1,0,16H39.38A15.4,15.4,0,0,1,24,200.62V56A16,16,0,0,1,40,40H92.69A15.86,15.86,0,0,1,104,44.69L131.31,72H216A16,16,0,0,1,232,88ZM108.69,72l-16-16H40V72Z">
+                    </path>
+                </svg>
+                <h1>Explore Projects</h1>
+                <p>Discover open source and innovative projects build by our community</p>
+            </li>
+            <li class="ovItem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256">
+                    <path
+                        d="M216,48H40A16,16,0,0,0,24,64V224a15.84,15.84,0,0,0,9.25,14.5A16.05,16.05,0,0,0,40,240a15.89,15.89,0,0,0,10.25-3.78l.09-.07L83,208H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM84,140a12,12,0,1,1,12-12A12,12,0,0,1,84,140Zm44,0a12,12,0,1,1,12-12A12,12,0,0,1,128,140Zm44,0a12,12,0,1,1,12-12A12,12,0,0,1,172,140Z">
+                    </path>
+                </svg>
+                <h1>Share and Collaborate</h1>
+                <p>Share yout knowledge ,get feed back and collabrate with others</p>
+            </li>
+
+        </ul>
+
+
+    </section>
+
+
+</body>
+
+</html>
+
+========================================
+FILE: frontend/login.html
+========================================
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./login.css">
+    <script src="./login.js" defer></script>
+    <title>Login</title>
+</head>
+
+<body>
+
+    <div class=" login-container">
+        <h2>Welcome Onboard</h2>
+        <h1>Login to DevSphere</h1>
+
+
+        <form class="loginForm">
+            <div class="input-container">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="input-container">
+                <label for="password">Password</label>
+                <input type="password" id="PASSWORD" name="password" required placeholder="Enter your password">
+                <button type="button" id="toggle-password">Show</button>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+        <br>
+        <p class="signup-text">Dont have an account ? <a href="./signup.html">Sign up</a></p>
+    </div>
+
+
+
+
+
+</body>
+
+</html>
+
+========================================
+FILE: frontend/signup.html
+========================================
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="signup.css">
+    <script src="./signup.js" defer></script>
+</head>
+
+<body>
+    <div class="signup-container">
+        <h1>DevSphere</h1>
+        <h2>Create Your Account</h2>
+        <form class="signup">
+            <div class="input-container"><label for="username">Username</label><input type="text" id="username"
+                    name="username" required placeholder="Enter your Username"></div>
+            <div class="input-container"><label for="email">Email</label><input type="email" name="email" id="email"
+                    required placeholder="Enter your email address"></div>
+            <div class="input-container"><label for="password">Password</label><input type="password" name="password"
+                    id="password" required placeholder="Enter your password"><button type="button"
+                    id="toggle-password">Show</button><small id="password-strength"></small></div>
+            <div class="input-container"><label for="confirmPassword">Confirm Password</label><input type="password"
+                    name="confirmPassword" id="confirmPassword" required placeholder="Re-Enter your password"></div>
+            <button type="submit">Register</button>
+        </form>
+        <br>
+        <p>Already have account ? <a href="./login.html">login here</a></p>
+
+
+    </div>
+
+</body>
+
+</html>
+
+========================================
+FILE: frontend/BlogPage.html
+========================================
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Paget</title>
+    <link rel="stylesheet" href="./BlogPage.css">
+    <script src="./BlogPage.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-left"><a href="./index.html"><img src="./images/logo1.png"></a></div>
+            <ul class="navbar-centre">
+                <li class="navbarItem"><a href="./index.html">Home</a></li>
+                <li class="navbarItem"><a href="./BlogPage.html">Blog</a></li>
+                <li class="navbarItem"><a href="./Developers.html">Developers</a></li>
+                <li class="navbarItem"><a href="./Projects.html">Projects</a></li>
+                <li class="navbarItem"><a href="./About.html">About</a></li>
+
+            </ul>
+
+            <div class="navbar-right">
+                <div class="searchbar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                        <path d="M21 21l-6 -6" />
+                    </svg>
+                    <input type="text" placeholder="search...">
+                </div>
+                <button id="login" type="button">Login</button>
+                <button id="register" type="button">Register</button>
+            </div>
+        </nav>
+    </header>
+    <main>
+
+        <section class="blogsHeader">
+            <h1>Explore Developer Blogs</h1>
+            <p>Learn from developers, share knowledge and grow together.</p>
+        </section>
+
+        <section class="blogActions">
+            <div class="blogSearch">
+                <input type="text" placeholder="Search blogs...">
+            </div>
+
+            <button class="write" type="button">Write a Blog</button>
+        </section>
+
+        <section class="categories">
+            <button class="active">All</button>
+            <button>Web Development</button>
+            <button>Mobile</button>
+            <button>AI / ML</button>
+            <button>DevOps</button>
+        </section>
+
+        <section class="blogGrid">
+
+            <article class="blogCard">
+                <div class="blogImage">JavaScript</div>
+                <div class="blogContent">
+                    <span class="tech">JavaScript</span>
+                    <h2>Understanding JavaScript Closures</h2>
+                    <p>Learn how closures work and why they are useful in modern JavaScript.</p>
+                    <small>Ajay Kumar Â· 5 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">React</div>
+                <div class="blogContent">
+                    <span class="tech">React</span>
+                    <h2>Getting Started with React Hooks</h2>
+                    <p>A simple introduction to useState, useEffect and React Hooks.</p>
+                    <small>Arun Kumar Â· 6 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">SQL</div>
+                <div class="blogContent">
+                    <span class="tech">Database</span>
+                    <h2>Understanding SQL Joins</h2>
+                    <p>Learn the basics of INNER, LEFT and RIGHT joins with examples.</p>
+                    <small>Ravi Kumar Â· 4 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">Python</div>
+                <div class="blogContent">
+                    <span class="tech">Python</span>
+                    <h2>Python for Beginners</h2>
+                    <p>Start your Python journey with variables, functions and data types.</p>
+                    <small>Priya Â· 7 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">AI</div>
+                <div class="blogContent">
+                    <span class="tech">AI / ML</span>
+                    <h2>Introduction to Machine Learning</h2>
+                    <p>Understand the basic concepts behind machine learning.</p>
+                    <small>Vishal Â· 8 min read</small>
+                </div>
+            </article>
+
+            <article class="blogCard">
+                <div class="blogImage">Git</div>
+                <div class="blogContent">
+                    <span class="tech">Development</span>
+                    <h2>Git and GitHub Basics</h2>
+                    <p>Learn how developers use Git and GitHub to manage projects.</p>
+                    <small>Rahul Â· 5 min read</small>
+                </div>
+            </article>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
+
+========================================
+FILE: frontend/writeBlog.html
+========================================
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write a Blog</title>
+    <link rel="stylesheet" href="writeBlog.css">
+    <script src="./writeBlog.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-left"><a href="./index.html"><img src="./images/logo1.png"></a></div>
+            <ul class="navbar-centre">
+                <li class="navbarItem"><a href="./index.html">Home</a></li>
+                <li class="navbarItem"><a href="./BlogPage.html">Blog</a></li>
+                <li class="navbarItem"><a href="./Developers.html">Developers</a></li>
+                <li class="navbarItem"><a href="./Projects.html">Projects</a></li>
+                <li class="navbarItem"><a href="./About.html">About</a></li>
+
+            </ul>
+
+            <div class="navbar-right">
+                <div class="searchbar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                        <path d="M21 21l-6 -6" />
+                    </svg>
+                    <input type="text" placeholder="search...">
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+
+    <main class="write-container">
+
+        <section class="page-heading">
+
+            <h1>Write Your Story</h1>
+            <p>Share your thoughts, experiences and ideas with the community.</p>
+        </section>
+
+        <section class="editor-card">
+            <form>
+
+                <div class="form-group">
+                    <label for="blog-title">Blog Title</label>
+                    <input type="text" id="blog-title" name="blog-title"
+                        placeholder="Give your blog a meaningful title...">
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category">
+                            <option value="">Select a category</option>
+                            <option>Technology</option>
+                            <option>Travel</option>
+                            <option>Education</option>
+                            <option>Personal</option>
+                            <option>Lifestyle</option>
+                            <option>Programming</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" id="author" name="author" placeholder="Your name">
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Featured Image</label>
+
+                    <div class="image-upload">
+                        <div class="upload-icon">+</div>
+
+                        <div>
+                            <strong>Choose a featured image</strong>
+                            <p>Add an image that represents your blog</p>
+                        </div>
+
+                        <input type="file" id="image" name="image" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Your Story</label>
+
+                    <textarea id="content" name="content" placeholder="Start writing your story here..."></textarea>
+
+                    <div class="editor-info">
+                        <span>Write freely. Share your ideas.</span>
+                        <span>0 words</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+
+                    <input type="text" id="tags" name="tags" placeholder="e.g. coding, technology, web development">
+
+                    <small>Add a few keywords to help readers discover your blog.</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn secondary-btn">Save Draft</button>
+                    <button type="button" class="btn preview-btn">Preview</button>
+                    <button type="submit" class="btn publish-btn">Publish Blog</button>
+                </div>
+
+            </form>
+        </section>
+
+
+    </main>
+
+    <footer>
+        <p>Â© 2026 BlogSphere. Share your story with the world.</p>
+    </footer>
+
+</body>
+
+</html>
+
+========================================
+FILE: frontend/Developers.html
+========================================
+
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Developers - DevSphere</title><link rel="stylesheet" href="Developers.css"><script src="./Developers.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></head><body><header><nav class="navbar"><a class="logo" href="index.html"><b>&lt;/&gt;</b><span>Dev<span>Sphere</span></span></a><ul class="nav"><li><a href="index.html">Home</a></li><li><a href="BlogPage.html">Blogs</a></li><li class="active"><a href="Developers.html">Developers</a></li><li><a href="Projects.html">Projects</a></li><li><a href="About.html">About</a></li></ul><div class="right"><div class="search">Ã¢Å’â€¢<input placeholder="Search DevSphere..."></div><a class="login" href="login.html">Log in</a><a class="signup" href="signup.html">Sign up</a></div></nav></header><main><p class="crumb"><a href="index.html">Home</a> Ã¢â‚¬Âº Developers</p><section class="head"><h1>Discover <span>Developers</span></h1><p>Connect, learn and collaborate with talented developers.</p><div class="devsearch">Ã¢Å’â€¢<input placeholder="Search developers..."></div></section><section class="grid">
+<article><div class="avatar a1">AK</div><div><h2>Ajay Kumar</h2><b>Full Stack Developer</b><p>Passionate about building web applications and APIs.</p><div class="tags"><i>HTML</i><i>CSS</i><i>JavaScript</i><i>Node.js</i></div><a href="DeveloperProfile.html">View Profile</a></div></article>
+<article><div class="avatar a2">AK</div><div><h2>Arun Kumar</h2><b>React Developer</b><p>Building interactive and responsive user interfaces.</p><div class="tags"><i>React</i><i>JavaScript</i><i>CSS</i><i>Tailwind</i></div><a href="DeveloperProfile.html">View Profile</a></div></article>
+<article><div class="avatar a3">PS</div><div><h2>Priya Sharma</h2><b>AI/ML Developer</b><p>Exploring machine learning and AI to build smart solutions.</p><div class="tags"><i>Python</i><i>TensorFlow</i><i>ML</i><i>AI</i></div><a href="DeveloperProfile.html">View Profile</a></div></article>
+<article><div class="avatar a4">RV</div><div><h2>Rohit Verma</h2><b>Backend Developer</b><p>Love solving problems and building scalable backend systems.</p><div class="tags"><i>Node.js</i><i>Express</i><i>MongoDB</i><i>SQL</i></div><a href="DeveloperProfile.html">View Profile</a></div></article>
+<article><div class="avatar a5">NS</div><div><h2>Neha Singh</h2><b>UI/UX Designer</b><p>Designing beautiful and user-friendly digital experiences.</p><div class="tags"><i>Figma</i><i>UI/UX</i><i>Adobe XD</i><i>Prototype</i></div><a href="DeveloperProfile.html">View Profile</a></div></article>
+<article><div class="avatar a6">SP</div><div><h2>Sagar Patil</h2><b>DevOps Engineer</b><p>Automating deployments and managing cloud infrastructure.</p><div class="tags"><i>AWS</i><i>Docker</i><i>Kubernetes</i><i>Jenkins</i></div><a href="DeveloperProfile.html">View Profile</a></div></article></section></main><footer>Ã‚Â© 2026 DevSphere. All rights reserved.</footer></body></html>
+
+
+========================================
+FILE: frontend/DeveloperProfile.html
+========================================
+
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Developer Profile - DevSphere</title><link rel="stylesheet" href="DeveloperProfile.css"><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="./DeveloperProfile.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></head><body><header><nav class="navbar"><a class="logo" href="index.html"><b>&lt;/&gt;</b><span>Dev<span>Sphere</span></span></a><ul class="nav"><li><a href="index.html">Home</a></li><li><a href="BlogPage.html">Blogs</a></li><li class="active"><a href="Developers.html">Developers</a></li><li><a href="Projects.html">Projects</a></li><li><a href="About.html">About</a></li></ul><div class="right"><div class="search">Ã¢Å’â€¢<input placeholder="Search DevSphere..."></div><a class="login" href="login.html">Log in</a><a class="signup" href="signup.html">Sign up</a></div></nav></header><main><p class="crumb"><a href="Developers.html">Developers</a> Ã¢â‚¬Âº Profile</p><section class="profile"><div class="avatar">AK</div><div><b>Full Stack Developer</b><h1>Ajay Kumar</h1><small>India Ã‚Â· Available for collaboration</small><p>Passionate about building useful web applications, APIs and developer-focused products. I enjoy learning new technologies and sharing knowledge.</p><button>Connect</button><button class="outline">Message</button></div></section><div class="columns"><section class="card"><h2>About</h2><p>I am a full stack developer interested in creating clean, scalable and user-friendly applications. I enjoy working across frontend and backend technologies.</p><h2>Skills</h2><div class="tags"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>React</span><span>Node.js</span><span>Express</span><span>MongoDB</span><span>Git</span></div></section><aside class="card stats"><h2>Developer Stats</h2><p><strong>12</strong> Projects</p><p><strong>24</strong> Blogs</p><p><strong>186</strong> Connections</p></aside></div><section class="card"><h2>Projects</h2><div class="mini"><article><b>Web Development</b><h3>DevSphere</h3><p>Developer community platform.</p></article><article><b>Web Development</b><h3>Personal Finance Tracker</h3><p>Track income and expenses.</p></article><article><b>Tools</b><h3>TaskFlow</h3><p>Manage tasks and teams.</p></article></div></section><section class="card"><h2>Latest Blogs</h2><div class="blog"><h3>Understanding JavaScript Closures</h3><span>JavaScript Ã‚Â· 5 min read</span></div><div class="blog"><h3>Building Better APIs with Node.js</h3><span>Web Development Ã‚Â· 7 min read</span></div></section></main><footer>Ã‚Â© 2026 DevSphere. All rights reserved.</footer></body></html>
+
+
+========================================
+FILE: frontend/Projects.html
+========================================
+
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Projects - DevSphere</title><link rel="stylesheet" href="Projects.css"><script src="./Projects.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></head><body><header><nav class="navbar"><a class="logo" href="index.html"><b>&lt;/&gt;</b><span>Dev<span>Sphere</span></span></a><ul class="nav"><li><a href="index.html">Home</a></li><li><a href="BlogPage.html">Blogs</a></li><li><a href="Developers.html">Developers</a></li><li class="active"><a href="Projects.html">Projects</a></li><li><a href="About.html">About</a></li></ul><div class="right"><div class="search">Ã¢Å’â€¢<input placeholder="Search DevSphere..."></div><a class="login" href="login.html">Log in</a><a class="signup" href="signup.html">Sign up</a></div></nav></header><main><p class="crumb"><a href="index.html">Home</a> Ã¢â‚¬Âº Projects</p><section class="top"><div><h1>Projects</h1><p>Explore innovative projects built by our community.</p></div><div class="filters"><input placeholder="Search projects..."><select><option>All Categories</option><option>Web Development</option><option>AI/ML</option><option>DevOps</option></select><select><option>Latest</option><option>Most Liked</option></select><button>Ã¯Â¼â€¹ Submit Project</button></div></section><div class="cats"><button class="active">All</button><button>Web Development</button><button>Mobile</button><button>AI/ML</button><button>DevOps</button><button>Tools</button><button>UI/UX</button><button>Other</button></div><section class="grid">
+<article><div class="pic finance">Finance Overview</div><div class="body"><b>Web Development</b><h2>Personal Finance Tracker</h2><p>A full-stack web app to track income, expenses, budgets and financial insights.</p><div class="tags"><span>React</span><span>Node.js</span><span>MongoDB</span><span>Tailwind CSS</span></div><small>Ajaykumar NÃ£â‚¬â‚¬Ã¢â„¢Â¡128Ã£â‚¬â‚¬Ã¢â€”â€°2.4K</small></div></article>
+<article><div class="pic rail">Book Your Ticket</div><div class="body"><b>Web Development</b><h2>Railway Ticket Booking System</h2><p>A comprehensive railway ticket booking system with seat reservation and secure payments.</p><div class="tags"><span>Java</span><span>JSP</span><span>MySQL</span><span>Bootstrap</span></div><small>Varnika SÃ£â‚¬â‚¬Ã¢â„¢Â¡96Ã£â‚¬â‚¬Ã¢â€”â€°1.8K</small></div></article>
+<article><div class="pic vehicle">Vehicle Health Monitor</div><div class="body"><b>AI/ML</b><h2>AI Vehicle Fault Detection</h2><p>Real-time vehicle telemetry monitoring and AI-powered fault detection system.</p><div class="tags"><span>Python</span><span>FastAPI</span><span>TensorFlow</span><span>PostgreSQL</span></div><small>Vinovasri KÃ£â‚¬â‚¬Ã¢â„¢Â¡142Ã£â‚¬â‚¬Ã¢â€”â€°3.1K</small></div></article>
+<article><div class="pic habit">Habit Arena</div><div class="body"><b>Web Development</b><h2>Habit Arena</h2><p>Gamified habit tracking app to build consistency and compete with friends.</p><div class="tags"><span>React</span><span>Supabase</span><span>PostgreSQL</span><span>Tailwind CSS</span></div><small>Meena RÃ£â‚¬â‚¬Ã¢â„¢Â¡87Ã£â‚¬â‚¬Ã¢â€”â€°1.2K</small></div></article>
+<article><div class="pic market">MarketMind</div><div class="body"><b>Web Development</b><h2>MarketMind</h2><p>AI-powered stock market learning and trading simulator with real-time insights.</p><div class="tags"><span>React</span><span>Node.js</span><span>Firebase</span><span>Groq AI</span></div><small>Hari SÃ£â‚¬â‚¬Ã¢â„¢Â¡164Ã£â‚¬â‚¬Ã¢â€”â€°2.9K</small></div></article>
+<article><div class="pic task">TaskFlow Pro</div><div class="body"><b>Tools</b><h2>TaskFlow Pro</h2><p>A productivity platform to manage tasks, teams and projects efficiently.</p><div class="tags"><span>Next.js</span><span>TypeScript</span><span>Prisma</span><span>PostgreSQL</span></div><small>Kevin DÃ£â‚¬â‚¬Ã¢â„¢Â¡73Ã£â‚¬â‚¬Ã¢â€”â€°950</small></div></article></section><div class="pages"><button>Ã¢â‚¬Â¹</button><button class="current">1</button><button>2</button><button>3</button><button>4</button><button>Ã¢â‚¬Âº</button></div></main><footer>Ã‚Â© 2026 DevSphere. All rights reserved.</footer></body></html>
+
+
+========================================
+FILE: frontend/About.html
+========================================
+
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>About - DevSphere</title><link rel="stylesheet" href="About.css"><script src="./About.js" defer></script><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></head><body><header><nav class="navbar"><a class="logo" href="index.html"><b>&lt;/&gt;</b><span>Dev<span>Sphere</span></span></a><ul class="nav"><li><a href="index.html">Home</a></li><li><a href="BlogPage.html">Blogs</a></li><li><a href="Developers.html">Developers</a></li><li><a href="Projects.html">Projects</a></li><li class="active"><a href="About.html">About</a></li></ul><div class="right"><div class="search">Ã¢Å’â€¢<input placeholder="Search DevSphere..."></div><a class="login" href="login.html">Log in</a><a class="signup" href="signup.html">Sign up</a></div></nav></header><main><p class="crumb"><a href="index.html">Home</a> Ã¢â‚¬Âº About</p><section class="hero"><div><h1>About <span>DevSphere</span></h1><h2>Empowering developers to learn, grow, and build the future together.</h2><p>DevSphere is a community-driven platform where developers share knowledge, showcase projects, and connect with like-minded people from around the world.</p><a class="join" href="signup.html">Ã¢â„¢Â§Ã£â‚¬â‚¬Join Our Community</a></div><div class="illustration"><div class="code">&lt;/&gt;<br><small>const community = "DevSphere";<br>buildTogether();</small></div><div class="people"><b>Ã¢â€”Â</b><b>Ã¢â€”Â</b><b>&lt;/&gt;</b></div></div><section class="numbers"><h2>DevSphere in Numbers</h2><div><article><strong>10K+</strong><b>Developers</b><small>Active community members</small></article><article><strong>2.5K+</strong><b>Blogs</b><small>Knowledge shared</small></article><article><strong>1.2K+</strong><b>Projects</b><small>Innovative projects built</small></article><article><strong>50+</strong><b>Countries</b><small>Developers worldwide</small></article></div></section></section><section class="middle"><article class="card"><h2>Ã¢â€”Å½Ã£â‚¬â‚¬Our Mission</h2><p>Our mission is to create a collaborative space where developers can learn, share, and grow together. We believe in the power of community and open knowledge to build better software and a better future.</p></article><article class="card"><h2>Ã¢â€”â€¡Ã£â‚¬â‚¬Our Values</h2><div class="values"><div><b>Ã¢â„¢Â§</b><strong>Community First</strong><p>We grow together as a community.</p></div><div><b>Ã°Å¸â€™Â¡</b><strong>Knowledge Sharing</strong><p>Share what you know.</p></div><div><b>Ã¢â„¢Â¢</b><strong>Quality & Integrity</strong><p>We value quality and authenticity.</p></div><div><b>Ã°Å¸Å¡â‚¬</b><strong>Innovation</strong><p>Encouraging creativity and new ideas.</p></div></div></article></section><section class="join-card"><div class="big-icon">&lt;/&gt;</div><div><h2>Be a part of DevSphere</h2><p>Whether you're a beginner or an expert, DevSphere is the place for you. Share your knowledge, inspire others, and let's build the future of technology together.</p></div><div class="options"><div><b>Ã¢Å“Å½</b><strong>Write Blog</strong><small>Share your knowledge with the community</small></div><div><b>Ã¢ËœÂ</b><strong>Share Project</strong><small>Showcase your work and get feedback</small></div><div><b>Ã¢â„¢Â§</b><strong>Connect</strong><small>Network with amazing developers</small></div><a href="signup.html">Get Started TodayÃ£â‚¬â‚¬Ã¢â€ â€™</a></div></section></main><footer>Ã‚Â© 2026 DevSphere. All rights reserved.Ã£â‚¬â‚¬Ã£â‚¬â‚¬Privacy PolicyÃ£â‚¬â‚¬Ã£â‚¬â‚¬Terms of ServiceÃ£â‚¬â‚¬Ã£â‚¬â‚¬Code of ConductÃ£â‚¬â‚¬Ã£â‚¬â‚¬Contact Us</footer></body></html>
+
+
+========================================
+FILE: frontend/index.css
+========================================
+
+* {
+  background-color: #f8fafc;
+  border: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+.navbar-left img {
+  height: 60px;
+  width: 140px;
+}
+.navbar {
+  padding-top: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0px 2px 2px rgb(182, 179, 179);
+  padding-right: 5px;
+}
+.navbar-left {
+  height: 60px;
+  width: 180px;
+  border: 2px sold #4f46e5;
+  justify-content: left;
+  object-fit: fill;
+}
+.navbar-centre {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
+.navbarItem {
+  height: auto;
+  width: auto;
+  padding: 5px;
+  border-radius: 2px;
+}
+.navbarItem:hover {
+  transition: none;
+  color: white;
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  box-shadow: 2px 2px 5px #4f46e5;
+  transition: all 0.3 ease;
+}
+.navbar-right {
+  display: flex;
+  gap: 3px;
+}
+.searchbar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  border: 2px solid #b4b1f6;
+}
+.searchbar svg {
+  color: #4f46e5;
+  margin: 5px;
+}
+.searchbar input {
+  width: none;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.navbar-right button {
+  font-size: 15px;
+  border: 2px solid #4f46e5;
+  height: 40px;
+  width: 70px;
+  border-radius: 5px;
+}
+#login:hover {
+  color: white;
+  background-color: #4f46e5;
+  transition: all 0.3 ease;
+}
+#register {
+  color: white;
+  background-color: #4f46e5;
+}
+#register:hover {
+  color: #4f46e5;
+  background-color: #f8fafc;
+  transition: all 0.3 ease;
+}
+
+.navbarItem {
+  font-size: 15px;
+  color: #3a3b3d;
+  margin-left: 50px;
+}
+
+.navbarRItem {
+  padding: 10px;
+  padding-top: 0px;
+}
+/*ABOUT SECTION*/
+.about {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.about .textcontent {
+  height: 400px;
+  width: 600px;
+  padding-left: 150px;
+  line-height: 70px;
+}
+.about .textcontent h1 {
+  font-size: 70px;
+  margin: 0%;
+}
+.about .textcontent h2 {
+  font-size: 65px;
+  margin: 0%;
+}
+.about .textcontent h3 {
+  font-size: 60px;
+  margin: 0%;
+  color: #4f46e5;
+}
+.about .textcontent h4 {
+  line-height: normal;
+  font-size: 18px;
+}
+.about img {
+  height: 400px;
+  width: 600px;
+}
+.about button {
+  display: flex;
+  font-weight: 600;
+  font-size: 18px;
+  font-family: "Poppins", sans-serif;
+  align-items: center;
+  justify-content: center;
+  color: #f8fafc;
+  gap: 10px;
+  height: 50px;
+  width: 170px;
+  border: 2px solid;
+  background-color: #4f46e5;
+  border-radius: 10px;
+}
+
+.about button svg {
+  padding: 0%;
+  height: 24px;
+  width: 24px;
+  color: white;
+  background-color: #4f46e5;
+}
+.about button:hover {
+  box-shadow: 2px 2px 2px #4f46e5;
+  transition: all 0.3 ease;
+}
+.about .btn {
+  display: flex;
+  gap: 10px;
+}
+#join {
+  width: fit-content;
+  font-family: "Poppins", sans-serif;
+  padding: 8px;
+}
+/*Overview Section*/
+.overview {
+  margin-top: 80px;
+  display: flex;
+  list-style: none;
+  align-items: center;
+  justify-content: center;
+  border-left: 2px solid #b4b1f6;
+}
+.ovItem {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-right: 2px solid #b4b1f6;
+  background-blend-mode: color;
+}
+.ovItem svg {
+  border-radius: 5px;
+  align-items: center;
+  background-color: #b4b1f6;
+  color: #000000;
+  padding: 8px;
+}
+.ovItem h1 {
+  font-weight: 700;
+  font-size: 25px;
+  padding: 0px;
+  margin: 3pxpx;
+  text-align: center;
+}
+.ovItem p {
+  padding: 0%;
+  margin: 0%;
+  color: dimgrey;
+  justify-content: center;
+  text-align: center;
+}
+
+
+========================================
+FILE: frontend/login.css
+========================================
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+body h1 {
+  margin: 20px;
+}
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #4f46e5;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.login-container {
+  background-color: whitesmoke;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border: 2px solid violet;
+  border-radius: 20px;
+
+  box-shadow: #b4b1f6;
+  width: 400px;
+  padding: 40px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.loginForm label {
+  gap: 5px;
+  margin: 5px;
+  margin-left: 0px;
+}
+.loginForm input {
+  padding: 0 12px;
+  font-family: "Inter", sans-serif;
+  height: 40px;
+  border: 1px solid #c4b5fd;
+  border-radius: 8px;
+  width: 300px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.loginForm input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px #eef2ff;
+}
+button {
+  color: white;
+  letter-spacing: 1px;
+  font-weight: 500;
+  font-size: 18px;
+  background-color: #4f46e5;
+  border: 2px solid #4f46e5;
+  height: 40px;
+  width: 90px;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+button:hover {
+  color: #4f46e5;
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+
+========================================
+FILE: frontend/signup.css
+========================================
+
+* {
+  padding: 0px;
+  margin: 0px;
+}
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #4f46e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 100vh;
+}
+.signup-container {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  border-radius: 20px;
+  gap: 10px;
+  padding: 40px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+.signup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  justify-content: center;
+}
+.input-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+.input-container input {
+  padding: 0 12px;
+  font-family: "Inter", sans-serif;
+  height: 40px;
+  width: 300px;
+  border-radius: 8px;
+  font-size: 14px;
+  border: 1px solid #b4b1f6;
+}
+.input-container input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px #eef2ff;
+}
+button {
+  color: white;
+  letter-spacing: 1px;
+  font-weight: 500;
+  font-size: 18px;
+  background-color: #4f46e5;
+  border: 2px solid #4f46e5;
+  height: 40px;
+  width: 120px;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+}
+button:hover {
+  color: #4f46e5;
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+
+========================================
+FILE: frontend/BlogPage.css
+========================================
+
+* {
+  border: 0;
+  padding: 0;
+}
+body {
+  font-family: "Inter", sans-serif;
+}
+.navbar-left img {
+  height: 60px;
+  width: 140px;
+}
+.navbar {
+  padding-top: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0px 2px 2px rgb(182, 179, 179);
+  padding-right: 5px;
+}
+.navbar-left {
+  height: 60px;
+  width: 180px;
+  border: 2px sold #4f46e5;
+  justify-content: left;
+  object-fit: fill;
+}
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
+.navbar-centre {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.navbarItem {
+  height: auto;
+  width: auto;
+  padding: 5px;
+  border-radius: 2px;
+}
+.navbarItem:hover {
+  transition: none;
+  color: white;
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  box-shadow: 2px 2px 5px #4f46e5;
+  transition: all 0.3 ease;
+}
+.navbar-right {
+  display: flex;
+  gap: 3px;
+}
+.searchbar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  border: 2px solid #b4b1f6;
+}
+.searchbar svg {
+  color: #4f46e5;
+  margin: 5px;
+}
+.searchbar input {
+  width: none;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.navbar-right button {
+  font-size: 15px;
+  border: 2px solid #4f46e5;
+  height: 40px;
+  width: 70px;
+  border-radius: 5px;
+}
+#login:hover {
+  color: white;
+  background-color: #4f46e5;
+  transition: all 0.3 ease;
+}
+#register {
+  color: white;
+  background-color: #4f46e5;
+}
+#register:hover {
+  color: #4f46e5;
+  background-color: #f8fafc;
+  transition: all 0.3 ease;
+}
+
+.navbarItem {
+  font-size: 15px;
+  color: #3a3b3d;
+  margin-left: 50px;
+}
+
+.navbarRItem {
+  padding: 10px;
+  padding-top: 0px;
+}
+/* BLOG PAGE */
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.blogsHeader {
+  text-align: center;
+  margin-bottom: 35px;
+}
+button a {
+  color: white;
+  font-family: "Inter", sans-serif;
+}
+.blogsHeader h1 {
+  font-size: 40px;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.blogsHeader p {
+  font-size: 17px;
+  color: #6b7280;
+}
+
+.blogActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.blogSearch input {
+  width: 300px;
+  height: 42px;
+  padding: 0 15px;
+  border: 1px solid #b4b1f6;
+  border-radius: 10px;
+  outline: none;
+  font-family: "Inter", sans-serif;
+  background: white;
+}
+
+.blogSearch input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px #eef2ff;
+}
+
+.write {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 2px solid #4f46e5;
+  background-color: #4f46e5;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.categories {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 35px;
+}
+
+.categories button {
+  padding: 9px 18px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.categories .active,
+.categories button:hover {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+.blogGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.blogCard {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  overflow: hidden;
+  transition: 0.3s ease;
+}
+
+.blogCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.blogImage {
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+/* CONTENT */
+
+.blogContent {
+  padding: 20px;
+}
+
+.tech {
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.blogContent h2 {
+  color: #111827;
+  font-size: 20px;
+  margin: 10px 0;
+}
+
+.blogContent p {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.blogContent small {
+  color: #9ca3af;
+}
+
+
+========================================
+FILE: frontend/writeBlog.css
+========================================
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #f7f8fa;
+  color: #202124;
+  line-height: 1.6;
+}
+* {
+  border: 0;
+  padding: 0;
+}
+
+.navbar-left img {
+  height: 60px;
+  width: 140px;
+}
+.navbar {
+  padding-top: 0%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0px 2px 2px rgb(182, 179, 179);
+  padding-right: 5px;
+}
+.navbar-left {
+  height: 60px;
+  width: 180px;
+  border: 2px sold #4f46e5;
+  justify-content: left;
+  
+  object-fit: fill;
+}
+.navbar-centre {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.navbarItem {
+  height: auto;
+  width: auto;
+  padding: 5px;
+  border-radius: 2px;
+}
+.navbarItem:hover {
+  transition: none;
+  color: white;
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  box-shadow: 2px 2px 5px #4f46e5;
+  transition: all 0.3 ease;
+}
+.navbar-right {
+  display: flex;
+  gap: 3px;
+}
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
+.searchbar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  border: 2px solid #b4b1f6;
+}
+.searchbar svg {
+  color: #4f46e5;
+  margin: 5px;
+}
+.searchbar input {
+  width: none;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.navbarItem {
+  font-size: 15px;
+  color: #3a3b3d;
+  margin-left: 50px;
+}
+
+.write-container {
+  width: 90%;
+
+  margin: 60px auto;
+}
+
+.page-heading {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.heading-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  margin-bottom: 12px;
+  border-radius: 20px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.page-heading h1 {
+  font-size: 42px;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.page-heading p {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.editor-card {
+  background: #ffffff;
+  padding: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+  margin-bottom: 28px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+#blog-title {
+  font-size: 18px;
+  padding: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.image-upload {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border: 1.5px dashed #c7c9d1;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.image-upload:hover {
+  border-color: #6366f1;
+  background: #f8f8ff;
+}
+
+.upload-icon {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 25px;
+}
+
+.image-upload strong {
+  font-size: 14px;
+}
+
+.image-upload p {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.image-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.form-group textarea {
+  min-height: 350px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.editor-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eeeeee;
+}
+
+.btn {
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.secondary-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.secondary-btn:hover {
+  background: #f3f4f6;
+}
+
+.preview-btn {
+  background: white;
+  border: 1px solid #6366f1;
+  color: #4f46e5;
+}
+
+.preview-btn:hover {
+  background: #eef2ff;
+}
+
+.publish-btn {
+  background: #111827;
+  border: 1px solid #111827;
+  color: white;
+}
+
+.publish-btn:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.writing-tip {
+  margin-top: 25px;
+  padding: 20px 25px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.tip-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff7ed;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+.writing-tip h3 {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.writing-tip p {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+footer {
+  margin-top: 70px;
+  padding: 25px;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 5%;
+  }
+
+  .navbar nav {
+    display: none;
+  }
+
+  .write-container {
+    width: 94%;
+    margin: 40px auto;
+  }
+
+  .page-heading h1 {
+    font-size: 32px;
+  }
+
+  .editor-card {
+    padding: 25px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .writing-tip {
+    align-items: flex-start;
+  }
+}
+
+
+========================================
+FILE: frontend/Developers.css
+========================================
+
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#111827}.navbar{min-height:82px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 14px 14px;box-shadow:0 4px 16px rgba(17,24,39,.06)}.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#111827;font-size:25px;font-weight:700}.logo span span{color:#4f46e5}.logo b{background:#4f46e5;color:#fff;border-radius:10px;padding:9px 10px;font-size:16px}.nav{display:flex;gap:34px;list-style:none}.nav li{position:relative}.nav a{display:block;padding:31px 0 27px;color:#111827;text-decoration:none;font-size:15px}.nav a:hover,.nav .active a{color:#4f46e5}.nav .active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#4f46e5}.right{display:flex;align-items:center;gap:12px}.search{width:250px;height:45px;border:1px solid #dbe1ea;border-radius:10px;display:flex;align-items:center;gap:8px;padding:0 12px;color:#6b7280}.search input,.devsearch input{width:100%;border:0;outline:0;font:14px Inter}.login,.signup{padding:13px 18px;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600}.login{border:1.5px solid #4f46e5;color:#4f46e5}.signup{background:#4f46e5;color:#fff;border:1.5px solid #4f46e5}main{max-width:1280px;margin:auto;padding:38px 35px 65px}.crumb{font-size:14px;color:#6b7280;margin-bottom:35px}.crumb a{color:#4f46e5;text-decoration:none}.head{text-align:center}.head h1{font-size:46px;margin-bottom:10px}.head h1 span{color:#4f46e5}.head>p{color:#6b7280;font-size:17px}.devsearch{width:min(620px,100%);height:52px;margin:28px auto 42px;display:flex;align-items:center;gap:10px;padding:0 16px;background:#fff;border:1px solid #dbe1ea;border-radius:10px;box-shadow:0 3px 10px rgba(17,24,39,.04);color:#7c8596}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.grid article{min-height:280px;padding:27px;display:flex;gap:20px;background:#fff;border:1px solid #e5e7eb;border-radius:15px;box-shadow:0 4px 15px rgba(17,24,39,.04);transition:.25s}.grid article:hover{transform:translateY(-4px);border-color:#c4b5fd;box-shadow:0 10px 24px rgba(79,70,229,.1)}.avatar{width:82px;height:82px;min-width:82px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:4px solid #eef2ff;color:#4f46e5;font-weight:700;font-size:23px}.a1{background:#ede9fe}.a2{background:#e0f2fe}.a3{background:#fce7f3}.a4{background:#dcfce7}.a5{background:#ffedd5}.a6{background:#e5e7eb}article h2{font-size:20px;margin-bottom:7px}article b{color:#4f46e5;font-size:13px}article p{color:#4b5563;font-size:13px;line-height:1.55;margin:12px 0}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:17px}.tags i{font-style:normal;padding:5px 7px;background:#f3f4f6;color:#4b5563;border-radius:6px;font-size:10px}article a{display:inline-flex;padding:9px 14px;border:1.5px solid #4f46e5;border-radius:8px;color:#4f46e5;text-decoration:none;font-size:12px;font-weight:600}article a:hover{background:#4f46e5;color:#fff}footer{text-align:center;padding:22px;background:#fff;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}@media(max-width:1050px){.navbar{padding:0 20px}.nav{gap:18px}.search{width:190px}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:780px){.navbar{padding:15px 20px;flex-wrap:wrap;gap:15px}.nav{order:3;width:100%;justify-content:center}.search{display:none}.grid{grid-template-columns:1fr}main{padding:25px 20px}}
+
+
+========================================
+FILE: frontend/DeveloperProfile.css
+========================================
+
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#111827}.navbar{min-height:82px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 14px 14px;box-shadow:0 4px 16px rgba(17,24,39,.06)}.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#111827;font-size:25px;font-weight:700}.logo span span{color:#4f46e5}.logo b{background:#4f46e5;color:#fff;border-radius:10px;padding:9px 10px}.nav{display:flex;gap:34px;list-style:none}.nav li{position:relative}.nav a{display:block;padding:31px 0 27px;color:#111827;text-decoration:none;font-size:15px}.nav .active a,.nav a:hover{color:#4f46e5}.nav .active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#4f46e5}.right{display:flex;gap:12px;align-items:center}.search{width:250px;height:45px;border:1px solid #dbe1ea;border-radius:10px;display:flex;align-items:center;padding:0 12px;color:#6b7280}.search input{width:100%;border:0;outline:0;font:14px Inter}.login,.signup{padding:13px 18px;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600}.login{border:1.5px solid #4f46e5;color:#4f46e5}.signup{background:#4f46e5;color:#fff}main{max-width:1120px;margin:auto;padding:38px 35px 65px}.crumb{color:#6b7280;font-size:14px;margin-bottom:28px}.crumb a{color:#4f46e5;text-decoration:none}.profile,.card{background:#fff;border:1px solid #e5e7eb;border-radius:15px;box-shadow:0 4px 15px rgba(17,24,39,.04)}.profile{padding:35px;display:flex;gap:28px;align-items:center}.avatar{width:125px;height:125px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ede9fe;border:6px solid #eef2ff;color:#4f46e5;font-size:34px;font-weight:700}.profile b{color:#4f46e5;font-size:14px}.profile h1{font-size:36px;margin:7px 0}.profile small{color:#6b7280}.profile p{max-width:700px;color:#4b5563;line-height:1.7;font-size:14px;margin:15px 0}.profile button{height:40px;padding:0 18px;border:1.5px solid #4f46e5;border-radius:8px;background:#4f46e5;color:#fff;font:600 13px Inter;margin-right:7px}.profile .outline{background:#fff;color:#4f46e5}.columns{display:grid;grid-template-columns:2fr 1fr;gap:22px;margin:22px 0}.card{padding:28px;margin-bottom:22px}.card h2{font-size:20px;margin-bottom:16px}.card h2:not(:first-child){margin-top:28px}.card>p{color:#4b5563;font-size:14px;line-height:1.7}.tags{display:flex;flex-wrap:wrap;gap:8px}.tags span{padding:7px 10px;background:#eef2ff;color:#4f46e5;border-radius:7px;font-size:12px;font-weight:600}.stats p{padding:14px 0;border-bottom:1px solid #e5e7eb;color:#6b7280}.stats strong{color:#4f46e5;font-size:22px;margin-right:7px}.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.mini article{padding:17px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px}.mini b{font-size:11px;color:#4f46e5}.mini h3{font-size:15px;margin:8px 0}.mini p,.blog span{font-size:12px;color:#6b7280}.blog{padding:15px 0;border-bottom:1px solid #e5e7eb}.blog h3{font-size:15px;margin-bottom:6px}footer{text-align:center;padding:22px;background:#fff;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}@media(max-width:900px){.navbar{padding:15px 20px;flex-wrap:wrap;gap:15px}.nav{order:3;width:100%;justify-content:center}.search{display:none}.columns{grid-template-columns:1fr}.mini{grid-template-columns:1fr 1fr}}@media(max-width:600px){main{padding:25px 18px}.profile{flex-direction:column;text-align:center}.mini{grid-template-columns:1fr}}
+
+
+========================================
+FILE: frontend/Projects.css
+========================================
+
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#111827}.navbar{min-height:82px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 14px 14px;box-shadow:0 4px 16px rgba(17,24,39,.06)}.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#111827;font-size:25px;font-weight:700}.logo span span{color:#4f46e5}.logo b{background:#4f46e5;color:#fff;border-radius:10px;padding:9px 10px}.nav{display:flex;gap:34px;list-style:none}.nav li{position:relative}.nav a{display:block;padding:31px 0 27px;color:#111827;text-decoration:none;font-size:15px}.nav a:hover,.nav .active a{color:#4f46e5}.nav .active:after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:#4f46e5}.right{display:flex;gap:12px;align-items:center}.search{width:250px;height:45px;border:1px solid #dbe1ea;border-radius:10px;display:flex;align-items:center;padding:0 12px;color:#6b7280}.search input{width:100%;border:0;outline:0;font:14px Inter}.login,.signup{padding:13px 18px;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600}.login{border:1.5px solid #4f46e5;color:#4f46e5}.signup{background:#4f46e5;color:#fff}main{max-width:1280px;margin:auto;padding:38px 35px 55px}.crumb{margin-bottom:28px;color:#6b7280;font-size:14px}.crumb a{color:#4f46e5;text-decoration:none}.top{display:flex;justify-content:space-between;align-items:end;gap:20px}.top h1{font-size:38px;margin-bottom:8px}.top p{color:#6b7280;font-size:15px}.filters{display:flex;gap:10px}.filters input,.filters select{height:42px;border:1px solid #dbe1ea;border-radius:8px;background:#fff;padding:0 12px;font:13px Inter;color:#4b5563}.filters input{width:250px}.filters select{width:140px}.filters button,.cats button{height:42px;padding:0 15px;border:1px solid #dbe1ea;border-radius:8px;background:#fff;font:13px Inter;cursor:pointer}.filters button{background:#4f46e5;color:#fff;border-color:#4f46e5}.cats{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0}.cats button{height:35px;padding:0 16px}.cats .active,.cats button:hover{background:#4f46e5;color:#fff;border-color:#4f46e5}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.grid article{overflow:hidden;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 4px 15px rgba(17,24,39,.04);transition:.25s}.grid article:hover{transform:translateY(-4px);box-shadow:0 10px 25px rgba(17,24,39,.09)}.pic{height:180px;padding:22px;font-weight:700;font-size:17px}.finance{background:linear-gradient(135deg,#0f172a,#334155);color:#fff}.rail{background:linear-gradient(135deg,#f8fafc,#93c5fd)}.vehicle{background:linear-gradient(135deg,#07131f,#164e63);color:#fff}.habit{background:linear-gradient(135deg,#ecfdf5,#047857);color:#fff}.market{background:linear-gradient(135deg,#111827,#312e81);color:#fff}.task{background:linear-gradient(135deg,#fff,#e0e7ff)}.body{padding:17px}.body>b{display:inline-block;padding:5px 9px;background:#eef2ff;color:#4f46e5;border-radius:6px;font-size:11px}.body h2{font-size:18px;margin:9px 0}.body p{color:#4b5563;font-size:13px;line-height:1.55;min-height:41px}.tags{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0}.tags span{padding:5px 8px;background:#f3f4f6;border-radius:6px;color:#4b5563;font-size:11px}.body small{display:block;border-top:1px solid #e5e7eb;padding-top:12px;font-size:11px;color:#6b7280}.pages{display:flex;justify-content:center;gap:8px;margin-top:30px}.pages button{width:38px;height:38px;border:1px solid #e5e7eb;border-radius:8px;background:#fff}.pages .current{background:#4f46e5;color:#fff;border-color:#4f46e5}footer{text-align:center;padding:22px;background:#fff;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}@media(max-width:1100px){.navbar{padding:0 20px}.nav{gap:18px}.search{width:190px}.top{flex-direction:column;align-items:flex-start}.filters{flex-wrap:wrap}.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:780px){.navbar{padding:15px 20px;flex-wrap:wrap;gap:15px}.nav{order:3;width:100%;justify-content:center}.search{display:none}.grid{grid-template-columns:1fr}main{padding:25px 20px}}
+
+
+========================================
+FILE: frontend/About.css
+========================================
+
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f8fafc;color:#111827}.navbar{min-height:82px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:0 0 14px 14px;box-shadow:0 4px 16px rgba(17,24,39,.06)}.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#111827;font-size:25px;font-weight:700}.logo span span{color:#4f46e5}.logo b{background:#4f46e5;color:#fff;border-radius:10px;padding:9px 10px}.nav{display:flex;gap:34px;list-style:none}.nav li{position:relative}.nav a{display:block;padding:31px 0 27px;color:#111827;text-decoration:none;font-size:15px}.nav a:hover,.nav .active a{color:#4f46e5}.nav .active:after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:#4f46e5}.right{display:flex;gap:12px;align-items:center}.search{width:250px;height:45px;border:1px solid #dbe1ea;border-radius:10px;display:flex;align-items:center;padding:0 12px;color:#6b7280}.search input{width:100%;border:0;outline:0;font:14px Inter}.login,.signup{padding:13px 18px;border-radius:9px;text-decoration:none;font-size:14px;font-weight:600}.login{border:1.5px solid #4f46e5;color:#4f46e5}.signup{background:#4f46e5;color:#fff}main{max-width:1280px;margin:auto;padding:38px 35px 45px}.crumb{margin-bottom:25px;color:#6b7280;font-size:14px}.crumb a{color:#4f46e5;text-decoration:none}.hero{display:grid;grid-template-columns:1fr .8fr .95fr;gap:30px;align-items:center}.hero h1{font-size:39px;margin-bottom:14px}.hero h1 span{color:#4f46e5}.hero h2{font-size:18px;line-height:1.5;color:#536078;margin-bottom:18px}.hero p{color:#334155;font-size:14px;line-height:1.8;margin-bottom:23px}.join{display:inline-flex;padding:14px 20px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600}.illustration{height:290px;background:#eef2ff;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center}.code{width:250px;padding:20px;background:#172033;color:#fff;border-radius:10px;font-family:monospace;font-size:22px}.code small{font-size:11px;color:#c4b5fd;line-height:2}.people{display:flex;gap:15px;margin-top:-10px}.people b{width:55px;height:55px;background:#4f46e5;color:#fff;border:4px solid #eef2ff;border-radius:50%;display:flex;align-items:center;justify-content:center}.numbers{padding:25px;background:#fff;border:1px solid #e5e7eb;border-radius:15px}.numbers h2{text-align:center;font-size:19px;margin-bottom:18px}.numbers>div{display:grid;grid-template-columns:1fr 1fr}.numbers article{padding:15px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;display:flex;flex-direction:column;gap:4px}.numbers article:nth-child(even){border-right:0}.numbers article:nth-last-child(-n+2){border-bottom:0}.numbers strong{color:#4f46e5;font-size:25px}.numbers b{font-size:13px}.numbers small{color:#6b7280;font-size:10px}.middle{display:grid;grid-template-columns:1fr 1.3fr;gap:22px;margin-top:25px}.card,.join-card{background:#fff;border:1px solid #e5e7eb;border-radius:15px;box-shadow:0 4px 15px rgba(17,24,39,.04)}.card{padding:28px}.card h2{font-size:19px;margin-bottom:20px}.card>p{color:#4b5563;font-size:14px;line-height:1.8}.values{display:grid;grid-template-columns:repeat(4,1fr)}.values>div{text-align:center;padding:0 10px;border-right:1px solid #e5e7eb}.values>div:last-child{border:0}.values b{width:50px;height:50px;margin:0 auto 10px;background:#eef2ff;color:#4f46e5;border-radius:50%;display:flex;align-items:center;justify-content:center}.values strong{display:block;font-size:12px;margin-bottom:7px}.values p{font-size:10px;color:#6b7280;line-height:1.5}.join-card{margin-top:25px;padding:28px;display:grid;grid-template-columns:85px 1fr 1.6fr;gap:22px;align-items:center;background:#f1efff}.big-icon{width:78px;height:78px;background:#4f46e5;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}.join-card h2{font-size:22px;margin-bottom:9px}.join-card p{color:#4b5563;font-size:13px;line-height:1.7}.options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.options>div{display:grid;grid-template-columns:34px 1fr;gap:6px}.options b{grid-row:span 2;width:34px;height:34px;background:#4f46e5;color:#fff;border-radius:7px;display:flex;align-items:center;justify-content:center}.options strong{font-size:12px}.options small{color:#6b7280;font-size:10px;line-height:1.4}.options>a{grid-column:1/-1;justify-self:end;border:1.5px solid #4f46e5;background:#fff;color:#4f46e5;padding:10px 15px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600}footer{text-align:center;padding:22px;background:#fff;border-top:1px solid #e5e7eb;color:#6b7280;font-size:12px}@media(max-width:1050px){.navbar{padding:0 20px}.nav{gap:18px}.search{width:190px}.hero{grid-template-columns:1fr 1fr}.numbers{grid-column:1/-1}.middle{grid-template-columns:1fr}.join-card{grid-template-columns:80px 1fr}.options{grid-column:1/-1}}@media(max-width:780px){.navbar{padding:15px 20px;flex-wrap:wrap;gap:15px}.nav{order:3;width:100%;justify-content:center}.search{display:none}.hero{grid-template-columns:1fr}.numbers{grid-column:auto}.values{grid-template-columns:1fr 1fr;gap:18px}.values>div{border:0}.join-card{grid-template-columns:1fr;text-align:center}.big-icon{margin:auto}.options{grid-template-columns:1fr}.options>a{justify-self:center}}
+
+
+========================================
+FILE: frontend/index.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const go = (selector, page) => document.querySelector(selector)?.addEventListener('click', () => { window.location.href = page; });
+    go('#login', './login.html');
+    go('#register', './signup.html');
+    go('#start', './BlogPage.html');
+    go('#join', './signup.html');
+    const search = document.querySelector('.searchbar input');
+    const message = document.createElement('small');
+    message.className = 'search-message';
+    search?.parentElement?.appendChild(message);
+    search?.addEventListener('input', () => {
+        const value = search.value.trim();
+        message.textContent = value ? `Searching DevSphere for â€œ${value}â€â€¦` : '';
+    });
+    const welcome = document.createElement('p');
+    welcome.textContent = `Welcome to DevSphere, ${localStorage.getItem('loggedInUser') || 'developer'}!`;
+    document.querySelector('.textcontent')?.appendChild(welcome);
+});
+
+
+========================================
+FILE: frontend/login.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.loginForm');
+    const email = document.querySelector('#email');
+    const password = document.querySelector('#PASSWORD');
+    const toggle = document.querySelector('#toggle-password');
+    const message = document.createElement('p');
+    form?.prepend(message);
+    const showMessage = (text, success = false) => { message.textContent = text; message.style.color = success ? 'green' : 'crimson'; };
+    toggle?.addEventListener('click', () => { const visible = password.type === 'text'; password.type = visible ? 'password' : 'text'; toggle.textContent = visible ? 'Show' : 'Hide'; });
+    form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const emailValue = email.value.trim();
+        const passwordValue = password.value;
+        if (!emailValue) showMessage('Email is required.');
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) showMessage('Enter a valid email address.');
+        else if (passwordValue.length < 6) showMessage('Password must be at least 6 characters.');
+        else {
+            localStorage.setItem('loggedInUser', emailValue);
+            showMessage('Login successful. Redirectingâ€¦', true);
+            window.setTimeout(() => { window.location.href = './index.html'; }, 900);
+        }
+    });
+});
+
+
+========================================
+FILE: frontend/signup.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.signup');
+    const username = document.querySelector('#username');
+    const email = document.querySelector('#email');
+    const password = document.querySelector('#password');
+    const confirmPassword = document.querySelector('#confirmPassword');
+    const strength = document.querySelector('#password-strength') || document.createElement('small');
+    if (!strength.parentElement) password.parentElement.appendChild(strength);
+    const toggle = document.querySelector('#toggle-password');
+    const message = document.createElement('p');
+    form?.prepend(message);
+    const showMessage = (text, success = false) => { message.textContent = text; message.style.color = success ? 'green' : 'crimson'; };
+    toggle?.addEventListener('click', () => { const visible = password.type === 'text'; password.type = visible ? 'password' : 'text'; toggle.textContent = visible ? 'Show' : 'Hide'; });
+    password?.addEventListener('input', () => { const length = password.value.length; strength.textContent = length < 6 ? 'Weak' : length < 10 ? 'Medium' : 'Strong'; });
+    form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = username.value.trim();
+        const address = email.value.trim().toLowerCase();
+        if (name.length < 3) showMessage('Username must contain at least 3 characters.');
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) showMessage('Enter a valid email address.');
+        else if (password.value.length < 6) showMessage('Password must be at least 6 characters.');
+        else if (password.value !== confirmPassword.value) showMessage('Passwords do not match.');
+        else {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            let duplicate = false;
+            for (const user of users) if (user.email === address) duplicate = true;
+            if (duplicate) showMessage('This email is already registered.');
+            else { users.push({ username: name, email: address, password: password.value }); localStorage.setItem('users', JSON.stringify(users)); showMessage('Account created. You can now log in.', true); form.reset(); }
+        }
+    });
+});
+
+
+========================================
+FILE: frontend/BlogPage.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const blogs = [
+        { title: 'Understanding JavaScript Closures', category: 'Web Development', description: 'Learn how closures work and why they are useful in modern JavaScript.', author: 'Ajay Kumar', readTime: '5 min read', tech: 'JavaScript' },
+        { title: 'Getting Started with React Hooks', category: 'Web Development', description: 'A simple introduction to useState, useEffect and React Hooks.', author: 'Arun Kumar', readTime: '6 min read', tech: 'React' },
+        { title: 'Understanding SQL Joins', category: 'Web Development', description: 'Learn the basics of INNER, LEFT and RIGHT joins with examples.', author: 'Ravi Kumar', readTime: '4 min read', tech: 'Database' },
+        { title: 'Python for Beginners', category: 'AI / ML', description: 'Start your Python journey with variables, functions and data types.', author: 'Priya', readTime: '7 min read', tech: 'Python' },
+        { title: 'Introduction to Machine Learning', category: 'AI / ML', description: 'Understand the basic concepts behind machine learning.', author: 'Vishal', readTime: '8 min read', tech: 'AI' },
+        { title: 'Git and GitHub Basics', category: 'DevOps', description: 'Learn how developers use Git and GitHub to manage projects.', author: 'Rahul', readTime: '5 min read', tech: 'Git' }
+    ];
+    const grid = document.querySelector('.blogGrid');
+    const search = document.querySelector('.blogSearch input');
+    const filters = document.querySelectorAll('.categories button');
+    let category = 'All';
+    const render = () => {
+        const query = search.value.trim().toLowerCase();
+        const results = blogs.filter(blog => (category === 'All' || blog.category === category) && `${blog.title} ${blog.category} ${blog.description}`.toLowerCase().includes(query));
+        grid.innerHTML = results.length ? results.map(blog => `<article class="blogCard"><div class="blogImage">${blog.tech}</div><div class="blogContent"><span class="tech">${blog.tech}</span><h2>${blog.title}</h2><p>${blog.description}</p><small>${blog.author} Â· ${blog.readTime}</small></div></article>`).join('') : '<p class="empty-state">No blogs found.</p>';
+    };
+    search?.addEventListener('input', render);
+    filters.forEach(button => button.addEventListener('click', () => { filters.forEach(item => item.classList.remove('active')); button.classList.add('active'); category = button.textContent.trim(); render(); }));
+    document.querySelector('.write')?.addEventListener('click', () => { window.location.href = './writeBlog.html'; });
+    document.querySelector('#login')?.addEventListener('click', () => { window.location.href = './login.html'; });
+    document.querySelector('#register')?.addEventListener('click', () => { window.location.href = './signup.html'; });
+    render();
+});
+
+
+========================================
+FILE: frontend/writeBlog.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('.editor-card form');
+    const title = document.querySelector('#blog-title');
+    const category = document.querySelector('#category');
+    const author = document.querySelector('#author');
+    const content = document.querySelector('#content');
+    const tags = document.querySelector('#tags');
+    const info = document.querySelector('.editor-info');
+    const feedback = document.createElement('p');
+    form?.prepend(feedback);
+    const show = (text, success = false) => { feedback.textContent = text; feedback.style.color = success ? 'green' : 'crimson'; };
+    const counter = document.createElement('span');
+    counter.textContent = 'Characters: 0 / 5000';
+    info?.appendChild(counter);
+    content?.addEventListener('input', () => { if (content.value.length > 5000) content.value = content.value.slice(0, 5000); counter.textContent = `Characters: ${content.value.length} / 5000`; });
+    const read = () => ({ title: title.value.trim(), category: category.value, content: content.value.trim(), author: author.value.trim() || 'Anonymous', tags: tags.value.split(',').map(tag => tag.trim()).filter(Boolean), createdAt: new Date().toISOString() });
+    const valid = blog => { if (!blog.title || !blog.category || !blog.content) { show('Title, category and content are required.'); return false; } return true; };
+    const preview = document.createElement('section');
+    preview.className = 'blog-preview';
+    form?.appendChild(preview);
+    document.querySelector('.preview-btn')?.addEventListener('click', () => { const blog = read(); if (valid(blog)) preview.innerHTML = `<h2>${blog.title}</h2><b>${blog.category}</b><p>${blog.content}</p>`; });
+    document.querySelector('.secondary-btn')?.addEventListener('click', () => { const blog = read(); if (valid(blog)) { const drafts = JSON.parse(localStorage.getItem('drafts') || '[]'); drafts.push(blog); localStorage.setItem('drafts', JSON.stringify(drafts)); show('Draft saved.', true); } });
+    form?.addEventListener('submit', event => { event.preventDefault(); const blog = read(); if (valid(blog)) { const published = JSON.parse(localStorage.getItem('publishedBlogs') || '[]'); published.push(blog); localStorage.setItem('publishedBlogs', JSON.stringify(published)); show('Blog published successfully.', true); window.setTimeout(() => { window.location.href = './BlogPage.html'; }, 900); } });
+});
+
+
+========================================
+FILE: frontend/Developers.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const developers = [
+        { name: 'Ajay Kumar', role: 'Full Stack Developer', description: 'Passionate about building web applications and APIs.', skills: ['HTML', 'CSS', 'JavaScript', 'Node.js'], location: 'India' },
+        { name: 'Arun Kumar', role: 'React Developer', description: 'Building interactive and responsive user interfaces.', skills: ['React', 'JavaScript', 'CSS', 'Tailwind'], location: 'India' },
+        { name: 'Priya Sharma', role: 'AI/ML Developer', description: 'Exploring machine learning and AI to build smart solutions.', skills: ['Python', 'TensorFlow', 'ML', 'AI'], location: 'India' },
+        { name: 'Rohit Verma', role: 'Backend Developer', description: 'Love solving problems and building scalable backend systems.', skills: ['Node.js', 'Express', 'MongoDB', 'SQL'], location: 'India' },
+        { name: 'Neha Singh', role: 'UI/UX Designer', description: 'Designing beautiful and user-friendly digital experiences.', skills: ['Figma', 'UI/UX', 'Adobe XD', 'Prototype'], location: 'India' },
+        { name: 'Sagar Patil', role: 'DevOps Engineer', description: 'Automating deployments and managing cloud infrastructure.', skills: ['AWS', 'Docker', 'Kubernetes', 'Jenkins'], location: 'India' }
+    ];
+    const grid = document.querySelector('.grid');
+    const search = document.querySelector('.devsearch input');
+    const render = () => { const query = search.value.trim().toLowerCase(); const results = developers.filter(developer => `${developer.name} ${developer.role} ${developer.skills.join(' ')}`.toLowerCase().includes(query)); grid.innerHTML = results.length ? results.map((developer, index) => `<article><div class="avatar a${index + 1}">${developer.name.split(' ').map(part => part[0]).join('')}</div><div><h2>${developer.name}</h2><b>${developer.role}</b><p>${developer.description}</p><div class="tags">${developer.skills.map(skill => `<i>${skill}</i>`).join('')}</div><a href="DeveloperProfile.html" data-developer="${developer.name}">View Profile</a></div></article>`).join('') : '<p class="empty-state">No developers found.</p>'; grid.querySelectorAll('[data-developer]').forEach(link => link.addEventListener('click', () => { const selected = developers.find(developer => developer.name === link.dataset.developer); localStorage.setItem('selectedDeveloper', JSON.stringify(selected)); })); };
+    search?.addEventListener('input', render);
+    render();
+});
+
+
+========================================
+FILE: frontend/DeveloperProfile.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selected = JSON.parse(localStorage.getItem('selectedDeveloper') || 'null') || { name: 'Ajay Kumar', role: 'Full Stack Developer', description: 'Passionate about building useful web applications, APIs and developer-focused products.', skills: ['HTML', 'CSS', 'JavaScript', 'React', 'Node.js'], location: 'India' };
+    const profile = document.querySelector('.profile');
+    const heading = profile?.querySelector('h1');
+    const role = profile?.querySelector('b');
+    const details = profile?.querySelector('small');
+    const bio = profile?.querySelector('p');
+    if (heading) heading.textContent = selected.name;
+    if (role) role.textContent = selected.role;
+    if (details) details.textContent = `${selected.location} Â· Available for collaboration`;
+    if (bio) bio.textContent = selected.description;
+    const skills = document.querySelector('.columns .card .tags');
+    if (skills) skills.innerHTML = selected.skills.map(skill => `<span>${skill}</span>`).join('');
+    const actions = profile?.querySelectorAll('button');
+    const connect = actions?.[0];
+    const message = actions?.[1];
+    const connectionKey = `connection:${selected.name}`;
+    if (connect) { connect.textContent = localStorage.getItem(connectionKey) === 'true' ? 'Connected' : 'Connect'; connect.addEventListener('click', () => { if (localStorage.getItem(connectionKey) !== 'true') { localStorage.setItem(connectionKey, 'true'); connect.textContent = 'Connected'; } }); }
+    message?.addEventListener('click', () => { const note = document.createElement('p'); note.textContent = `Message panel for ${selected.name} will be connected to the backend later.`; profile.appendChild(note); });
+    const stats = document.querySelector('.stats');
+    if (stats && window.Chart) { const canvas = document.createElement('canvas'); stats.appendChild(canvas); new Chart(canvas, { type: 'bar', data: { labels: ['Projects', 'Blogs', 'Connections'], datasets: [{ label: 'Activity', data: [12, 24, 186], backgroundColor: '#4F46E5' }] }, options: { responsive: true } }); }
+});
+
+
+========================================
+FILE: frontend/Projects.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const projects = [
+        { title: 'Personal Finance Tracker', category: 'Web Development', description: 'A full-stack web app to track income, expenses, budgets and financial insights.', technologies: ['React', 'Node.js', 'MongoDB', 'Tailwind CSS'], author: 'Ajaykumar N', likes: 128, views: 2400 },
+        { title: 'Railway Ticket Booking System', category: 'Web Development', description: 'A comprehensive railway ticket booking system with seat reservation and secure payments.', technologies: ['Java', 'JSP', 'MySQL', 'Bootstrap'], author: 'Varnika S', likes: 96, views: 1800 },
+        { title: 'AI Vehicle Fault Detection', category: 'AI/ML', description: 'Real-time vehicle telemetry monitoring and AI-powered fault detection system.', technologies: ['Python', 'FastAPI', 'TensorFlow', 'PostgreSQL'], author: 'Vinovasri K', likes: 142, views: 3100 },
+        { title: 'Habit Arena', category: 'Web Development', description: 'Gamified habit tracking app to build consistency and compete with friends.', technologies: ['React', 'Supabase', 'PostgreSQL', 'Tailwind CSS'], author: 'Meena R', likes: 87, views: 1200 },
+        { title: 'MarketMind', category: 'Web Development', description: 'AI-powered stock market learning and trading simulator with real-time insights.', technologies: ['React', 'Node.js', 'Firebase', 'Groq AI'], author: 'Hari S', likes: 164, views: 2900 },
+        { title: 'TaskFlow Pro', category: 'Tools', description: 'A productivity platform to manage tasks, teams and projects efficiently.', technologies: ['Next.js', 'TypeScript', 'Prisma', 'PostgreSQL'], author: 'Kevin D', likes: 73, views: 950 }
+    ];
+    const grid = document.querySelector('.grid'); const search = document.querySelector('.filters input'); const categorySelect = document.querySelectorAll('.filters select')[0]; const sortSelect = document.querySelectorAll('.filters select')[1]; const categories = document.querySelectorAll('.cats button'); let category = 'All';
+    const render = () => { const query = search.value.trim().toLowerCase(); let results = projects.filter(project => (category === 'All' || project.category === category) && `${project.title} ${project.category} ${project.technologies.join(' ')} ${project.author}`.toLowerCase().includes(query)); if (sortSelect.value === 'Most Liked') results.sort((a, b) => b.likes - a.likes); if (sortSelect.value === 'Most Viewed') results.sort((a, b) => b.views - a.views); grid.innerHTML = results.length ? results.map((project, index) => `<article><div class="pic p${index}">${project.title}</div><div class="body"><b>${project.category}</b><h2>${project.title}</h2><p>${project.description}</p><div class="tags">${project.technologies.map(technology => `<span>${technology}</span>`).join('')}</div><small>${project.author} Â· <button class="like" data-title="${project.title}" type="button">â™¡${project.likes}</button> Â· â—‰${project.views}</small></div></article>`).join('') : '<p class="empty-state">No projects found.</p>'; grid.querySelectorAll('.like').forEach(button => button.addEventListener('click', () => { const project = projects.find(item => item.title === button.dataset.title); if (!button.classList.contains('liked')) { project.likes++; button.classList.add('liked'); button.textContent = `â™¥${project.likes}`; } })); };
+    search?.addEventListener('input', render); sortSelect?.addEventListener('change', render); categorySelect?.addEventListener('change', () => { category = categorySelect.value === 'All Categories' ? 'All' : categorySelect.value; render(); }); categories.forEach(button => button.addEventListener('click', () => { categories.forEach(item => item.classList.remove('active')); button.classList.add('active'); category = button.textContent.trim(); render(); })); document.querySelector('.filters button')?.addEventListener('click', () => window.alert('Project submission will be connected to the backend later.')); render();
+});
+
+
+========================================
+FILE: frontend/About.js
+========================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const values = [10000, 2500, 1200, 50];
+    document.querySelectorAll('.numbers article strong').forEach((element, index) => { const target = values[index]; let current = 0; const step = Math.max(1, Math.ceil(target / 50)); const timer = window.setInterval(() => { current = Math.min(target, current + step); element.textContent = `${current >= 1000 ? `${(current / 1000).toFixed(current % 1000 ? 1 : 0)}K` : current}+`; if (current === target) window.clearInterval(timer); }, 25); });
+    document.querySelector('.join')?.addEventListener('click', event => { event.preventDefault(); window.location.href = './signup.html'; });
+    const heroContent = document.querySelector('.hero > div');
+    if (heroContent && !heroContent.querySelector('.get-started')) {
+        const getStarted = document.createElement('a');
+        getStarted.className = 'join get-started';
+        getStarted.href = './signup.html';
+        getStarted.textContent = 'Get Started Today';
+        heroContent.appendChild(getStarted);
+        getStarted.addEventListener('click', event => { event.preventDefault(); window.location.href = './signup.html'; });
+    }
+    const reveal = () => document.querySelector('.numbers')?.classList.toggle('seen', window.scrollY > 120);
+    window.addEventListener('scroll', reveal); reveal();
+});
+

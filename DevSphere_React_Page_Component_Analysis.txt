@@ -1,0 +1,1076 @@
+================================================================================
+DEVSPHERE REACT REPORT: PAGE-BY-PAGE COMPONENT & ARCHITECTURAL ANALYSIS
+================================================================================
+Report Scope: REACT IMPLEMENTATION ONLY (Excluding HTML5/CSS3/Vanilla JS Reports)
+Target File: DevSphere_React_Page_Component_Analysis.txt
+Date of Analysis: September 20, 2026
+Source of Truth: Actual DevSphere Source Code in /src, /frontend, and Root Files
+================================================================================
+
+
+================================================================================
+1. PROJECT ARCHITECTURE
+================================================================================
+
+DevSphere implements a Dual-Layer React Architecture centered around a Vite 
+Multi-Page Application (MPA) with Progressive Enhancement React Islands, coexisting 
+with a modular React Single-Page Application (SPA) component system:
+
+1. Primary Architecture: Progressive Enhancement React Islands (Vite MPA)
+   - Host Documents: 9 semantic HTML files located in `frontend/` (`index.html`, 
+     `login.html`, `signup.html`, `BlogPage.html`, `writeBlog.html`, `Developers.html`, 
+     `DeveloperProfile.html`, `Projects.html`, `About.html`).
+   - Entry Point Configuration: `vite.config.js` defines Rollup inputs for all 9 
+     HTML documents under `build.rollupOptions.input`.
+   - Island Mounting: Each HTML document contains an isolated mounting container 
+     (e.g., `#blog-island-root`, `#profile-interactive-root`) loaded via ES module 
+     scripts (`<script type="module" src="/src/islands/..."></script>`).
+   - Coexistence Principle: The existing semantic HTML document structure, native 
+     CSS stylesheets, and Vanilla JavaScript logic remain active. React islands 
+     mount strictly into targeted high-interaction subtrees (search, filtering, 
+     controlled forms, interactive charts, and live counters). Vanilla scripts 
+     include guard clauses (`if (document.getElementById('...-root')) return;`) to 
+     yield DOM ownership to React without conflict.
+
+2. Secondary Architecture: Modular React Component & SPA System
+   - Host Document: Root `index.html` mounting into `<div id="root"></div>` via 
+     `src/main.jsx`.
+   - Component Tree: `src/main.jsx` renders `<DevSphereProvider>` and `<App />`. 
+     `src/App.jsx` utilizes `react-router-dom` (`BrowserRouter`, `Routes`, `Route`) 
+     to provide client-side routing across 9 route paths (`/`, `/login`, `/signup`, 
+     `/blogs`, `/write-blog`, `/developers`, `/developer-profile`, `/projects`, 
+     `/about`).
+   - Reusable Component Library: Located in `src/components/` (subdivided into 
+     `cards/`, `charts/`, `layout/`, and `ui/`), consumed by full-page React 
+     components in `src/pages/`.
+   - Shared State & Utilities: Managed through `src/context/DevSphereContext.jsx`, 
+     custom hooks in `src/hooks/` (`useAuth`, `useLocalStorage`, `useSearch`), and 
+     centralized active datasets in `src/data/`.
+
+Both layers share identical data structures (`src/data/`), identical custom hooks 
+(`src/hooks/`), and identical localStorage schemas, ensuring 100% interoperability.
+
+
+================================================================================
+2. COMPLETE COMPONENT INVENTORY
+================================================================================
+
+The codebase contains 23 discrete React components, structured as follows:
+
+| Component Name   | File Path                              | Type            | Scope           | Pages Where Used                              | Main Purpose                                                          |
+|------------------|----------------------------------------|-----------------|-----------------|-----------------------------------------------|-----------------------------------------------------------------------|
+| App              | src/App.jsx                            | Application     | Shared / Root   | SPA Root                                      | Top-level router declaring all client-side routes                     |
+| DevSphereProvider| src/context/DevSphereContext.jsx       | Context Provider| Shared          | SPA Root, LoginForm Island                   | Provides global authentication session state via React Context        |
+| Shell            | src/components/layout/Shell.jsx        | Layout          | Shared          | Home, Blogs, WriteBlog, Developers, Profile, Projects, About (SPA) | Global page wrapper rendering Navbar, main slot, and Footer |
+| Navbar           | src/components/layout/Navbar.jsx       | Navigation      | Shared          | All SPA Pages (inside Shell)                  | Accessible navigation bar, active link highlighting, auth indicator  |
+| Footer           | src/components/layout/Footer.jsx       | Layout          | Shared          | All SPA Pages (inside Shell)                  | Global footer displaying copyright metadata                           |
+| PageIntro        | src/components/layout/PageIntro.jsx    | Layout / Header | Shared          | Blogs, WriteBlog, Developers, Projects (SPA)  | Standardized page title, eyebrow label, and introductory copy         |
+| AuthCard         | src/components/ui/AuthCard.jsx         | Container / Card| Shared          | Login, Signup (SPA)                           | Centered authentication layout card with header and children          |
+| Button           | src/components/ui/Button.jsx           | UI Control      | Shared          | Home (SPA)                                    | Reusable button supporting primary, outline, and secondary variants   |
+| FormInput        | src/components/ui/FormInput.jsx        | UI Control / Form| Shared         | Login (SPA)                                   | Reusable labeled form input with forwardRef and error display         |
+| SearchBar        | src/components/ui/SearchBar.jsx        | Search / Input  | Shared          | Blogs, Developers (SPA)                       | Reusable search input with keyboard Escape handler and useRef blur   |
+| BlogCard         | src/components/cards/BlogCard.jsx      | Card            | Shared          | Blogs (SPA)                                   | Displays article summary card with tags, author, and reading time     |
+| DeveloperCard    | src/components/cards/DeveloperCard.jsx | Card            | Shared          | Developers (SPA)                              | Displays developer card with avatar initials, skills, and action      |
+| ProjectCard      | src/components/cards/ProjectCard.jsx   | Card            | Shared          | Projects (SPA)                                | Displays project showcase card with tags, like toggle, and views      |
+| StatsCard        | src/components/cards/StatsCard.jsx     | Card / Display  | Shared          | DeveloperProfile (SPA)                        | Displays key developer profile counts (projects, blogs, connections)  |
+| ActivityChart    | src/components/charts/ActivityChart.jsx| Chart / Canvas  | Shared          | DeveloperProfile (SPA)                        | Chart.js canvas chart with useRef and useEffect lifecycle teardown    |
+| HomeIsland       | src/islands/HomeIsland.jsx             | React Island    | Page-Specific   | frontend/index.html                           | Authenticated session banner listening to window storage events       |
+| LoginForm        | src/islands/LoginForm.jsx              | React Island    | Page-Specific   | frontend/login.html                           | Controlled login form with regex check, useRef focus, and auth sync   |
+| SignupForm       | src/islands/SignupForm.jsx             | React Island    | Page-Specific   | frontend/signup.html                          | Controlled registration form with password strength & duplicate check |
+| BlogIsland       | src/islands/BlogIsland.jsx             | React Island    | Page-Specific   | frontend/BlogPage.html                        | Real-time search, category pill filter, published blog integration    |
+| WriteBlogIsland  | src/islands/WriteBlogIsland.jsx        | React Island    | Page-Specific   | frontend/writeBlog.html                       | Character counter, live markdown preview, draft and publishing flows  |
+| DevelopersIsland | src/islands/DevelopersIsland.jsx       | React Island    | Page-Specific   | frontend/Developers.html                      | Directory search, role filter, developer profile selection to storage |
+| ProfileChart     | src/islands/ProfileChart.jsx           | React Island    | Page-Specific   | frontend/DeveloperProfile.html                | Profile connection toggle, Chart.js lifecycle management on canvas    |
+| ProjectsIsland   | src/islands/ProjectsIsland.jsx         | React Island    | Page-Specific   | frontend/Projects.html                        | Search, category filter, sorting, and reactive like counter toggle    |
+| AboutStats       | src/islands/AboutStats.jsx             | React Island    | Page-Specific   | frontend/About.html                           | Animated metric counters with setInterval and clearInterval cleanup   |
+| Home             | src/pages/Home.jsx                     | Page Component  | Page-Specific   | SPA Route ("/")                               | Full home landing page with hero illustration and feature grid        |
+| Login            | src/pages/Login.jsx                    | Page Component  | Page-Specific   | SPA Route ("/login")                          | Full login page with AuthCard, FormInput, and useAuth hook            |
+| Signup           | src/pages/Signup.jsx                   | Page Component  | Page-Specific   | SPA Route ("/signup")                         | Full signup page with AuthCard, strength meter, and useLocalStorage   |
+| Blogs            | src/pages/Blogs.jsx                    | Page Component  | Page-Specific   | SPA Route ("/blogs")                          | Full blogs catalog with PageIntro, SearchBar, category pills, BlogCard|
+| WriteBlog        | src/pages/WriteBlog.jsx                | Page Component  | Page-Specific   | SPA Route ("/write-blog")                     | Full blog editor with PageIntro, draft saving, preview, and publish   |
+| Developers       | src/pages/Developers.jsx               | Page Component  | Page-Specific   | SPA Route ("/developers")                     | Full developers directory with PageIntro, SearchBar, useSearch        |
+| DeveloperProfile | src/pages/DeveloperProfile.jsx         | Page Component  | Page-Specific   | SPA Route ("/developer-profile")              | Full profile view with StatsCard, ActivityChart, connection button    |
+| Projects         | src/pages/Projects.jsx                 | Page Component  | Page-Specific   | SPA Route ("/projects")                       | Full projects showcase with PageIntro, search, sort, ProjectCard      |
+| About            | src/pages/About.jsx                    | Page Component  | Page-Specific   | SPA Route ("/about")                          | Full about page with hero, mission statement, and animated numbers    |
+
+
+================================================================================
+3. PAGE-BY-PAGE ANALYSIS
+================================================================================
+
+--------------------------------------------------------------------------------
+PAGE: Home (frontend/index.html & SPA Route "/")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component   | File / Location                 | Where Used on Page          | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-------------|---------------------------------|-----------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| HomeIsland  | src/islands/HomeIsland.jsx      | Hero section (#home-island-root) | Displays dynamic welcome banner if user is logged in    | State, Effects, Storage      | State: currentUser; Hooks: useState, useEffect | Page-Specific (Island)  |
+| Home        | src/pages/Home.jsx              | SPA Route ("/")             | Renders complete Home page view in SPA mode                 | Components, Routing, Props   | Hooks: useNavigate, useAuth                    | Page-Specific (Page)    |
+| Shell       | src/components/layout/Shell.jsx | Root of Home page (SPA)     | Wraps content with shared Navbar and Footer                 | Component Composition, Props | Props: children                                | Shared (Layout)         |
+| Navbar      | src/components/layout/Navbar.jsx| Top of Shell (SPA)          | Main site navigation and authentication display             | Routing, Context             | Hooks: useAuth; Events: onClick (logout)       | Shared (Navigation)     |
+| Footer      | src/components/layout/Footer.jsx| Bottom of Shell (SPA)       | Copyright landmark footer                                   | Static Component             | None                                           | Shared (Layout)         |
+| Button      | src/components/ui/Button.jsx    | Hero action buttons (SPA)   | Standardized clickable buttons for CTA actions              | Component, Props, Events     | Props: children, variant, onClick              | Shared (UI)             |
+
+React Flow:
+frontend/index.html (HTML Document)
+   ↓
+#home-island-root (Mount Target)
+   ↓
+HomeIsland Component
+   ↓
+useState(localStorage.getItem('loggedInUser')) & useEffect(window 'storage' listener)
+   ↓
+Dynamic Welcome Banner UI (or null if guest)
+
+SPA Mode React Flow:
+App (BrowserRouter) → Route ("/") → Home Component → Shell → Navbar + Hero + Feature Grid → useAuth() → Render Welcome Banner & CTA Buttons
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File           | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/HomeIsland.jsx | createRoot progressive mount to #home-island-root                       |
+| JSX                   | Yes          | HomeIsland.jsx, Home.jsx   | Inline conditional banner JSX and dynamic CTA layout                    |
+| Components            | Yes          | Home.jsx, Shell.jsx        | Composition of page layout via Shell and Button components             |
+| Props                 | Yes          | Button.jsx, Shell.jsx      | Passing children, variant, and onClick handlers                         |
+| Events                | Yes          | Navbar.jsx, Button.jsx     | Synthetic onClick for client-side navigation and logout                 |
+| Routing               | Yes          | Home.jsx, Navbar.jsx       | useNavigate and NavLink from react-router-dom                           |
+| useState              | Yes          | HomeIsland.jsx             | currentUser state tracking active loggedInUser                          |
+| useEffect             | Yes          | HomeIsland.jsx             | Subscribes to window 'storage' event with cleanup                       |
+| useContext            | Yes          | Navbar.jsx, Home.jsx       | Consumes DevSphereContext via useAuth hook                              |
+| Custom Hooks          | Yes          | Home.jsx, Navbar.jsx       | useAuth hook for session authentication state                           |
+| useDebugValue         | Yes          | src/hooks/useAuth.js       | Formats debug label in DevTools based on auth state                     |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| currentUser   | localStorage ('loggedInUser')| HomeIsland.jsx    | Displays personalized greeting to logged-in user  | localStorage    |
+| currentUser   | DevSphereContext           | Home.jsx, Navbar.jsx| Controls navigation buttons and welcome paragraph | Context/Storage |
+| isAuthenticated| DevSphereContext          | Home.jsx, Navbar.jsx| Conditionally toggles CTA actions and auth links  | In-memory state |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onClick  | Button ("Start writing")| () => navigate("/blogs")| Navigates to blog section                    |
+| onClick  | Button ("Join / Explore")| navigate conditional   | Navigates to /projects or /signup            |
+| onClick  | button.logout-btn       | logout                 | Clears session via useAuth                   |
+| storage  | window                  | handleStorage          | Syncs HomeIsland state on multi-tab storage  |
+
+Page Hook Usage:
+| Hook         | Component   | Purpose                              | Dependency / Trigger   | Result                                  |
+|--------------|-------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState     | HomeIsland  | Tracks active logged-in user         | Mount / Initializer    | currentUser state initialized           |
+| useEffect    | HomeIsland  | Syncs user on external storage change| [] (Mount only)        | Sets storage listener, returns cleanup  |
+| useNavigate  | Home        | Programmatic SPA navigation          | Call on button click   | Transitions router route                |
+| useAuth      | Home, Navbar| Accesses auth user and logout method | Context re-renders     | Re-renders UI on login/logout state     |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/index.html    | #home-island-root container       | Progressively renders React welcome banner without clearing hero section|
+| frontend/index.css     | Reuses .hero, .btn styles         | Retains exact font, layout, and visual spacing                         |
+| frontend/index.js      | Guard check on #home-island-root  | Legacy welcome paragraph logic yields to React island                  |
+| localStorage           | Reads 'loggedInUser' raw string   | Seamless interop with legacy login.js raw email string                 |
+
+--------------------------------------------------------------------------------
+PAGE: Login (frontend/login.html & SPA Route "/login")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component   | File / Location                 | Where Used on Page          | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-------------|---------------------------------|-----------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| LoginForm   | src/islands/LoginForm.jsx       | Form area (#login-island-root)| Controlled login form with validation and error focus       | Controlled Forms, Refs       | State: email, password, showPassword, message, isSuccess; Hooks: useState, useRef, useAuth | Page-Specific (Island) |
+| Login       | src/pages/Login.jsx             | SPA Route ("/login")        | Full login page view in SPA mode                            | Controlled Forms, Refs       | State: form, show, message, isSuccess; Hooks: useState, useRef, useNavigate, useAuth | Page-Specific (Page) |
+| AuthCard    | src/components/ui/AuthCard.jsx  | Page wrapper (SPA)          | Card container with title and subtitle                      | Component Composition, Props | Props: title, subtitle, children               | Shared (UI)             |
+| FormInput   | src/components/ui/FormInput.jsx | Email field (SPA)           | Labeled input with forwardRef for DOM focus                 | forwardRef, Props            | Props: label, error, ref                       | Shared (UI)             |
+| DevSphereProvider| src/context/DevSphereContext.jsx| Island Root Wrapper   | Injects auth context into standalone LoginForm island       | Context Provider             | Props: children                                | Shared (Context)        |
+
+React Flow:
+frontend/login.html (HTML Document)
+   ↓
+#login-island-root (Mount Target)
+   ↓
+DevSphereProvider → LoginForm Component
+   ↓
+Controlled inputs (email, password) via useState & focus management via useRef
+   ↓
+onSubmit (handleSubmit) → Validation (Empty check, Regex syntax, Length check)
+   ↓
+login(email) + localStorage.setItem('loggedInUser', email)
+   ↓
+Success feedback message → setTimeout redirect to index.html
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File           | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/LoginForm.jsx  | createRoot mounts LoginForm wrapped with DevSphereProvider              |
+| JSX                   | Yes          | LoginForm.jsx, Login.jsx   | Renders form elements, password reveal button, error messages           |
+| Components            | Yes          | LoginForm.jsx, AuthCard.jsx| Encapsulates credential validation and presentation                     |
+| Props                 | Yes          | FormInput.jsx, AuthCard.jsx| Passes label, type, value, onChange, and forwarded refs                 |
+| Events                | Yes          | LoginForm.jsx, Login.jsx   | onSubmit, onChange, onClick (toggle password visibility)                |
+| Forms                 | Yes          | LoginForm.jsx, Login.jsx   | Fully controlled dual-bound inputs with synchronous error feedback      |
+| Refs                  | Yes          | LoginForm.jsx, Login.jsx   | useRef(null) attached to email input for programmatic error focus       |
+| Rules of Hooks        | Yes          | LoginForm.jsx, Login.jsx   | All hooks called unconditionally at the top level of component function |
+| useState              | Yes          | LoginForm.jsx, Login.jsx   | Manages form inputs, showPassword boolean, validation messages          |
+| useContext            | Yes          | LoginForm.jsx, Login.jsx   | Injects session login method via useAuth / DevSphereContext             |
+| useRef                | Yes          | LoginForm.jsx, Login.jsx   | emailInputRef / emailRef focuses input on validation failure            |
+| Custom Hooks          | Yes          | LoginForm.jsx, Login.jsx   | useAuth provides login method and session mutation                      |
+| useDebugValue         | Yes          | src/hooks/useAuth.js       | Inspects auth session status in React DevTools                          |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| email         | useState                   | LoginForm, Login    | Controlled input value for user email             | In-memory state |
+| password      | useState                   | LoginForm, Login    | Controlled input value for password               | In-memory state |
+| showPassword  | useState                   | LoginForm, Login    | Toggles input type between 'password' and 'text'  | In-memory state |
+| message       | useState                   | LoginForm, Login    | Displays inline error or success alerts           | In-memory state |
+| loggedInUser  | login() / localStorage     | DevSphereContext    | Persists authenticated user identity              | localStorage    |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onSubmit | form.loginForm          | handleSubmit           | Validates inputs, updates auth, sets redirect|
+| onChange | input[name="email"]     | setEmail / setForm     | Updates email controlled state               |
+| onChange | input[name="password"]  | setPassword / setForm  | Updates password controlled state            |
+| onClick  | button#toggle-password  | setShowPassword(!show) | Toggles password visibility                  |
+
+Page Hook Usage:
+| Hook         | Component   | Purpose                              | Dependency / Trigger   | Result                                  |
+|--------------|-------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState     | LoginForm   | Manages email, password, show, error | Initial render / input | State accessors and updater functions   |
+| useRef       | LoginForm   | Targets email input for auto-focus   | Mount / Validation     | Holds DOM node; .focus() on error       |
+| useAuth      | LoginForm   | Invokes context login updater        | Valid form submission  | Updates global authentication state     |
+| useNavigate  | Login (SPA) | Navigates to "/" upon success        | Valid form submission  | Transitions SPA route                   |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/login.html    | #login-island-root container      | React mounts inside the semantic form section                          |
+| frontend/login.css     | Reuses .loginForm, .input-container, .btn-submit | Preserves existing layout, fonts, and button styles   |
+| frontend/login.js      | Guard check on #login-island-root | Legacy DOM event listeners yield to React LoginForm                    |
+| localStorage           | Writes 'loggedInUser' raw string  | Maintains backward compatibility with legacy scripts expecting raw email|
+
+--------------------------------------------------------------------------------
+PAGE: Signup (frontend/signup.html & SPA Route "/signup")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component   | File / Location                 | Where Used on Page          | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-------------|---------------------------------|-----------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| SignupForm  | src/islands/SignupForm.jsx      | Form area (#signup-island-root)| Controlled signup form with strength meter & duplicate check| Controlled Forms, State      | State: form, showPassword, message, isSuccess; Hooks: useState | Page-Specific (Island) |
+| Signup      | src/pages/Signup.jsx            | SPA Route ("/signup")       | Full signup page view in SPA mode                           | Controlled Forms, Storage    | State: form, show, message, isSuccess; Hooks: useState, useLocalStorage | Page-Specific (Page) |
+| AuthCard    | src/components/ui/AuthCard.jsx  | Page wrapper (SPA)          | Card container with title and subtitle                      | Component Composition, Props | Props: title, subtitle, children               | Shared (UI)             |
+
+React Flow:
+frontend/signup.html (HTML Document)
+   ↓
+#signup-island-root (Mount Target)
+   ↓
+SignupForm Component
+   ↓
+Controlled inputs (username, email, password, confirmPassword) via useState
+   ↓
+Derived real-time password strength calculation (Weak / Medium / Strong)
+   ↓
+onSubmit (handleSubmit) → Validation (Length checks, Regex format, Password match)
+   ↓
+Duplicate email verification against localStorage users array
+   ↓
+Appends new user object & persists JSON to localStorage ('users')
+   ↓
+Form reset and success notification
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File           | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/SignupForm.jsx | createRoot mounts SignupForm into #signup-island-root                   |
+| JSX                   | Yes          | SignupForm.jsx, Signup.jsx | Renders inputs, dynamic strength indicator badge, error messages        |
+| Components            | Yes          | SignupForm.jsx, AuthCard   | Encapsulates user registration logic and layout                         |
+| Props                 | Yes          | AuthCard.jsx               | Passes title, subtitle, and child form elements                         |
+| Events                | Yes          | SignupForm.jsx, Signup.jsx | onSubmit, onChange, onClick (password visibility toggle)                |
+| Forms                 | Yes          | SignupForm.jsx, Signup.jsx | Multi-field controlled state ({ username, email, password, confirm })   |
+| Styling React         | Yes          | SignupForm.jsx             | Dynamic style attribute coloring strength indicator (crimson/orange/green)|
+| Rules of Hooks        | Yes          | SignupForm.jsx, Signup.jsx | Hooks called unconditionally at component top level                     |
+| useState              | Yes          | SignupForm.jsx, Signup.jsx | Tracks multi-field form state, showPassword toggle, feedback messages  |
+| Custom Hooks          | Yes          | Signup.jsx (SPA)           | useLocalStorage synchronizes registered users array                     |
+| useDebugValue         | Yes          | src/hooks/useLocalStorage.js| Inspects 'users' array length in React DevTools                         |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| form          | useState                   | SignupForm, Signup  | Stores username, email, password, confirmPassword | In-memory state |
+| strength      | Derived from password.length| SignupForm, Signup | Live indicator displaying Weak/Medium/Strong      | Derived value   |
+| users         | localStorage ('users')     | SignupForm, Signup  | Validates against duplicate email addresses       | localStorage    |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onSubmit | form.signup             | handleSubmit           | Validates credentials, saves to users array  |
+| onChange | input[name="username"]  | setForm field update   | Updates username state                       |
+| onChange | input[name="email"]     | setForm field update   | Updates email state                          |
+| onChange | input[name="password"]  | setForm field update   | Updates password state & recalculates strength|
+| onChange | input[name="confirmPassword"]| setForm field update| Updates confirm password state              |
+| onClick  | button#toggle-password  | setShowPassword(!show) | Toggles password input type                  |
+
+Page Hook Usage:
+| Hook           | Component   | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState       | SignupForm  | Holds form object and feedback state | Mount / Field updates  | Form state and dispatchers              |
+| useLocalStorage| Signup (SPA)| Syncs users array with localStorage  | Mount / Submission     | Persists user credentials array         |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/signup.html   | #signup-island-root container     | Progressively enhances registration area                               |
+| frontend/signup.css    | Reuses .signup, .input-container, button | Retains visual identity, card layout, and inputs               |
+| frontend/signup.js     | Guard check on #signup-island-root| Legacy imperative registration listener yields to React SignupForm     |
+| localStorage           | Reads/writes 'users' array        | Maintains format compatibility with legacy vanilla login/signup        |
+
+--------------------------------------------------------------------------------
+PAGE: Blogs (frontend/BlogPage.html & SPA Route "/blogs")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component   | File / Location                 | Where Used on Page          | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-------------|---------------------------------|-----------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| BlogIsland  | src/islands/BlogIsland.jsx      | Main content (#blog-island-root)| Search, category filter, published blogs merge, cards grid | Memoization, Storage, Lists  | State: query, category; Hooks: useState, useMemo, useLocalStorage | Page-Specific (Island) |
+| Blogs       | src/pages/Blogs.jsx             | SPA Route ("/blogs")        | Full blogs catalog page in SPA mode                         | Memoization, Storage, Lists  | State: query, category; Hooks: useState, useMemo, useLocalStorage | Page-Specific (Page) |
+| BlogCard    | src/components/cards/BlogCard.jsx| Card grid (SPA)            | Reusable blog summary card with category, author, read time | Component, Props             | Props: blog                                    | Shared (Card)           |
+| SearchBar   | src/components/ui/SearchBar.jsx | Toolbar (SPA)               | Search bar with keyboard blur on Escape                     | Refs, Events                 | Props: value, onChange, placeholder; Hooks: useRef | Shared (UI)        |
+| PageIntro   | src/components/layout/PageIntro.jsx| Header area (SPA)        | Section header title and subtitle                           | Component, Props             | Props: title, text                             | Shared (Layout)         |
+| Shell       | src/components/layout/Shell.jsx | Page wrapper (SPA)          | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/BlogPage.html (HTML Document)
+   ↓
+#blog-island-root (Mount Target)
+   ↓
+BlogIsland Component
+   ↓
+useLocalStorage('publishedBlogs') + initialBlogs from data/blogs.js
+   ↓
+useMemo: merges published list with initial blogs
+   ↓
+useMemo: filters merged blogs by search query and category pill
+   ↓
+Renders search input, category buttons with .active class, and .blogGrid
+   ↓
+Maps filtered blogs into <article className="blogCard"> elements (or empty state)
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File           | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/BlogIsland.jsx | createRoot mounts BlogIsland into #blog-island-root                     |
+| JSX                   | Yes          | BlogIsland.jsx, BlogCard   | Declarative rendering of blog cards, badges, and empty states           |
+| Components            | Yes          | BlogCard.jsx, SearchBar.jsx| Modular decomposition of cards and search bar                           |
+| Props                 | Yes          | BlogCard.jsx               | Receives blog object (title, category, author, readTime, description)   |
+| Events                | Yes          | BlogIsland.jsx, Blogs.jsx  | onChange (search query), onClick (category selection, write redirect)  |
+| Styling React         | Yes          | BlogIsland.jsx             | Dynamic active class application (category === cat ? 'active' : '')     |
+| List Rendering        | Yes          | BlogIsland.jsx, Blogs.jsx  | Array.map() rendering category buttons and blog cards with unique keys  |
+| Conditional Rendering | Yes          | BlogIsland.jsx, Blogs.jsx  | Renders grid when blogs exist, else renders empty-state paragraph       |
+| Rules of Hooks        | Yes          | BlogIsland.jsx, Blogs.jsx  | Hooks called at top level unconditionally                               |
+| useState              | Yes          | BlogIsland.jsx, Blogs.jsx  | Manages query string and active category filter                         |
+| useMemo               | Yes          | BlogIsland.jsx, Blogs.jsx  | Memoizes published blog adaptation and multi-criteria filtered results  |
+| Custom Hooks          | Yes          | BlogIsland.jsx, Blogs.jsx  | useLocalStorage reads published blogs authored in writeBlog             |
+| useDebugValue         | Yes          | src/hooks/useLocalStorage.js| Exposes 'publishedBlogs' array length in React DevTools                 |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| initialBlogs  | src/data/blogs.js          | BlogIsland, Blogs   | Base catalog of 6 core developer articles         | Static module   |
+| storedBlogs   | localStorage ('publishedBlogs')| BlogIsland, Blogs| User-created blog posts authored via writeBlog    | localStorage    |
+| query         | useState                   | BlogIsland, Blogs   | Filters articles by title, description, or author | In-memory state |
+| category      | useState                   | BlogIsland, Blogs   | Filters articles by category pill                 | In-memory state |
+| filteredBlogs | useMemo                    | BlogIsland, Blogs   | Combined, filtered collection passed to card view | Derived value   |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onChange | input (Search)          | setQuery(e.target.value)| Updates search query in real time            |
+| onClick  | button.write            | redirect to writeBlog  | Navigates to blog authoring editor           |
+| onClick  | button (category pill)  | setCategory(cat)       | Filters articles by category                 |
+
+Page Hook Usage:
+| Hook           | Component   | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState       | BlogIsland  | Stores query and category selection  | Mount / User interaction| query and category state variables     |
+| useLocalStorage| BlogIsland  | Fetches published blogs from storage | Mount / Storage updates| storedBlogs array                       |
+| useMemo (1)    | BlogIsland  | Adapts stored blogs to schema        | [storedBlogs]          | publishedList normalized array          |
+| useMemo (2)    | BlogIsland  | Concatenates published + initial     | [publishedList]        | allBlogs unified array                  |
+| useMemo (3)    | BlogIsland  | Filters blogs by category and search | [allBlogs, category, query] | filteredBlogs array               |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/BlogPage.html | #blog-island-root container       | Replaces static actions, category buttons, and blog grid               |
+| frontend/BlogPage.css  | Reuses .blogActions, .categories, .blogGrid, .blogCard | Exact visual identity, grid columns, tags, and cards |
+| frontend/BlogPage.js   | Guard check on #blog-island-root  | Legacy string-concatenation innerHTML rendering yields to React island |
+| localStorage           | Reads 'publishedBlogs'            | Blogs created in writeBlog.html dynamically appear in the feed         |
+
+--------------------------------------------------------------------------------
+PAGE: Write Blog (frontend/writeBlog.html & SPA Route "/write-blog")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component       | File / Location                 | Where Used on Page             | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-----------------|---------------------------------|--------------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| WriteBlogIsland | src/islands/WriteBlogIsland.jsx | Form area (#write-blog-island-root)| Blog creation editor, 5000-char cap, draft and publish logic| Controlled Forms, Storage, Refs| State: title, category, author, content, tags, preview, message, isSuccess; Hooks: useState, useRef, useLocalStorage | Page-Specific (Island) |
+| WriteBlog       | src/pages/WriteBlog.jsx         | SPA Route ("/write-blog")      | Full blog authoring page in SPA mode                        | Controlled Forms, Storage, Refs| State: form, preview, message, isSuccess; Hooks: useState, useRef, useLocalStorage, useAuth, useNavigate | Page-Specific (Page) |
+| PageIntro       | src/components/layout/PageIntro.jsx| Header area (SPA)           | Page title and subtitle                                     | Component, Props             | Props: title, text                             | Shared (Layout)         |
+| Shell           | src/components/layout/Shell.jsx | Page wrapper (SPA)             | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/writeBlog.html (HTML Document)
+   ↓
+#write-blog-island-root (Mount Target)
+   ↓
+WriteBlogIsland Component
+   ↓
+Controlled inputs for title, category, author (pre-filled from loggedInUser), content, tags
+   ↓
+Real-time character counter (content.length / 5000 characters)
+   ↓
+handleContentChange enforces maximum length of 5000 chars
+   ↓
+Toggle Preview Button → setPreview(!preview) & contentRef.current?.focus()
+   ↓
+handleSaveDraft → Builds payload, validates required fields, updates 'drafts' in localStorage
+   ↓
+handlePublish → Builds payload, validates, prepends to 'publishedBlogs' in localStorage, redirects to BlogPage.html
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File               | How It Is Used                                                          |
+|-----------------------|--------------|--------------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/WriteBlogIsland.jsx| createRoot mounts WriteBlogIsland into #write-blog-island-root          |
+| JSX                   | Yes          | WriteBlogIsland.jsx            | Controlled form fields, preview card markup, character count display    |
+| Components            | Yes          | WriteBlogIsland.jsx            | Self-contained blog authoring and publishing system                     |
+| Props                 | Yes          | PageIntro.jsx                  | Title and subtitle passed into page intro                               |
+| Events                | Yes          | WriteBlogIsland.jsx            | onSubmit, onChange, onClick (Save Draft, Toggle Preview)                |
+| Forms                 | Yes          | WriteBlogIsland.jsx            | Multi-field controlled state with custom character-cap validator        |
+| Refs                  | Yes          | WriteBlogIsland.jsx            | contentRef attached to textarea for focus transfer upon preview toggle  |
+| Conditional Rendering | Yes          | WriteBlogIsland.jsx            | {preview && (<section className="blog-preview">...)}                   |
+| Rules of Hooks        | Yes          | WriteBlogIsland.jsx            | All hooks executed at top level of functional component                 |
+| useState              | Yes          | WriteBlogIsland.jsx            | Tracks form fields, preview toggle, and validation notification         |
+| useRef                | Yes          | WriteBlogIsland.jsx            | contentRef focuses textarea when user closes/opens preview              |
+| Custom Hooks          | Yes          | WriteBlogIsland.jsx            | useLocalStorage reads and writes 'drafts' and 'publishedBlogs' arrays   |
+| useDebugValue         | Yes          | src/hooks/useLocalStorage.js   | Inspects draft and published blog storage entries in DevTools           |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| title, category, author, content, tags | useState | WriteBlogIsland   | Controlled values for article submission          | In-memory state |
+| drafts        | useLocalStorage ('drafts') | WriteBlogIsland     | Array of saved unfinished blog drafts             | localStorage    |
+| published     | useLocalStorage ('publishedBlogs')| WriteBlogIsland| Array of published articles merged into blog feed | localStorage    |
+| preview       | useState                   | WriteBlogIsland     | Boolean toggling live preview section             | In-memory state |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onSubmit | form                    | handlePublish          | Validates, prepends to publishedBlogs, redirects|
+| onChange | input#blog-title        | setTitle               | Updates blog title                           |
+| onChange | select#category         | setCategory            | Updates selected category                    |
+| onChange | input#author            | setAuthor              | Updates author name                          |
+| onChange | textarea#content        | handleContentChange    | Enforces 5000 character limit and updates    |
+| onChange | input#tags              | setTags                | Updates comma-separated tag list             |
+| onClick  | button.secondary-btn    | handleSaveDraft        | Appends current payload to drafts in storage |
+| onClick  | button.preview-btn      | toggle preview + focus | Toggles live preview mode & focuses textarea |
+
+Page Hook Usage:
+| Hook           | Component       | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-----------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState       | WriteBlogIsland | Tracks editor fields and preview flag| Mount / Typing         | Field states and dispatchers            |
+| useRef         | WriteBlogIsland | Holds textarea DOM reference         | Mount / Preview click  | Programmatic textarea focus             |
+| useLocalStorage| WriteBlogIsland | Persists 'drafts' and 'publishedBlogs'| Mount / Action click  | Reads/writes persistent blog collections|
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/writeBlog.html| #write-blog-island-root container | Replaces static editor form with reactive controlled component         |
+| frontend/writeBlog.css | Reuses .editor-card, .form-group, .btn, .preview | Retains identical styling, spacing, and button variants|
+| frontend/writeBlog.js  | Guard check on #write-blog-island-root | Legacy DOM event listeners yield to React WriteBlogIsland         |
+| localStorage           | Reads/writes 'drafts' and 'publishedBlogs' | Compatible with both vanilla and React blog pages             |
+
+--------------------------------------------------------------------------------
+PAGE: Developers (frontend/Developers.html & SPA Route "/developers")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component       | File / Location                 | Where Used on Page             | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-----------------|---------------------------------|--------------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| DevelopersIsland| src/islands/DevelopersIsland.jsx| Main content (#developers-island-root)| Search, initials calculation, developer selection to storage| Memoization, Storage, Lists  | State: query; Hooks: useState, useMemo, useLocalStorage | Page-Specific (Island) |
+| Developers      | src/pages/Developers.jsx        | SPA Route ("/developers")      | Full developers directory page in SPA mode                  | Custom Hooks, Routing, Lists | Hooks: useNavigate, useSearch, useLocalStorage | Page-Specific (Page)    |
+| DeveloperCard   | src/components/cards/DeveloperCard.jsx| Card grid (SPA)          | Reusable developer card displaying initials, skills, action | Component, Props, Events     | Props: developer, onSelect                     | Shared (Card)           |
+| SearchBar       | src/components/ui/SearchBar.jsx | Search area (SPA)              | Reusable search input with keyboard escape handler          | Refs, Events                 | Props: value, onChange, placeholder; Hooks: useRef | Shared (UI)        |
+| PageIntro       | src/components/layout/PageIntro.jsx| Header area (SPA)           | Page header title and subtitle                              | Component, Props             | Props: title, text                             | Shared (Layout)         |
+| Shell           | src/components/layout/Shell.jsx | Page wrapper (SPA)             | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/Developers.html (HTML Document)
+   ↓
+#developers-island-root (Mount Target)
+   ↓
+DevelopersIsland Component
+   ↓
+useState(query) + initial developers from data/developers.js
+   ↓
+useMemo: filters developers by matching name, role, skills, or location against normalized query
+   ↓
+Renders search bar with icon and .grid section
+   ↓
+Calculates avatar initials dynamically (dev.name.split(' ').map(p => p[0]).join(''))
+   ↓
+Maps developers into <article> cards with alternating avatar classes (.a1 to .a6)
+   ↓
+"View Profile" link click → handleSelectDeveloper sets 'selectedDeveloper' in localStorage & navigates
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File               | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/DevelopersIsland.jsx| createRoot mounts DevelopersIsland into #developers-island-root        |
+| JSX                   | Yes          | DevelopersIsland.jsx, DeveloperCard| Declarative avatar initials, skill tags, card layout               |
+| Components            | Yes          | DeveloperCard.jsx, SearchBar.jsx| Reusable card and search bar components                                |
+| Props                 | Yes          | DeveloperCard.jsx              | Passes developer object and onSelect callback handler                   |
+| Events                | Yes          | DevelopersIsland.jsx           | onChange (search query), onClick (profile selection)                    |
+| List Rendering        | Yes          | DevelopersIsland.jsx           | Maps developer array to cards and skills array to <i> / <span> tags     |
+| Rules of Hooks        | Yes          | DevelopersIsland.jsx           | Hooks called unconditionally at top of functional component             |
+| useState              | Yes          | DevelopersIsland.jsx           | Tracks search query string                                              |
+| useMemo               | Yes          | DevelopersIsland.jsx           | Memoizes filtered developer list based on query                         |
+| Custom Hooks          | Yes          | Developers.jsx (SPA)           | useSearch filters developers; useLocalStorage saves selection           |
+| useDebugValue         | Yes          | src/hooks/useSearch.js         | Inspects active search query and matching developer count in DevTools   |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| developers    | src/data/developers.js     | DevelopersIsland, Developers| Complete array of 6 community developers          | Static module   |
+| query         | useState / useSearch       | DevelopersIsland, Developers| Real-time search string                           | In-memory state |
+| filtered      | useMemo / useSearch        | DevelopersIsland, Developers| Filtered collection matching search query         | Derived value   |
+| selectedDeveloper| useLocalStorage / handleSelect| DevelopersIsland, Developers| Active developer chosen to view on Profile page | localStorage    |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onChange | input (Search)          | setQuery(e.target.value)| Filters developer list in real time          |
+| onClick  | a ("View Profile")      | handleSelectDeveloper  | Stores selected dev in localStorage & routes |
+
+Page Hook Usage:
+| Hook           | Component       | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-----------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState       | DevelopersIsland| Tracks search query input            | Mount / Typing         | query state string                      |
+| useMemo        | DevelopersIsland| Computes filtered developer list     | [query]                | filtered array of developers            |
+| useLocalStorage| DevelopersIsland| Setter updates 'selectedDeveloper'   | Mount / Card select    | Updates stored developer object         |
+| useSearch      | Developers (SPA)| Custom hook extracting searchable text| Query change           | Reusable query and results list         |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/Developers.html| #developers-island-root container | Replaces static header search and card grid                            |
+| frontend/Developers.css| Reuses .head, .devsearch, .grid, .avatar, .tags | Maintains identical colors, avatar circles, and grid   |
+| frontend/Developers.js | Guard check on #developers-island-root | Legacy DOM querySelector/innerHTML rendering yields to React     |
+| localStorage           | Writes 'selectedDeveloper' JSON   | Consumed seamlessly by both DeveloperProfile.html and Profile.jsx      |
+
+--------------------------------------------------------------------------------
+PAGE: Developer Profile (frontend/DeveloperProfile.html & SPA Route "/developer-profile")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component       | File / Location                 | Where Used on Page             | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-----------------|---------------------------------|--------------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| ProfileChart    | src/islands/ProfileChart.jsx    | Interactive area (#profile-interactive-root)| Connect toggle and Chart.js bar chart lifecycle on canvas | Lifecycle, Canvas, Refs, State| State: selectedDeveloper, connected, message; Hooks: useState, useEffect, useRef | Page-Specific (Island) |
+| DeveloperProfile| src/pages/DeveloperProfile.jsx  | SPA Route ("/developer-profile")| Full developer profile view in SPA mode                     | Components, Storage, State   | State: selected, connected, message; Hooks: useState, useEffect, useLocalStorage | Page-Specific (Page) |
+| StatsCard       | src/components/cards/StatsCard.jsx| Stats row (SPA)              | Displays summary metric counters for projects, blogs, conn. | Component, Props             | Props: projectsCount, blogsCount, connectionsCount | Shared (Card)      |
+| ActivityChart   | src/components/charts/ActivityChart.jsx| Chart area (SPA)        | Chart.js bar chart component with clean teardown on unmount | External Library, Refs, Lifecycle| Props: data, labels; Hooks: useRef, useEffect | Shared (Chart)       |
+| Shell           | src/components/layout/Shell.jsx | Page wrapper (SPA)             | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/DeveloperProfile.html (HTML Document)
+   ↓
+#profile-interactive-root (Mount Target)
+   ↓
+ProfileChart Component
+   ↓
+useEffect reads 'selectedDeveloper' & 'connection:<name>' from localStorage
+   ↓
+Renders Connect button (toggles "+ Connect" / "✓ Connected") & Message button
+   ↓
+canvasRef targets <canvas> element
+   ↓
+useEffect([connected]) → Destroys previous Chart.js instance (if existing)
+   ↓
+Instantiates `new Chart(ctx, { type: 'bar', data: ..., options: ... })`
+   ↓
+Cleanup return callback destroys Chart instance on unmount or re-render
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File               | How It Is Used                                                          |
+|-----------------------|--------------|--------------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/ProfileChart.jsx   | createRoot mounts ProfileChart into #profile-interactive-root           |
+| JSX                   | Yes          | ProfileChart.jsx, StatsCard    | Dynamic buttons, canvas container, and formatted badges                 |
+| Components            | Yes          | StatsCard.jsx, ActivityChart   | Modular separation of metric cards and chart visualization              |
+| Props                 | Yes          | StatsCard.jsx, ActivityChart   | Passes counts, chart data arrays, and label arrays                      |
+| Events                | Yes          | ProfileChart.jsx               | onClick for Connect toggle and simulated Message alert                  |
+| External Library      | Yes          | ProfileChart.jsx, ActivityChart| Direct Chart.js/auto canvas integration inside React lifecycle          |
+| Rules of Hooks        | Yes          | ProfileChart.jsx, ActivityChart| Hooks called strictly at top level of functional components             |
+| useState              | Yes          | ProfileChart.jsx               | Manages selectedDeveloper, connected boolean, and message feedback     |
+| useEffect             | Yes          | ProfileChart.jsx, ActivityChart| Initializes chart on canvas; returns teardown callback to prevent leaks |
+| useRef                | Yes          | ProfileChart.jsx, ActivityChart| canvasRef references DOM canvas; chartInstanceRef retains chart object  |
+| Custom Hooks          | Yes          | DeveloperProfile.jsx (SPA)     | useLocalStorage retrieves active developer and connection flags         |
+| useDebugValue         | Yes          | src/hooks/useLocalStorage.js   | Inspects active developer storage state in DevTools                     |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| selectedDeveloper| localStorage ('selectedDeveloper')| ProfileChart, DeveloperProfile| Active developer object shown on profile  | localStorage    |
+| connected     | localStorage (`connection:${dev.name}`)| ProfileChart, DeveloperProfile| Boolean flag tracking connection status| localStorage    |
+| message       | useState                   | ProfileChart, DeveloperProfile| Temporary alert text regarding messaging panel    | In-memory state |
+| chartData     | Derived ([12, 24, conn?187:186])| ProfileChart, ActivityChart| Feeds numerical datasets to Chart.js bar chart     | Dynamic state   |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onClick  | button ("Connect")      | handleConnect          | Toggles connection state, saves to storage   |
+| onClick  | button ("Message")      | setMessage             | Sets simulated phase notification message    |
+
+Page Hook Usage:
+| Hook           | Component       | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-----------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState       | ProfileChart    | Stores developer, connection, message| Mount / Connect toggle | State accessors and mutators            |
+| useRef (1)     | ProfileChart    | References <canvas> DOM node         | Mount                  | canvasRef.current holding DOM element   |
+| useRef (2)     | ProfileChart    | Holds Chart.js instance reference    | Chart creation         | chartInstanceRef for clean destruction  |
+| useEffect (1)  | ProfileChart    | Loads developer data from storage    | [] (Mount only)        | Populates selectedDeveloper state       |
+| useEffect (2)  | ProfileChart    | Instantiates & cleans up Chart.js    | [connected]            | Renders bar chart; destroys on cleanup  |
+
+Existing DevSphere Integration:
+| Existing Feature             | React Integration                 | Result                                                                 |
+|------------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/DeveloperProfile.html| #profile-interactive-root        | Progressively mounts connect button, message button, and chart canvas  |
+| frontend/DeveloperProfile.css| Reuses .profile, .avatar, .btn    | Retains layout, typography, and card aesthetics                        |
+| frontend/DeveloperProfile.js | Guard check on #profile-interactive-root| Legacy window.Chart imperative script yields to React island     |
+| Chart.js Canvas              | useRef on <canvas>                | Eliminates `Canvas is already in use` error via proper .destroy() cleanup|
+| localStorage                 | Reads 'selectedDeveloper' & 'connection:<name>' | Compatible with Developers.js and DevelopersIsland     |
+
+--------------------------------------------------------------------------------
+PAGE: Projects (frontend/Projects.html & SPA Route "/projects")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component       | File / Location                 | Where Used on Page             | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-----------------|---------------------------------|--------------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| ProjectsIsland  | src/islands/ProjectsIsland.jsx  | Main content (#projects-island-root)| Search, category filter, sorting, interactive likes toggle  | Memoization, State, Lists    | State: query, category, sort, projectsList, likedTitles; Hooks: useState, useMemo | Page-Specific (Island) |
+| Projects        | src/pages/Projects.jsx          | SPA Route ("/projects")        | Full projects showcase in SPA mode                          | Memoization, State, Lists    | State: query, category, sort, items, likedTitles, notice; Hooks: useState, useMemo | Page-Specific (Page) |
+| ProjectCard     | src/components/cards/ProjectCard.jsx| Card grid (SPA)            | Reusable project showcase card with tags, like toggle, views| Component, Props, Events     | Props: project, onLike, isLiked                | Shared (Card)           |
+| PageIntro       | src/components/layout/PageIntro.jsx| Header area (SPA)           | Page title and subtitle                                     | Component, Props             | Props: title, text                             | Shared (Layout)         |
+| Shell           | src/components/layout/Shell.jsx | Page wrapper (SPA)             | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/Projects.html (HTML Document)
+   ↓
+#projects-island-root (Mount Target)
+   ↓
+ProjectsIsland Component
+   ↓
+useState manages query, category, sort ("Latest" / "Most Liked" / "Most Viewed"), projectsList, likedTitles
+   ↓
+useMemo filters projects by category pill & query, then sorts by likes or views
+   ↓
+Renders search input, category dropdown, sort dropdown, category buttons with .active class
+   ↓
+Maps filtered projects into <article> cards with alternating pic background classes
+   ↓
+handleLike(projectTitle) toggles like status: increments/decrements likes & flips heart icon (♥ / ♡)
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File               | How It Is Used                                                          |
+|-----------------------|--------------|--------------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/ProjectsIsland.jsx | createRoot mounts ProjectsIsland into #projects-island-root             |
+| JSX                   | Yes          | ProjectsIsland.jsx, ProjectCard| Renders interactive like buttons, category pills, project cards         |
+| Components            | Yes          | ProjectCard.jsx, ProjectsIsland| Encapsulates showcase layout and interactive card mechanics             |
+| Props                 | Yes          | ProjectCard.jsx                | Receives project data, isLiked flag, and onLike callback handler        |
+| Events                | Yes          | ProjectsIsland.jsx, Projects   | onChange (search, filter, sort), onClick (category, submit, like toggle)|
+| Styling React         | Yes          | ProjectsIsland.jsx             | Conditional styling for active pills and heart color (liked ? red : indigo)|
+| List Rendering        | Yes          | ProjectsIsland.jsx, Projects   | Maps categories and filtered projects array with unique keys            |
+| Rules of Hooks        | Yes          | ProjectsIsland.jsx, Projects   | Hooks called unconditionally at top level of functional components      |
+| useState              | Yes          | ProjectsIsland.jsx, Projects   | Manages search query, category, sort option, project list, liked titles |
+| useMemo               | Yes          | ProjectsIsland.jsx, Projects   | Computes filtered and sorted project items based on 4 dependencies      |
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| initialProjects| src/data/projects.js      | ProjectsIsland, Projects| Seed dataset of 6 featured community projects     | Static module   |
+| projectsList  | useState                   | ProjectsIsland, Projects| In-memory list updated when likes are toggled     | In-memory state |
+| likedTitles   | useState                   | ProjectsIsland, Projects| Array of project titles liked by current user     | In-memory state |
+| query, category, sort | useState           | ProjectsIsland, Projects| Filtering and sorting criteria                    | In-memory state |
+| filtered      | useMemo                    | ProjectsIsland, Projects| Multi-criteria filtered and sorted array for view | Derived value   |
+
+Page Events:
+| Event    | Element / Component     | Handler                | Purpose                                      |
+|----------|-------------------------|------------------------|----------------------------------------------|
+| onChange | input (Search)          | setQuery(e.target.value)| Updates search query in real time            |
+| onChange | select (Category)       | setCategory(e.target.value)| Filters projects by category               |
+| onChange | select (Sort)           | setSort(e.target.value)| Re-sorts projects by likes, views, or latest |
+| onClick  | button (category pill)  | setCategory(cat)       | Filters projects by pill click               |
+| onClick  | button.like             | handleLike(project.title)| Toggles like state and increments like count |
+| onClick  | button ("Submit Project")| alert notification     | Simulated future phase feature notification  |
+
+Page Hook Usage:
+| Hook           | Component       | Purpose                              | Dependency / Trigger   | Result                                  |
+|----------------|-----------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState (1-5) | ProjectsIsland  | Tracks query, category, sort, list, likes| Mount / User actions | Reactive state variables and setters    |
+| useMemo        | ProjectsIsland  | Computes filtered and sorted projects| [projectsList, category, query, sort] | Optimized filtered array |
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/Projects.html | #projects-island-root container   | Replaces top filter bar, category buttons, and project cards grid      |
+| frontend/Projects.css  | Reuses .top, .filters, .cats, .grid, .pic, .body, .like | Identical layout, card banners, and like button styles|
+| frontend/Projects.js   | Guard check on #projects-island-root | Legacy DOM query/innerHTML rendering yields to React island        |
+
+--------------------------------------------------------------------------------
+PAGE: About (frontend/About.html & SPA Route "/about")
+--------------------------------------------------------------------------------
+
+Mandatory Component Table:
+| Component   | File / Location                 | Where Used on Page          | Purpose                                                     | React Concept                | Props / State / Events / Hooks                 | Shared or Page-Specific |
+|-------------|---------------------------------|-----------------------------|-------------------------------------------------------------|------------------------------|------------------------------------------------|-------------------------|
+| AboutStats  | src/islands/AboutStats.jsx      | Stats section (#about-stats-root)| Incremental animated counters with timer interval cleanup  | Timers, Lifecycle, State     | State: counts; Hooks: useState, useEffect      | Page-Specific (Island)  |
+| About       | src/pages/About.jsx             | SPA Route ("/about")        | Full about page view in SPA mode                            | Timers, Lifecycle, State     | State: counts; Hooks: useState, useEffect      | Page-Specific (Page)    |
+| Shell       | src/components/layout/Shell.jsx | Page wrapper (SPA)          | Wraps page in Navbar and Footer                             | Layout Composition           | Props: children                                | Shared (Layout)         |
+
+React Flow:
+frontend/About.html (HTML Document)
+   ↓
+#about-stats-root (Mount Target)
+   ↓
+AboutStats Component
+   ↓
+useState(counts = [0, 0, 0, 0])
+   ↓
+useEffect on mount sets setInterval running every 25ms
+   ↓
+Calculates incremental step (Math.ceil(target / 40)) up to targets:
+10,000 Developers | 2,500 Blogs | 1,200 Projects | 50 Countries
+   ↓
+Maps counts to formatted labels (e.g. 10K+, 2.5K+, 1200+, 50+)
+   ↓
+Cleanup function clearInterval(timer) executes on unmount
+
+Page Syllabus Mapping:
+| React Syllabus Topic  | Implemented? | Component / File           | How It Is Used                                                          |
+|-----------------------|--------------|----------------------------|-------------------------------------------------------------------------|
+| Foundation of React   | Yes          | src/islands/AboutStats.jsx | createRoot mounts AboutStats into #about-stats-root                     |
+| JSX                   | Yes          | AboutStats.jsx, About.jsx  | Formatted metric number display with <strong> and <small> copy          |
+| Components            | Yes          | AboutStats.jsx, Shell.jsx  | Self-contained animated counter card collection                         |
+| List Rendering        | Yes          | AboutStats.jsx, About.jsx  | Maps labels array and counts to <article> elements                      |
+| Rules of Hooks        | Yes          | AboutStats.jsx, About.jsx  | Hooks called unconditionally at top level of functional component       |
+| useState              | Yes          | AboutStats.jsx, About.jsx  | Array of 4 numbers tracking current counter animation progress          |
+| useEffect             | Yes          | AboutStats.jsx, About.jsx  | Manages setInterval timer on mount and executes clearInterval on unmount|
+
+Page Data Flow:
+| Data / State  | Source                     | Used By             | Purpose                                           | Persistence     |
+|---------------|----------------------------|---------------------|---------------------------------------------------|-----------------|
+| targets       | Static array ([10K, 2.5K, 1.2K, 50])| AboutStats, About| Numerical end-points for animation counters  | Static constant |
+| counts        | useState                   | AboutStats, About   | Current intermediate counter values during tick   | In-memory state |
+| labels        | Static metadata array      | AboutStats, About   | Descriptive titles and subtitles for metrics      | Static constant |
+
+Page Events:
+No direct user DOM events. Animation is driven by internal setInterval timer in useEffect.
+
+Page Hook Usage:
+| Hook         | Component   | Purpose                              | Dependency / Trigger   | Result                                  |
+|--------------|-------------|--------------------------------------|------------------------|-----------------------------------------|
+| useState     | AboutStats  | Holds 4 animated numeric counters    | Mount / Timer tick     | counts state array                      |
+| useEffect    | AboutStats  | Runs interval timer; cleans up on unmount| [] (Mount only)    | Increments counts; clearInterval returns|
+
+Existing DevSphere Integration:
+| Existing Feature       | React Integration                 | Result                                                                 |
+|------------------------|-----------------------------------|------------------------------------------------------------------------|
+| frontend/About.html    | #about-stats-root container       | Progressively enhances metric numbers area                             |
+| frontend/About.css     | Reuses .stats-grid, article       | Exact spacing, font sizing, and visual card styling                   |
+| frontend/About.js      | Guard check on #about-stats-root  | Legacy imperative setInterval script yields to React island            |
+
+
+================================================================================
+4. COMPONENT REUSE ANALYSIS
+================================================================================
+
+| Component        | File Path                             | Used On Pages / Islands                       | Reuse Purpose                                                     |
+|------------------|---------------------------------------|-----------------------------------------------|-------------------------------------------------------------------|
+| Shell            | src/components/layout/Shell.jsx       | All SPA Pages (Home, Blogs, Write, Devs, etc.)| Centralizes page shell, header navbar, and footer layout          |
+| Navbar           | src/components/layout/Navbar.jsx      | Rendered inside Shell on all SPA pages        | Consistent navigation, active link highlighting, auth session UI |
+| Footer           | src/components/layout/Footer.jsx      | Rendered inside Shell on all SPA pages        | Standardized copyright footer                                     |
+| PageIntro        | src/components/layout/PageIntro.jsx   | Blogs, WriteBlog, Developers, Projects        | Consistent header banner with eyebrow, title, and subtitle        |
+| SearchBar        | src/components/ui/SearchBar.jsx       | Blogs (SPA), Developers (SPA)                 | Reusable search input with keyboard Escape handler and useRef blur|
+| AuthCard         | src/components/ui/AuthCard.jsx        | Login (SPA), Signup (SPA)                     | Reusable centered container card for authentication forms         |
+| Button           | src/components/ui/Button.jsx          | Home (SPA)                                    | Reusable button supporting multiple visual variants               |
+| FormInput        | src/components/ui/FormInput.jsx       | Login (SPA)                                   | Form input with label, forwardRef, and error display              |
+| BlogCard         | src/components/cards/BlogCard.jsx     | Blogs (SPA)                                   | Reusable presentation card for blog items                         |
+| DeveloperCard    | src/components/cards/DeveloperCard.jsx| Developers (SPA)                              | Reusable presentation card for developer profiles                 |
+| ProjectCard      | src/components/cards/ProjectCard.jsx  | Projects (SPA)                                | Reusable showcase card with like toggle and stats                 |
+| StatsCard        | src/components/cards/StatsCard.jsx    | DeveloperProfile (SPA)                        | Reusable summary statistics card for developer activity           |
+| ActivityChart    | src/components/charts/ActivityChart.jsx| DeveloperProfile (SPA)                       | Reusable Chart.js canvas chart with lifecycle destruction         |
+| DevSphereProvider| src/context/DevSphereContext.jsx      | Root SPA (main.jsx), LoginForm Island         | Injects authentication context across component boundaries        |
+| useLocalStorage  | src/hooks/useLocalStorage.js          | BlogIsland, WriteBlogIsland, DevelopersIsland, LoginForm, Signup, WriteBlog, Profile, DevSphereContext | Unified dual-compatible persistence for JSON and raw strings |
+| useSearch        | src/hooks/useSearch.js                | Developers (SPA)                              | Encapsulates search query state and memoized result computation   |
+| useAuth          | src/hooks/useAuth.js                  | Home, Login, WriteBlog, Navbar, LoginForm     | Encapsulates user session state, login, and logout routines       |
+
+
+================================================================================
+5. COMPLETE PAGE × COMPONENT MATRIX
+================================================================================
+
+Matrix showing which components are active on each page (including Island and SPA views):
+
+| Component        | Home | Login | Signup | Blogs | WriteBlog | Developers | Profile | Projects | About |
+|------------------|:----:|:-----:|:------:|:-----:|:---------:|:----------:|:-------:|:--------:|:-----:|
+| HomeIsland       |  ✓   |       |        |       |           |            |         |          |       |
+| LoginForm        |      |   ✓   |        |       |           |            |         |          |       |
+| SignupForm       |      |       |   ✓    |       |           |            |         |          |       |
+| BlogIsland       |      |       |        |   ✓   |           |            |         |          |       |
+| WriteBlogIsland  |      |       |        |       |     ✓     |            |         |          |       |
+| DevelopersIsland |      |       |        |       |           |     ✓      |         |          |       |
+| ProfileChart     |      |       |        |       |           |            |    ✓    |          |       |
+| ProjectsIsland   |      |       |        |       |           |            |         |    ✓     |       |
+| AboutStats       |      |       |        |       |           |            |         |          |   ✓   |
+| Shell            |  ✓   |       |        |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Navbar           |  ✓   |       |        |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Footer           |  ✓   |       |        |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| PageIntro        |      |       |        |   ✓   |     ✓     |     ✓      |         |    ✓     |       |
+| AuthCard         |      |   ✓   |   ✓    |       |           |            |         |          |       |
+| Button           |  ✓   |       |        |       |           |            |         |          |       |
+| FormInput        |      |   ✓   |        |       |           |            |         |          |       |
+| SearchBar        |      |       |        |   ✓   |           |     ✓      |         |          |       |
+| BlogCard         |      |       |        |   ✓   |           |            |         |          |       |
+| DeveloperCard    |      |       |        |       |           |     ✓      |         |          |       |
+| ProjectCard      |      |       |        |       |           |            |         |    ✓     |       |
+| StatsCard        |      |       |        |       |           |            |    ✓    |          |       |
+| ActivityChart    |      |       |        |       |           |            |    ✓    |          |       |
+| DevSphereProvider|      |   ✓   |        |       |           |            |         |          |       |
+
+
+================================================================================
+6. PAGE × REACT SYLLABUS TOPIC MATRIX
+================================================================================
+
+| Topic / Concept       | Home | Login | Signup | Blogs | WriteBlog | Developers | Profile | Projects | About |
+|-----------------------|:----:|:-----:|:------:|:-----:|:---------:|:----------:|:-------:|:--------:|:-----:|
+| Foundation of React   |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| JSX                   |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Components            |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Props                 |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Events                |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |       |
+| Forms (Controlled)    |      |   ✓   |   ✓    |       |     ✓     |            |         |          |       |
+| Refs (useRef)         |      |   ✓   |        |       |     ✓     |            |    ✓    |          |       |
+| Styling React         |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Routing (MPA / Router)|  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| Rules of Hooks        |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| useState              |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |    ✓     |   ✓   |
+| useEffect             |  ✓   |       |        |       |           |            |    ✓    |          |   ✓   |
+| useContext            |  ✓   |   ✓   |        |       |     ✓     |            |         |          |       |
+| useMemo               |      |       |        |   ✓   |           |     ✓      |         |    ✓     |       |
+| useRef                |      |   ✓   |        |       |     ✓     |            |    ✓    |          |       |
+| Custom Hooks          |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |          |       |
+| useDebugValue         |  ✓   |   ✓   |   ✓    |   ✓   |     ✓     |     ✓      |    ✓    |          |       |
+| External Library      |      |       |        |       |           |            |    ✓    |          |       |
+
+
+================================================================================
+7. COMPLETE CUSTOM HOOK INVENTORY
+================================================================================
+
+The codebase contains 3 production-grade custom hooks:
+
+1. Hook Name: useLocalStorage
+   - File Path: src/hooks/useLocalStorage.js
+   - Purpose: Dual-compatible localStorage persistence. Reads JSON-serialized 
+     structures (arrays, objects) but gracefully falls back to raw strings (preventing 
+     SyntaxError crashes on legacy 'loggedInUser' written by Vanilla JS).
+   - Built-in Hooks Used: useState, useEffect, useDebugValue
+   - useDebugValue: `useDebugValue(`${key}: ${...}`)` displays key type, array count, 
+     or ready state in React DevTools.
+   - Consumed By: BlogIsland, WriteBlogIsland, DevelopersIsland, Signup, WriteBlog, 
+     DeveloperProfile, DevSphereContext.
+
+2. Hook Name: useSearch
+   - File Path: src/hooks/useSearch.js
+   - Purpose: Encapsulates search query state, text extraction, and memoized result 
+     filtering across item collections.
+   - Built-in Hooks Used: useState, useMemo, useDebugValue
+   - useDebugValue: `useDebugValue(`Query: "${query}" | Results: ${results.length}`)` 
+     exposes search diagnostics to DevTools.
+   - Consumed By: Developers (SPA).
+
+3. Hook Name: useAuth
+   - File Path: src/hooks/useAuth.js
+   - Purpose: Encapsulates authentication session operations (login, logout, active 
+     user identification) by interfacing directly with DevSphereContext.
+   - Built-in Hooks Used: useDebugValue (accesses useContext inside useDevSphere)
+   - useDebugValue: `useDebugValue(isAuthenticated ? `User: ${currentUser}` : "Guest")` 
+     safely exposes session state without leaking sensitive passwords.
+   - Consumed By: Home, Login, WriteBlog, Navbar, LoginForm Island.
+
+
+================================================================================
+8. ROUTING ANALYSIS
+================================================================================
+
+DevSphere implements routing via two coordinated approaches:
+
+1. Multi-Page Application (MPA) Routing (Primary / Progressive Enhancement):
+   - Entry points: 9 discrete HTML files served from `frontend/*.html`.
+   - Configuration: `vite.config.js` with Rollup input map:
+     - `main`: `frontend/index.html`
+     - `login`: `frontend/login.html`
+     - `signup`: `frontend/signup.html`
+     - `blogs`: `frontend/BlogPage.html`
+     - `writeBlog`: `frontend/writeBlog.html`
+     - `developers`: `frontend/Developers.html`
+     - `developerProfile`: `frontend/DeveloperProfile.html`
+     - `projects`: `frontend/Projects.html`
+     - `about`: `frontend/About.html`
+   - Navigation: Native HTML hyperlinks (`<a href="./writeBlog.html">`) and 
+     browser location redirects (`window.location.href = "./index.html"`).
+   - Server Middleware: `vite.config.js` redirects `/` and `/index.html` to 
+     `/frontend/index.html` during local development.
+
+2. React Client-Side SPA Routing (Secondary):
+   - Configured in: `src/App.jsx`
+   - Library: `react-router-dom` (v6.28.0)
+   - Router Components: `<BrowserRouter>`, `<Routes>`, `<Route>`
+   - Declared Routes:
+     - `/` → `<Home />`
+     - `/login` → `<Login />`
+     - `/signup` → `<Signup />`
+     - `/blogs` → `<Blogs />`
+     - `/write-blog` → `<WriteBlog />`
+     - `/developers` → `<Developers />`
+     - `/developer-profile` → `<DeveloperProfile />`
+     - `/projects` → `<Projects />`
+     - `/about` → `<About />`
+   - Navigation Methods: `<NavLink to="...">` for declarative links; 
+     `const navigate = useNavigate()` for programmatic redirects.
+
+
+================================================================================
+9. EXTERNAL LIBRARY INTEGRATION
+================================================================================
+
+| Library Name | Version | Where Used                       | React Integration Mechanism                                   | Purpose                                                        |
+|--------------|---------|----------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
+| Chart.js     | ^4.4.8  | ProfileChart.jsx, ActivityChart.jsx | `useRef` for <canvas> binding, `useEffect` for creation & teardown | Renders community activity bar chart on canvas with safe unmount|
+| react-router-dom | ^6.28.0 | src/App.jsx, Navbar, Home, Login, Signup, Blogs, WriteBlog, Developers, DeveloperProfile, About | `<BrowserRouter>`, `<Routes>`, `<Route>`, `<NavLink>`, `useNavigate` | Client-side routing, route param matching, active link styling |
+
+
+================================================================================
+10. REACT ARCHITECTURE SUMMARY
+================================================================================
+
+- Progressive Enhancement Islands: 9 dedicated islands in `src/islands/` auto-mount 
+  to specific DOM elements when their respective host HTML page loads. They 
+  manage high-value interaction zones without displacing semantic HTML document 
+  landmarks.
+- Coexistence with Vanilla JS: Legacy scripts in `frontend/*.js` check for the 
+  presence of island root containers and exit early. Vanilla JS code handles 
+  non-React document areas; React controls its own DOM subtrees.
+- Direct CSS Class Reuse: React components apply classes from `frontend/*.css` 
+  (`.blogCard`, `.card`, `.grid`, `.pic`, `.btn`, etc.) directly, eliminating the 
+  need for duplicate stylesheets or heavy CSS-in-JS frameworks.
+- LocalStorage Compatibility: The custom `useLocalStorage` hook transparently 
+  handles both raw string storage (legacy `loggedInUser`) and structured JSON data 
+  (`users`, `publishedBlogs`, `selectedDeveloper`), preventing runtime parse errors.
+- Chart Lifecycle Integrity: Chart.js instances are tracked via `useRef` and 
+  explicitly destroyed via `.destroy()` in `useEffect` cleanup callbacks, preventing 
+  canvas reuse errors and memory leaks.
+
+
+================================================================================
+11. IMPLEMENTATION GAPS & HONEST EVALUATION
+================================================================================
+
+| Expected React Topic    | Found? | Source Code Evidence                         | Gap / Note                                                    |
+|-------------------------|--------|----------------------------------------------|---------------------------------------------------------------|
+| Foundation / createRoot | Yes    | All files in src/islands/ & src/main.jsx     | Fully implemented; mounts progressively or into root          |
+| JSX                     | Yes    | All components in src/                       | Fully implemented; declarative UI rendering                   |
+| Components & Props      | Yes    | src/components/, src/pages/, src/islands/    | Fully implemented with clean prop contracts                   |
+| Events & SyntheticEvent | Yes    | onClick, onChange, onSubmit across islands   | Fully implemented with event normalization                    |
+| Controlled Forms        | Yes    | LoginForm.jsx, SignupForm.jsx, WriteBlogIsland| Fully implemented with state binding & validation             |
+| Refs (useRef)           | Yes    | ProfileChart, LoginForm, WriteBlog, SearchBar| Used for canvas binding, focus management, error handling     |
+| forwardRef              | Yes    | src/components/ui/FormInput.jsx              | Implemented on reusable form input component                  |
+| Styling React           | Yes    | Reuses existing CSS classes in JSX className | Fully implemented without CSS conflicts                       |
+| Rules of Hooks          | Yes    | All custom hooks and components              | Strictly obeyed; all hooks called unconditionally at top level|
+| useState                | Yes    | All 9 islands and 9 pages                    | Ubiquitously used for local reactive state                    |
+| useEffect               | Yes    | ProfileChart, AboutStats, HomeIsland         | Used for Chart.js lifecycle, timers, storage listeners        |
+| useContext              | Yes    | DevSphereContext.jsx, useAuth.js, LoginForm  | Used for shared user authentication session                   |
+| useMemo                 | Yes    | BlogIsland, ProjectsIsland, DevelopersIsland | Used for multi-criteria search, filtering, and sorting        |
+| Custom Hooks            | Yes    | useLocalStorage, useSearch, useAuth          | 3 distinct hooks encapsulating complex stateful logic         |
+| useDebugValue           | Yes    | Present in all 3 custom hooks                | Formats live diagnostic tags in React DevTools                |
+| useReducer              | No     | Not found in source code                     | Not implemented; useState adequately handles existing state   |
+| useCallback             | No     | Not found in source code                     | Not implemented; inline handlers and useMemo used instead     |
+| useLayoutEffect         | No     | Not found in source code                     | Not implemented; standard useEffect suffices                  |
+| React.memo              | No     | Not found in source code                     | Components rely on virtual DOM reconciliation and useMemo     |
+| React Router in Islands | No     | Islands use window.location and MPA hrefs    | By design: Islands operate in Vite Multi-Page Architecture    |
+
+
+================================================================================
+12. REPORT-READY SUMMARY
+================================================================================
+
+A. Pages Analyzed:
+   9 distinct pages (Home, Login, Signup, Blogs, Write Blog, Developers, 
+   Developer Profile, Projects, About) across both Progressive Enhancement 
+   Island architecture and React SPA architecture.
+
+B. Total React Components:
+   23 discrete React components (9 React Islands, 9 Full Page Components, 
+   1 Application Root, 1 Context Provider, 13 Reusable UI/Card/Layout Components).
+
+C. Total Custom Hooks:
+   3 production custom hooks: `useLocalStorage`, `useSearch`, `useAuth`.
+
+D. Built-in Hooks Used:
+   `useState`, `useEffect`, `useContext`, `useMemo`, `useRef`, `useDebugValue`.
+
+E. Routing Approach:
+   Vite Multi-Page Application (MPA) architecture for progressive enhancement 
+   with native HTML entry points, complemented by a client-side React Router 
+   v6 (`BrowserRouter`) implementation for SPA exploration.
+
+F. State Management Approach:
+   Component-level reactive state via `useState` and `useMemo`, combined with 
+   React Context (`DevSphereContext`) for authentication session state and 
+   synchronized `localStorage` for cross-page persistence.
+
+G. Form Handling Approach:
+   Controlled components with two-way state binding (`value` and `onChange`), 
+   real-time input constraints (e.g. 5000 character limit), regex email validation, 
+   real-time password strength indicators, and programmatic error focus.
+
+H. Ref Usage:
+   `useRef` is employed for canvas element targeting (`ProfileChart`, `ActivityChart`), 
+   input focus management on validation errors (`LoginForm`), textarea focus on 
+   preview toggle (`WriteBlogIsland`), and keyboard escape blur (`SearchBar`). 
+   `forwardRef` is implemented in `FormInput`.
+
+I. Context Usage:
+   `DevSphereContext` provides global authentication status (`currentUser`, 
+   `isAuthenticated`, `login`, `logout`) without prop drilling.
+
+J. Memoization Usage:
+   `useMemo` optimizes search query evaluation, multi-criteria category filtering, 
+   and array sorting across `BlogIsland`, `ProjectsIsland`, `DevelopersIsland`, 
+   and `useSearch`.
+
+K. External Libraries:
+   `chart.js` (^4.4.8) for interactive canvas activity charts; `react-router-dom` 
+   (^6.28.0) for client-side routing.
+
+L. Progressive Enhancement / MPA Integration:
+   React islands mount directly into designated container IDs in `frontend/*.html` 
+   while preserving the underlying HTML5 document structure, CSS3 styling rules, 
+   and legacy Vanilla JavaScript files through coexistence guards.
+
+M. Important Implementation Limitations:
+   Authentication is prototype-level (credentials stored in localStorage without 
+   backend password hashing); blog publishing and project likes are stored in the 
+   browser without cross-device database synchronization.
+================================================================================
+END OF REPORT
+================================================================================

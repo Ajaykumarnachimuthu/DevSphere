@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Phase 2 / Phase 3 Coexistence: If React island is active, React manages this region
+    if (document.getElementById('developers-island-root')) return;
     const developers = [
         { name: 'Ajay Kumar', role: 'Full Stack Developer', description: 'Passionate about building web applications and APIs.', skills: ['HTML', 'CSS', 'JavaScript', 'Node.js'], location: 'India' },
         { name: 'Arun Kumar', role: 'React Developer', description: 'Building interactive and responsive user interfaces.', skills: ['React', 'JavaScript', 'CSS', 'Tailwind'], location: 'India' },
