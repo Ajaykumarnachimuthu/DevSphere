@@ -1,0 +1,19 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/index.html", "destination": "/index.html" },
+    { "source": "/blogs", "destination": "/BlogPage.html" },
+    { "source": "/write-blog", "destination": "/writeBlog.html" },
+    { "source": "/developers", "destination": "/Developers.html" },
+    { "source": "/developer-profile", "destination": "/DeveloperProfile.html" },
+    { "source": "/projects", "destination": "/Projects.html" },
+    { "source": "/about", "destination": "/About.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/frontend/index.html", "destination": "/index.html" },
+    { "source": "/frontend/:match*", "destination": "/:match*" }
+  ]
+}
