@@ -1,0 +1,55 @@
+services:
+  # Spring Boot REST API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: devsphere-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SPRING_PROFILES_ACTIVE=dev
+      - DEVSphere_DB_URL=jdbc:postgresql://db:5432/devsphere
+      - DEVSphere_DB_USERNAME=postgres
+      - DEVSphere_DB_PASSWORD=postgres
+      - DEVSphere_JWT_SECRET=4c9b1d75f284e60183b9e4a7d6c518293f0b4d7e1c8a5f3962b0e8c71d4a6f95
+      - DEVSphere_CORS_ORIGINS=http://localhost,http://localhost:5173,http://localhost:80
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Local PostgreSQL Database (Or connect to Supabase)
+  db:
+    image: postgres:16-alpine
+    container_name: devsphere-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: devsphere
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # React SPA Frontend via Nginx
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devsphere-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
