@@ -2,14 +2,16 @@ services:
   - type: web
     name: devsphere-backend
     runtime: docker
-    dockerfilePath: backend/Dockerfile
-    dockerContext: backend
+    repo: https://github.com/Ajaykumarnachimuthu/DevSphere
     plan: free
     region: singapore
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    autoDeployTrigger: commit
     healthCheckPath: /api/v1/projects
     envVars:
       - key: PORT
-        value: 8080
+        value: "8080"
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: DEVSphere_DB_URL
