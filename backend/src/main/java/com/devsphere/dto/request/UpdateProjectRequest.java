@@ -1,0 +1,133 @@
+package com.devsphere.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+
+public class UpdateProjectRequest {
+
+    @NotBlank(message = "Title is required")
+    private String title;
+
+    private String tagline;
+
+    @NotBlank(message = "Category is required")
+    private String category;
+
+    @NotBlank(message = "Description is required")
+    private String description;
+
+    private List<String> technologies;
+
+    private String status;
+
+    private String liveDemoUrl;
+
+    private String githubUrl;
+
+    private String documentation;
+
+    private String problemStatement;
+
+    private String proposedSolution;
+
+    private String architectureSummary;
+
+    public UpdateProjectRequest() {
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<String> getTechnologies() {
+        return technologies;
+    }
+
+    public void setTechnologies(List<String> technologies) {
+        this.technologies = technologies;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getLiveDemoUrl() {
+        return liveDemoUrl;
+    }
+
+    public void setLiveDemoUrl(String liveDemoUrl) {
+        this.liveDemoUrl = liveDemoUrl;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    public void setDocumentation(String documentation) {
+        this.documentation = documentation;
+    }
+
+    public String getProblemStatement() {
+        return problemStatement;
+    }
+
+    public void setProblemStatement(String problemStatement) {
+        this.problemStatement = problemStatement;
+    }
+
+    public String getProposedSolution() {
+        return proposedSolution;
+    }
+
+    public void setProposedSolution(String proposedSolution) {
+        this.proposedSolution = proposedSolution;
+    }
+
+    public String getArchitectureSummary() {
+        return architectureSummary;
+    }
+
+    public void setArchitectureSummary(String architectureSummary) {
+        this.architectureSummary = architectureSummary;
+    }
+}

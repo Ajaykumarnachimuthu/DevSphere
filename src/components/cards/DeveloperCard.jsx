@@ -1,27 +1,36 @@
 export function DeveloperCard({ developer, onSelect }) {
-  const initials = developer.name
-    .split(" ")
+  const name = developer?.name || "Developer";
+  const initials = name
+    .trim()
+    .split(/\s+/)
     .map((part) => part[0])
-    .join("");
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "D";
+  const skills = Array.isArray(developer?.skills) ? developer.skills : [];
 
   return (
-    <article className="card developer-card">
-      <div className="avatar">{initials}</div>
+    <article className="developer-card">
+      <div className="avatar" title={name}>
+        {initials}
+      </div>
       <div className="developer-info">
-        <h2>{developer.name}</h2>
-        <b>{developer.role}</b>
-        <p>{developer.description}</p>
-        <div className="tags">
-          {developer.skills.map((skill) => (
-            <span key={skill}>{skill}</span>
-          ))}
-        </div>
+        <h2>{name}</h2>
+        <b>{developer?.role || "Software Engineer"}</b>
+        <p>{developer?.description || developer?.bio || ""}</p>
+        {skills.length > 0 && (
+          <div className="tags">
+            {skills.map((skill) => (
+              <span key={skill}>{skill}</span>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className="secondary"
           onClick={() => onSelect(developer)}
         >
-          View profile
+          View Profile &rarr;
         </button>
       </div>
     </article>

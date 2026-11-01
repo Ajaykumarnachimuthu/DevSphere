@@ -1,104 +1,268 @@
-import { useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { Shell } from "../components/layout/Shell";
-import { PageIntro } from "../components/layout/PageIntro";
-import { SearchBar } from "../components/ui/SearchBar";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Navbar } from "../components/layout/Navbar";
+import { Footer } from "../components/layout/Footer";
 import { BlogCard } from "../components/cards/BlogCard";
-import { blogs as initialBlogs } from "../data/blogs";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { BlogCardSkeleton } from "../components/ui/Skeleton";
+import { EmptyState } from "../components/ui/EmptyState";
+import { blogsApi } from "../services/api";
 
-const categories = [
+const CATEGORIES = [
   "All",
   "Web Development",
   "AI / ML",
   "DevOps",
   "Technology",
   "Programming",
+  "Tools",
 ];
 
 export function Blogs() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
-  const [storedBlogs] = useLocalStorage("publishedBlogs", []);
+  const [sort, setSort] = useState("Latest");
+  const [backendBlogs, setBackendBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
-  // Format custom published blogs to match blog card expectations
-  const publishedList = useMemo(() => {
-    const list = Array.isArray(storedBlogs) ? storedBlogs : [];
-    return list.map((blog) => ({
-      title: blog.title,
-      category: blog.category || "General",
-      description: blog.content,
-      author: blog.author || "Community Member",
-      readTime: "Recent",
-      tech: blog.category || "Article",
-    }));
-  }, [storedBlogs]);
+  useEffect(() => {
+    let isMounted = true;
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const catParam = category === "All" ? "" : category.replace(/\s+/g, " ").trim();
+        const res = await blogsApi.getAll({
+          category: catParam,
+          search: query,
+        });
+        const list = res?.content || (Array.isArray(res) ? res : null);
+        if (list && list.length > 0 && isMounted) {
+          const mapped = list.map((b) => ({
+            id: b.id,
+            title: b.title,
+            category: b.category,
+            description: b.content,
+            author: b.authorName || b.author || "DevSphere Author",
+            readTime: b.readTime || "5 min read",
+            tech: b.tech || b.category,
+            status: b.status,
+            coverImage: b.coverImage,
+            likes: b.likes ?? 0,
+            views: b.views ?? 0,
+            tags: Array.isArray(b.tags) ? b.tags : Array.from(b.tags || []),
+          }));
+          setBackendBlogs(mapped);
+        } else if (isMounted) {
+          setBackendBlogs([]);
+        }
+      } catch {
+        if (isMounted) {
+          setBackendBlogs([]);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
 
-  const allBlogs = useMemo(
-    () => [...publishedList, ...initialBlogs],
-    [publishedList]
-  );
+    const timer = setTimeout(fetchBlogs, 200);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [category, query]);
 
-  // Filter blogs based on selected category and search input
   const filteredBlogs = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return allBlogs.filter((blog) => {
-      const matchesCategory =
+    const q = query.trim().toLowerCase();
+    const result = backendBlogs.filter((blog) => {
+      const matchesCat =
         category === "All" ||
         blog.category.toLowerCase() === category.toLowerCase();
       const matchesQuery =
-        !normalized ||
-        `${blog.title} ${blog.description} ${blog.category} ${blog.author} ${blog.tech}`
-          .toLowerCase()
-          .includes(normalized);
-      return matchesCategory && matchesQuery;
+        !q ||
+        blog.title.toLowerCase().includes(q) ||
+        (blog.description && blog.description.toLowerCase().includes(q)) ||
+        (blog.author && blog.author.toLowerCase().includes(q)) ||
+        (blog.tech && blog.tech.toLowerCase().includes(q)) ||
+        (blog.tags && blog.tags.some((t) => t.toLowerCase().includes(q)));
+      return matchesCat && matchesQuery;
     });
-  }, [allBlogs, category, query]);
+
+    if (sort === "Most Liked") {
+      return [...result].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    }
+    if (sort === "Quick Reads") {
+      return [...result].sort((a, b) => parseInt(a.readTime || "5") - parseInt(b.readTime || "5"));
+    }
+    return result;
+  }, [backendBlogs, category, query, sort]);
+
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(filteredBlogs.length / itemsPerPage));
+  const displayedBlogs = filteredBlogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
-    <Shell>
-      <PageIntro
-        title="Explore developer blogs"
-        text="Learn from developers, share knowledge and grow together."
-      />
+    <div className="sample-list-page-wrapper">
+      <Navbar />
 
-      <div className="toolbar">
-        <SearchBar
-          value={query}
-          onChange={setQuery}
-          placeholder="Search blogs by title, topic, or author..."
-          label="Search blogs"
-        />
-        <NavLink className="primary-link" to="/write-blog">
-          Write a blog
-        </NavLink>
-      </div>
+      <main className="sample-list-container">
+        {/* Top Header Row matching ba331b87.jpg */}
+        <div className="sample-list-top-header">
+          <div className="sample-list-title-group">
+            <h1 className="sample-list-main-title">Blogs</h1>
+            <p className="sample-list-subtitle">
+              Explore insightful articles, tutorials, and deep dives written by developers.
+            </p>
+          </div>
 
-      <div className="filters">
-        {categories.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={category === item ? "selected" : ""}
-            onClick={() => setCategory(item)}
-          >
-            {item}
-          </button>
-        ))}
-      </div>
+          <div className="sample-list-toolbar-controls">
+            <div className="sample-search-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search blogs..."
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
 
-      <section className="card-grid">
-        {filteredBlogs.length > 0 ? (
-          filteredBlogs.map((blog, index) => (
-            <BlogCard
-              key={`${blog.title}-${blog.author}-${index}`}
-              blog={blog}
-            />
-          ))
-        ) : (
-          <p className="empty">No blogs found matching your criteria.</p>
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="sample-select-dropdown"
+              aria-label="Filter by category"
+            >
+              <option value="All">All Categories</option>
+              {CATEGORIES.filter((c) => c !== "All").map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="sample-select-dropdown"
+              aria-label="Sort blogs"
+            >
+              <option value="Latest">Latest</option>
+              <option value="Most Liked">Most Liked</option>
+              <option value="Quick Reads">Quick Reads</option>
+            </select>
+
+            <Link to="/write-blog" className="sample-primary-action-btn">
+              + Write a Blog
+            </Link>
+          </div>
+        </div>
+
+        {/* Category Filter Pills Row matching ba331b87.jpg */}
+        <div className="sample-category-pills-row">
+          {CATEGORIES.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className={`sample-pill-btn ${category === item ? "active" : ""}`}
+              onClick={() => {
+                setCategory(item);
+                setCurrentPage(1);
+              }}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        {/* 3-Column Card Grid matching ba331b87.jpg */}
+        <section className="sample-card-grid">
+          {loading ? (
+            <>
+              <BlogCardSkeleton />
+              <BlogCardSkeleton />
+              <BlogCardSkeleton />
+              <BlogCardSkeleton />
+              <BlogCardSkeleton />
+              <BlogCardSkeleton />
+            </>
+          ) : displayedBlogs.length > 0 ? (
+            displayedBlogs.map((blog, index) => (
+              <BlogCard
+                key={blog.id || `${blog.title}-${index}`}
+                blog={blog}
+              />
+            ))
+          ) : (
+            <div style={{ gridColumn: "1 / -1" }}>
+              <EmptyState
+                title={query || category !== "All" ? "No blogs found" : "No articles have been published yet."}
+                description={
+                  query
+                    ? `No articles matched "${query}" in category "${category}".`
+                    : category !== "All"
+                    ? `No articles found in category "${category}".`
+                    : "There are currently no articles in this section. Be the first to write and share your thoughts!"
+                }
+                actionLabel={query || category !== "All" ? "Reset filters" : undefined}
+                onAction={
+                  query || category !== "All"
+                    ? () => {
+                        setQuery("");
+                        setCategory("All");
+                        setCurrentPage(1);
+                      }
+                    : undefined
+                }
+              />
+            </div>
+          )}
+        </section>
+
+        {/* Pagination Bar matching ba331b87.jpg */}
+        {totalPages > 1 && (
+          <div className="sample-pagination-row">
+            <button
+              type="button"
+              className="sample-page-arrow-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`sample-page-num-btn ${currentPage === i + 1 ? "active" : ""}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              className="sample-page-arrow-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              ›
+            </button>
+          </div>
         )}
-      </section>
-    </Shell>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

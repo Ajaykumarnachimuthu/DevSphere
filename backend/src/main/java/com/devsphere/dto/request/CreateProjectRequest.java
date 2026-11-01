@@ -1,0 +1,122 @@
+package com.devsphere.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import java.util.List;
+
+public class CreateProjectRequest {
+
+    @NotBlank(message = "Title is required")
+    @Size(max = 255, message = "Title cannot exceed 255 characters")
+    private String title;
+
+    private String tagline;
+
+    @NotBlank(message = "Category is required")
+    @Size(max = 50, message = "Category cannot exceed 50 characters")
+    private String category;
+
+    @NotBlank(message = "Description is required")
+    private String description;
+
+    private List<String> technologies;
+
+    private String status;
+
+    private String liveDemoUrl;
+
+    private String githubUrl;
+
+    private String coverImage;
+
+    private String problemStatement;
+
+    public CreateProjectRequest() {}
+
+    public CreateProjectRequest(String title, String category, String description, List<String> technologies) {
+        this.title = title;
+        this.category = category;
+        this.description = description;
+        this.technologies = technologies;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<String> getTechnologies() {
+        return technologies;
+    }
+
+    public void setTechnologies(List<String> technologies) {
+        this.technologies = technologies;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getLiveDemoUrl() {
+        return liveDemoUrl;
+    }
+
+    public void setLiveDemoUrl(String liveDemoUrl) {
+        this.liveDemoUrl = liveDemoUrl;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getProblemStatement() {
+        return problemStatement;
+    }
+
+    public void setProblemStatement(String problemStatement) {
+        this.problemStatement = problemStatement;
+    }
+}

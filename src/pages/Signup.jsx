@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { AuthCard } from "../components/ui/AuthCard";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { Button } from "../components/ui/Button";
+import { authApi } from "../services/api";
 
 export function Signup() {
-  const [users, setUsers] = useLocalStorage("users", []);
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -14,8 +14,9 @@ export function Signup() {
   const [show, setShow] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const name = form.username.trim();
     const address = form.email.trim().toLowerCase();
@@ -27,7 +28,7 @@ export function Signup() {
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
-      setMessage("Enter a valid email address.");
+      setMessage("Please enter a valid email address.");
       setIsSuccess(false);
       return;
     }
@@ -44,23 +45,18 @@ export function Signup() {
       return;
     }
 
-    // Duplicate email verification against stored users array
-    const userList = Array.isArray(users) ? users : [];
-    if (userList.some((user) => user.email === address)) {
-      setMessage("This email is already registered.");
+    setIsLoading(true);
+    try {
+      await authApi.register(name, address, form.password);
+      setMessage("Account created successfully! You can now log in.");
+      setIsSuccess(true);
+      setForm({ username: "", email: "", password: "", confirm: "" });
+    } catch (err) {
+      setMessage(err.message || "Failed to create account. Please check your details.");
       setIsSuccess(false);
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    const updatedUsers = [
-      ...userList,
-      { username: name, email: address, password: form.password },
-    ];
-    setUsers(updatedUsers);
-
-    setMessage("Account created successfully. You can now log in.");
-    setIsSuccess(true);
-    setForm({ username: "", email: "", password: "", confirm: "" });
   };
 
   const passwordLength = form.password.length;
@@ -74,10 +70,18 @@ export function Signup() {
       : "Strong";
 
   return (
-    <AuthCard title="Create your account" subtitle="Join DevSphere">
-      <form onSubmit={handleSubmit}>
+    <AuthCard
+      title="Create your account"
+      subtitle="Join the DevSphere builder community."
+      eyebrow="JOIN THE COMMUNITY"
+      isSignup={true}
+    >
+      <form onSubmit={handleSubmit} noValidate>
         {message && (
-          <p className={isSuccess ? "message success" : "message"}>{message}</p>
+          <div className={isSuccess ? "alert-banner success" : "alert-banner error"} role="alert">
+            <span className="alert-icon">{isSuccess ? "✓" : "!"}</span>
+            <span>{message}</span>
+          </div>
         )}
 
         <label>
@@ -87,6 +91,7 @@ export function Signup() {
             placeholder="johndoe"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
+            required
           />
         </label>
 
@@ -97,20 +102,23 @@ export function Signup() {
             placeholder="john@example.com"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
         </label>
 
         <label>
           Password
-          <div className="password">
+          <div className="password-input-wrapper">
             <input
               type={show ? "text" : "password"}
               placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
             />
             <button
               type="button"
+              className="toggle-password-btn"
               onClick={() => setShow(!show)}
               aria-label={show ? "Hide password" : "Show password"}
             >
@@ -118,11 +126,11 @@ export function Signup() {
             </button>
           </div>
           {strength && (
-            <small
-              className={`strength-indicator ${strength.toLowerCase()}`}
-            >
-              Strength: {strength}
-            </small>
+            <div className="strength-bar-container">
+              <span className={`strength-indicator ${strength.toLowerCase()}`}>
+                Strength: <strong>{strength}</strong>
+              </span>
+            </div>
           )}
         </label>
 
@@ -133,14 +141,23 @@ export function Signup() {
             placeholder="••••••••"
             value={form.confirm}
             onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+            required
           />
         </label>
 
-        <button type="submit">Register</button>
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          isLoading={isLoading}
+          style={{ marginTop: "8px" }}
+        >
+          Create Account →
+        </Button>
       </form>
 
-      <p>
-        Already have an account? <NavLink to="/login">Log in</NavLink>
+      <p className="auth-footer-text">
+        Already have an account? <NavLink to="/login">Sign in here</NavLink>
       </p>
     </AuthCard>
   );

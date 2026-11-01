@@ -6,6 +6,17 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+target/
+**/target/
+*.class
+*.jar
+*.war
+
+# Database files & local uploads
+*.mv.db
+*.trace.db
+**/data/*.db
+backend/uploads/
 
 # Vite cache
 .vite/
