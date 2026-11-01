@@ -32,3 +32,4 @@ ENV SPRING_PROFILES_ACTIVE=prod
 
 # Optimized JVM memory options for container environments
 ENTRYPOINT ["java", "-XX:+UseG1GC", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+
