@@ -3,7 +3,10 @@
  * Connects Frontend (React SPA) to Spring Boot REST Backend
  */
 
-const rawBase = (import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
+const defaultBaseUrl = import.meta.env?.PROD
+  ? 'https://devsphere-backend-vjqq.onrender.com'
+  : 'http://localhost:8080';
+const rawBase = (import.meta.env?.VITE_API_BASE_URL || defaultBaseUrl).replace(/\/+$/, '');
 const API_BASE_URL = rawBase.endsWith('/api/v1') ? rawBase.slice(0, -7) : rawBase;
 
 export function getAuthToken() {
