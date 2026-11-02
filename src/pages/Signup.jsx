@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { AuthCard } from "../components/ui/AuthCard";
 import { Button } from "../components/ui/Button";
+import { useDevSphere } from "../context/DevSphereContext";
 import { authApi } from "../services/api";
 
 export function Signup() {
+  const navigate = useNavigate();
+  const { registerWithApi } = useDevSphere();
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -47,10 +50,17 @@ export function Signup() {
 
     setIsLoading(true);
     try {
-      await authApi.register(name, address, form.password);
-      setMessage("Account created successfully! You can now log in.");
+      if (registerWithApi) {
+        await registerWithApi(name, address, form.password);
+      } else {
+        await authApi.register(name, address, form.password);
+      }
+      setMessage("Account created successfully! Welcome to DevSphere…");
       setIsSuccess(true);
       setForm({ username: "", email: "", password: "", confirm: "" });
+      setTimeout(() => {
+        navigate("/");
+      }, 600);
     } catch (err) {
       setMessage(err.message || "Failed to create account. Please check your details.");
       setIsSuccess(false);
