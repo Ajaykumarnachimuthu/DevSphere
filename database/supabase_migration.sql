@@ -230,3 +230,45 @@ INSERT INTO project_technologies (project_id, technology) VALUES
 ('c0000000-0000-0000-0000-000000000006', 'Prisma'),
 ('c0000000-0000-0000-0000-000000000006', 'PostgreSQL')
 ON CONFLICT (project_id, technology) DO NOTHING;
+
+
+-- =============================================================================
+-- PART 4: V6 UPDATE — UNIFIED AUTHORSHIP (AJAYKUMAR N) & VERIFIED PROJECT BLOGS
+-- =============================================================================
+
+ALTER TABLE blogs ALTER COLUMN tech TYPE VARCHAR(150);
+
+-- Update Core User Account & Developer Profile
+UPDATE users 
+SET username = 'ajaykumar', 
+    email = 'ajaykumarnachimuthu37@gmail.com',
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = 'fb6a1933-9f43-4e96-9be2-5ce2c1b747d7';
+
+UPDATE developer_profiles
+SET name = 'AJAYKUMAR N',
+    role = 'Full-Stack Architect & AI Systems Engineer',
+    description = 'Full-stack software architect specializing in distributed microservices, AI-powered systems, real-time telemetry pipelines, and reactive web applications.',
+    location = 'India',
+    avatar = 'a1',
+    updated_at = CURRENT_TIMESTAMP
+WHERE user_id = 'fb6a1933-9f43-4e96-9be2-5ce2c1b747d7';
+
+-- Update all projects to AJAYKUMAR N
+UPDATE projects
+SET author_name = 'AJAYKUMAR N',
+    author_id = 'fb6a1933-9f43-4e96-9be2-5ce2c1b747d7',
+    updated_at = CURRENT_TIMESTAMP;
+
+-- Update Project Cover Images
+UPDATE projects
+SET cover_image = '/images/projects/ingris-groundwater.jpg',
+    tagline = 'AI-Driven Groundwater & Hydrogeological Assistant engineered with CGWB report insights and multi-provider RAG pipeline.',
+    updated_at = CURRENT_TIMESTAMP
+WHERE title ILIKE '%INGRIS%';
+
+UPDATE projects
+SET cover_image = '/images/projects/fleetwatch-telemetry.png',
+    tagline = 'FleetWatch: Real-time vehicle telemetry monitoring with AI-powered fault detection and live interactive controls.',
+    updated_at = CURRENT_TIMESTAMP
+WHERE title ILIKE '%Vehicle Telemetry%';
