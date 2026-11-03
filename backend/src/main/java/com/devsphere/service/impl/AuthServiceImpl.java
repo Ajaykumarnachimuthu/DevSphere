@@ -59,12 +59,12 @@ public class AuthServiceImpl implements AuthService {
         String email = request.getEmail().trim().toLowerCase();
         String username = request.getUsername().trim();
 
-        if (userRepository.existsByEmail(email)) {
-            throw new DuplicateResourceException("Email is already registered: " + email);
-        }
-        if (userRepository.existsByUsername(username)) {
+        userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(email, username).ifPresent(existing -> {
+            if (existing.getEmail().equalsIgnoreCase(email)) {
+                throw new DuplicateResourceException("Email is already registered: " + email);
+            }
             throw new DuplicateResourceException("Username is already taken: " + username);
-        }
+        });
 
         User user = new User(
                 username,
