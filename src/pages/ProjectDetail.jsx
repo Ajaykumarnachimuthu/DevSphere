@@ -274,7 +274,25 @@ export function ProjectDetail() {
           {/* Cover Graphic / Live Preview Card */}
           <div className="hero-visual-card">
             {project.coverImage ? (
-              <img src={project.coverImage} alt={project.title} className="hero-img" />
+              <div style={{ position: "relative", cursor: "zoom-in" }} onClick={() => setSelectedScreenshot(project.coverImage)} title="Click to inspect full resolution screenshot">
+                <img src={project.coverImage} alt={project.title} className="hero-img" style={{ display: "block", width: "100%", height: "auto" }} />
+                <div style={{
+                  position: "absolute",
+                  bottom: "12px",
+                  right: "12px",
+                  background: "rgba(0, 0, 0, 0.7)",
+                  color: "#fff",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  🔍 Expand Screenshot
+                </div>
+              </div>
             ) : (
               <div className="hero-terminal-mockup">
                 <div className="terminal-header">
@@ -360,67 +378,70 @@ export function ProjectDetail() {
           </section>
         )}
 
-        {/* Interactive Application Tour / Feature Walkthrough */}
-        <section className="project-tour-section">
-          <div className="section-title-row">
-            <h2>Interactive Application Tour</h2>
-            <p>Step through key engineering features and architectural capabilities.</p>
-          </div>
-
-          <div className="tour-stepper-container">
-            <div className="tour-steps-nav">
-              {tourSteps.map((step, idx) => (
-                <button
-                  key={idx}
-                  className={`tour-step-tab ${activeTourIndex === idx ? "active" : ""}`}
-                  onClick={() => setActiveTourIndex(idx)}
-                >
-                  <span className="step-icon">{step.icon}</span>
-                  <div className="step-text">
-                    <strong>Step {idx + 1}: {step.title}</strong>
-                    <span>{step.desc}</span>
-                  </div>
-                </button>
-              ))}
+        {/* Quickstart Command Bar */}
+        {project.quickstartCmd && (
+          <section className="project-quickstart-card" style={{
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "var(--radius-lg)",
+            padding: "20px 24px",
+            marginBottom: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "var(--shadow-sm)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{
+                background: "rgba(99, 102, 241, 0.12)",
+                color: "var(--primary)",
+                fontWeight: 700,
+                fontSize: "12px",
+                padding: "4px 10px",
+                borderRadius: "6px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px"
+              }}>
+                ⚡ Quickstart
+              </span>
+              <code style={{
+                fontFamily: "var(--font-mono, monospace)",
+                fontSize: "14px",
+                color: "var(--text-primary)",
+                fontWeight: 600
+              }}>
+                $ {project.quickstartCmd}
+              </code>
             </div>
+            <button
+              type="button"
+              className="action-btn-pill"
+              onClick={() => {
+                navigator.clipboard.writeText(project.quickstartCmd);
+                alert("Quickstart command copied to clipboard!");
+              }}
+              style={{ padding: "6px 16px", fontSize: "12px" }}
+            >
+              📋 Copy Command
+            </button>
+          </section>
+        )}
 
-            <div className="tour-stage-preview">
-              <div className="stage-card">
-                <div className="stage-badge">Feature Inspection ~ Step {activeTourIndex + 1}</div>
-                <h3>{tourSteps[activeTourIndex].title}</h3>
-                <p>{tourSteps[activeTourIndex].desc}</p>
-                <div className="stage-wireframe">
-                  <div className="wireframe-row header-row" />
-                  <div className="wireframe-grid">
-                    <div className="wireframe-col" />
-                    <div className="wireframe-col active" />
-                    <div className="wireframe-col" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Navigation Tabs for Deep Technical Inspection */}
+        {/* Dynamic Navigation Tabs */}
         <nav className="project-tabs-nav" aria-label="Project details sections">
           <button
             className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
             onClick={() => setActiveTab("overview")}
           >
-            📋 Technical Documentation
+            📋 Overview & Narrative
           </button>
           <button
-            className={`tab-btn ${activeTab === "xray" ? "active" : ""}`}
-            onClick={() => setActiveTab("xray")}
+            className={`tab-btn ${activeTab === "architecture" ? "active" : ""}`}
+            onClick={() => setActiveTab("architecture")}
           >
-            🔬 Project X-Ray & Architecture
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "releases" ? "active" : ""}`}
-            onClick={() => setActiveTab("releases")}
-          >
-            🏷️ Releases & Changelog
+            🏛️ Architecture & Decisions
           </button>
           <button
             className={`tab-btn ${activeTab === "discussion" ? "active" : ""}`}
@@ -430,222 +451,323 @@ export function ProjectDetail() {
           </button>
         </nav>
 
-        {/* Tab Content 1: Technical Documentation */}
+        {/* Tab 1: Overview & Narrative */}
         {activeTab === "overview" && (
-          <section className="tab-pane-container">
-            <div className="docs-grid">
-              <div className="docs-card">
-                <h3>Problem Statement</h3>
-                <p>{project.problemStatement || "Modern developers need a dedicated ecosystem to showcase real engineering systems, verify repository activity, and exchange architecture feedback without algorithmic noise."}</p>
-              </div>
+          <div className="tab-pane-container" style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+            {/* Problem & Solution Cards */}
+            {(project.problemStatement || project.proposedSolution) && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+                {project.problemStatement && (
+                  <div className="docs-card" style={{
+                    borderLeft: "4px solid #ef4444",
+                    background: "var(--bg-surface)",
+                    padding: "24px",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--border-color)",
+                    borderLeftWidth: "4px"
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "16px" }}>⚠️</span>
+                      <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
+                        The Problem Statement
+                      </h3>
+                    </div>
+                    <p style={{ margin: 0, lineHeight: "1.7", color: "var(--text-secondary)", fontSize: "14px" }}>
+                      {project.problemStatement}
+                    </p>
+                  </div>
+                )}
 
-              <div className="docs-card">
-                <h3>Proposed Solution & Implementation</h3>
-                <p>{project.proposedSolution || "A modular monolith core backed by Spring Boot 3 with high-concurrency connection pooling, JWT security, and a responsive React client island structure for rapid developer discovery."}</p>
+                {project.proposedSolution && (
+                  <div className="docs-card" style={{
+                    borderLeft: "4px solid #10b981",
+                    background: "var(--bg-surface)",
+                    padding: "24px",
+                    borderRadius: "var(--radius-lg)",
+                    border: "1px solid var(--border-color)",
+                    borderLeftWidth: "4px"
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "16px" }}>💡</span>
+                      <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
+                        The Proposed Solution
+                      </h3>
+                    </div>
+                    <p style={{ margin: 0, lineHeight: "1.7", color: "var(--text-secondary)", fontSize: "14px" }}>
+                      {project.proposedSolution}
+                    </p>
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* Key Features Grid */}
+            {project.keyFeatures && (
+              <div style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "var(--radius-lg)",
+                padding: "28px",
+                boxShadow: "var(--shadow-sm)"
+              }}>
+                <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
+                  Key Features & Capabilities
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+                  {project.keyFeatures
+                    .split("\n")
+                    .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+                    .filter(Boolean)
+                    .map((feature, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "12px",
+                          padding: "14px 16px",
+                          background: "var(--bg-surface-subtle)",
+                          borderRadius: "var(--radius-md)",
+                          border: "1px solid var(--border-subtle)"
+                        }}
+                      >
+                        <span style={{
+                          color: "#10b981",
+                          fontWeight: 800,
+                          fontSize: "14px",
+                          background: "rgba(16, 185, 129, 0.15)",
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0
+                        }}>
+                          ✓
+                        </span>
+                        <span style={{ fontSize: "13.5px", lineHeight: "1.5", color: "var(--text-primary)", fontWeight: 500 }}>
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Video Walkthrough Embed if present */}
+            {project.videoDemoUrl && (
+              <div style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "var(--radius-lg)",
+                padding: "28px"
+              }}>
+                <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700 }}>
+                  Video Walkthrough & Interactive Demo
+                </h3>
+                {project.videoDemoUrl.includes("youtube.com") || project.videoDemoUrl.includes("youtu.be") ? (
+                  <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "10px" }}>
+                    <iframe
+                      src={project.videoDemoUrl.replace("watch?v=", "embed/")}
+                      title="Project Video Demonstration"
+                      style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <a
+                    href={project.videoDemoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary"
+                    style={{ textDecoration: "none", display: "inline-flex" }}
+                  >
+                    📺 Open Video Demonstration ↗
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Technical Overview Description */}
+            <div style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-lg)",
+              padding: "28px",
+              boxShadow: "var(--shadow-sm)"
+            }}>
+              <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
+                Technical Overview & System Description
+              </h3>
+              <p style={{
+                margin: 0,
+                lineHeight: "1.75",
+                color: "var(--text-secondary)",
+                fontSize: "14.5px",
+                whiteSpace: "pre-line"
+              }}>
+                {project.description}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Architecture & Decisions */}
+        {activeTab === "architecture" && (
+          <div className="tab-pane-container" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            <div style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-lg)",
+              padding: "28px",
+              boxShadow: "var(--shadow-sm)"
+            }}>
+              <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
+                System Architecture & Design Decisions
+              </h3>
+              <p style={{
+                margin: 0,
+                lineHeight: "1.8",
+                color: "var(--text-secondary)",
+                fontSize: "14.5px",
+                whiteSpace: "pre-line"
+              }}>
+                {project.architectureSummary || project.documentation || project.description}
+              </p>
             </div>
 
-            <div className="docs-card full-width" style={{ marginTop: "24px" }}>
-              <h3>Architecture Summary & Production Patterns</h3>
-              <p>{project.architectureSummary || project.documentation || "The software applies domain-driven layering: REST Controllers receive validated DTOs, service layer handles transactions and optimistic concurrency locking, and Spring Data JPA executes index-optimized SQL queries."}</p>
+            {/* Active Technology Stack Summary */}
+            <div style={{
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-lg)",
+              padding: "24px"
+            }}>
+              <h4 style={{ margin: "0 0 14px 0", fontSize: "15px", fontWeight: 700, color: "var(--text-primary)" }}>
+                Core Technology Stack & Runtime Modules
+              </h4>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                {project.technologies?.map((tech) => (
+                  <span
+                    key={tech}
+                    style={{
+                      padding: "8px 14px",
+                      background: "var(--bg-surface-subtle)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "8px",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "var(--text-primary)"
+                    }}
+                  >
+                    🛠️ {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Peer Feedback & Discussions */}
+        {activeTab === "discussion" && (
+          <section className="tab-pane-container">
+            <div className="comments-header">
+              <h3>Community Reviews & Engineering Feedback ({comments.length})</h3>
+            </div>
+
+            <form onSubmit={handleAddComment} className="comment-input-form">
+              <textarea
+                rows="3"
+                placeholder="Leave feedback on architecture, performance, or codebase quality..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                required
+              />
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+                <Button type="submit" variant="primary" size="sm" isLoading={submittingComment}>
+                  Submit Feedback →
+                </Button>
+              </div>
+            </form>
+
+            <div className="comments-list">
+              {comments.length === 0 ? (
+                <p style={{ color: "var(--text-muted)", fontSize: "14px", fontStyle: "italic", margin: "20px 0" }}>
+                  No feedback posted yet. Share your evaluation with the builder!
+                </p>
+              ) : (
+                comments.map((comment) => (
+                  <div key={comment.id} className="comment-item">
+                    <div className="comment-top">
+                      <span className="comment-author">{comment.authorName}</span>
+                      <span className="comment-date">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                      {comment.canDelete && (
+                        <button
+                          type="button"
+                          className="comment-del-btn"
+                          onClick={() => handleDeleteComment(comment.id)}
+                          title="Delete feedback"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                    <p className="comment-body">{comment.content}</p>
+                  </div>
+                ))
+              )}
             </div>
           </section>
         )}
 
-        {/* Tab Content 2: Project X-Ray (Unique Showcase Feature) */}
-        {activeTab === "xray" && (
-          <section className="tab-pane-container xray-container">
-            <div className="xray-subnav">
+        {/* Lightbox Modal for High-Resolution Screenshot Inspection */}
+        {selectedScreenshot && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.85)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 9999,
+              padding: "24px"
+            }}
+            onClick={() => setSelectedScreenshot(null)}
+          >
+            <div
+              style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
-                className={`xray-subtab-btn ${xraySubTab === "flow" ? "active" : ""}`}
-                onClick={() => setXraySubTab("flow")}
+                type="button"
+                style={{
+                  position: "absolute",
+                  top: "-40px",
+                  right: 0,
+                  background: "transparent",
+                  border: "none",
+                  color: "#fff",
+                  fontSize: "28px",
+                  cursor: "pointer"
+                }}
+                onClick={() => setSelectedScreenshot(null)}
               >
-                End-to-End Request Flow
+                ✕
               </button>
-              <button
-                className={`xray-subtab-btn ${xraySubTab === "schema" ? "active" : ""}`}
-                onClick={() => setXraySubTab("schema")}
-              >
-                Database Schema Explorer
-              </button>
-              <button
-                className={`xray-subtab-btn ${xraySubTab === "api" ? "active" : ""}`}
-                onClick={() => setXraySubTab("api")}
-              >
-                REST API Explorer
-              </button>
-              <button
-                className={`xray-subtab-btn ${xraySubTab === "tradeoffs" ? "active" : ""}`}
-                onClick={() => setXraySubTab("tradeoffs")}
-              >
-                Decisions & Tradeoffs
-              </button>
+              <img
+                src={selectedScreenshot}
+                alt="Enlarged screenshot"
+                style={{ width: "100%", height: "auto", maxHeight: "85vh", borderRadius: "8px", objectFit: "contain" }}
+              />
             </div>
-
-            {/* Subtab: Request Flow */}
-            {xraySubTab === "flow" && (
-              <div className="xray-flow-box">
-                <h4>Interactive End-to-End Request Pipeline</h4>
-                <div className="flow-steps-diagram">
-                  <div className="flow-step">
-                    <span className="step-num">1</span>
-                    <strong>React SPA Client</strong>
-                    <p>Issues HTTP POST with Bearer token & JSON payload</p>
-                  </div>
-                  <div className="flow-arrow">→</div>
-                  <div className="flow-step">
-                    <span className="step-num">2</span>
-                    <strong>Security Filter Chain</strong>
-                    <p>Validates JWT HMAC-SHA512 & loads UserPrincipal</p>
-                  </div>
-                  <div className="flow-arrow">→</div>
-                  <div className="flow-step">
-                    <span className="step-num">3</span>
-                    <strong>ProjectController</strong>
-                    <p>Performs JSR-380 bean validation & extracts claims</p>
-                  </div>
-                  <div className="flow-arrow">→</div>
-                  <div className="flow-step">
-                    <span className="step-num">4</span>
-                    <strong>Transactional Service</strong>
-                    <p>Executes business logic with atomic lock protection</p>
-                  </div>
-                  <div className="flow-arrow">→</div>
-                  <div className="flow-step">
-                    <span className="step-num">5</span>
-                    <strong>PostgreSQL / H2</strong>
-                    <p>Persists entity with foreign key & cascade consistency</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Subtab: Database Schema */}
-            {xraySubTab === "schema" && (
-              <div className="xray-schema-box">
-                <h4>Relational Schema & Constraints</h4>
-                <div className="schema-table-mock">
-                  <table className="db-table">
-                    <thead>
-                      <tr>
-                        <th>Column Name</th>
-                        <th>Data Type</th>
-                        <th>Constraints</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><code>id</code></td>
-                        <td>UUID</td>
-                        <td>PRIMARY KEY</td>
-                        <td>Globally unique identifier generated via UUIDv4</td>
-                      </tr>
-                      <tr>
-                        <td><code>title</code></td>
-                        <td>VARCHAR(255)</td>
-                        <td>NOT NULL</td>
-                        <td>Canonical name of the project</td>
-                      </tr>
-                      <tr>
-                        <td><code>category</code></td>
-                        <td>VARCHAR(100)</td>
-                        <td>NOT NULL, INDEXED</td>
-                        <td>Domain category (Web, Mobile, Cloud, AI)</td>
-                      </tr>
-                      <tr>
-                        <td><code>likes</code></td>
-                        <td>INTEGER</td>
-                        <td>DEFAULT 0</td>
-                        <td>Synchronized atomic counter</td>
-                      </tr>
-                      <tr>
-                        <td><code>author_id</code></td>
-                        <td>UUID</td>
-                        <td>FOREIGN KEY → users(id)</td>
-                        <td>Owner reference with cascade protection</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Subtab: API Explorer */}
-            {xraySubTab === "api" && (
-              <div className="xray-api-box">
-                <h4>Interactive Endpoint Definitions</h4>
-                <div className="api-endpoint-card">
-                  <div className="endpoint-header">
-                    <span className="method get">GET</span>
-                    <code>/api/v1/projects/{project.id}</code>
-                  </div>
-                  <p>Fetches full project details, verified GitHub status, and user-specific like/bookmark states.</p>
-                  <pre className="endpoint-json">
-{`HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "id": "${project.id}",
-  "title": "${project.title}",
-  "category": "${project.category}",
-  "likes": ${project.likes},
-  "views": ${viewsCount},
-  "isOwner": ${project.owner ? "true" : "false"}
-}`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* Subtab: Tradeoffs */}
-            {xraySubTab === "tradeoffs" && (
-              <div className="xray-tradeoffs-box">
-                <h4>Architectural Decisions & Tradeoffs</h4>
-                <div className="tradeoff-card">
-                  <h5>Modular Monolith Core vs. Microservices</h5>
-                  <p>
-                    <strong>Decision:</strong> We consolidated core portfolio, blog, and developer entities inside a single Spring Boot application while keeping isolated microservices for external notification and feed ingestion.
-                  </p>
-                  <p>
-                    <strong>Tradeoff:</strong> Maximizes transaction guarantees and eliminates distributed RPC latency while keeping code organized into clean domain packages.
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Tab Content 3: Releases & Changelog */}
-        {activeTab === "releases" && (
-          <section className="tab-pane-container">
-            <div className="releases-list">
-              <div className="release-card">
-                <div className="release-header">
-                  <span className="release-tag">v1.1.0</span>
-                  <span className="release-date">Current Production Build</span>
-                </div>
-                <h4>Enhanced Project Experience & Verified GitHub Telemetry</h4>
-                <ul>
-                  <li>Integrated verified GitHub repository statistics with 15-minute resilient cache.</li>
-                  <li>Added Project X-Ray architecture explorer and interactive request tracer.</li>
-                  <li>Implemented one-click bookmarks and peer review discussions.</li>
-                </ul>
-              </div>
-
-              <div className="release-card" style={{ opacity: 0.75, marginTop: "16px" }}>
-                <div className="release-header">
-                  <span className="release-tag">v1.0.0</span>
-                  <span className="release-date">Initial Launch</span>
-                </div>
-                <h4>Core Discovery & Portfolio Showcase</h4>
-                <ul>
-                  <li>Initial release with technology filtering and responsive UI.</li>
-                  <li>Spring Boot JPA data persistence.</li>
-                </ul>
-              </div>
-            </div>
-          </section>
+          </div>
         )}
 
         {/* Tab Content 4: Peer Feedback & Discussions */}

@@ -32,16 +32,22 @@ export function Projects() {
   const [submitting, setSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [modalTab, setModalTab] = useState("basics");
   const [form, setForm] = useState({
     title: "",
     tagline: "",
-    coverImage: "",
     category: "Web Development",
-    status: "Active",
-    liveDemoUrl: "",
-    githubUrl: "",
-    description: "",
     technologies: "",
+    githubUrl: "",
+    liveDemoUrl: "",
+    coverImage: "",
+    videoDemoUrl: "",
+    problemStatement: "",
+    proposedSolution: "",
+    keyFeatures: "",
+    quickstartCmd: "",
+    description: "",
+    status: "Active",
   });
 
   const fetchProjects = async () => {
@@ -150,6 +156,12 @@ export function Projects() {
       return;
     }
 
+    if (!form.title.trim()) {
+      setModalTab("basics");
+      setNotice("Project title is required.");
+      return;
+    }
+
     setSubmitting(true);
     setNotice("");
 
@@ -167,22 +179,34 @@ export function Projects() {
         status: form.status,
         liveDemoUrl: form.liveDemoUrl?.trim() || "",
         githubUrl: form.githubUrl?.trim() || "",
-        description: form.description.trim(),
+        description: form.description?.trim() || (form.proposedSolution ? form.proposedSolution.slice(0, 300) : form.title),
         technologies: techs,
+        problemStatement: form.problemStatement?.trim() || "",
+        proposedSolution: form.proposedSolution?.trim() || "",
+        architectureSummary: form.description?.trim() || "",
+        keyFeatures: form.keyFeatures?.trim() || "",
+        quickstartCmd: form.quickstartCmd?.trim() || "",
+        videoDemoUrl: form.videoDemoUrl?.trim() || "",
       });
 
       setItems((prev) => [created, ...prev]);
       setIsModalOpen(false);
+      setModalTab("basics");
       setForm({
         title: "",
         tagline: "",
-        coverImage: "",
         category: "Web Development",
-        status: "Active",
-        liveDemoUrl: "",
-        githubUrl: "",
-        description: "",
         technologies: "",
+        githubUrl: "",
+        liveDemoUrl: "",
+        coverImage: "",
+        videoDemoUrl: "",
+        problemStatement: "",
+        proposedSolution: "",
+        keyFeatures: "",
+        quickstartCmd: "",
+        description: "",
+        status: "Active",
       });
       setNotice("Project published successfully to DevSphere!");
     } catch (err) {
@@ -303,7 +327,7 @@ export function Projects() {
               if (e.target === e.currentTarget) setIsModalOpen(false);
             }}
           >
-            <div className="desktop-modal-dialog" role="dialog" aria-modal="true">
+            <div className="desktop-modal-dialog" role="dialog" aria-modal="true" style={{ maxWidth: "820px" }}>
               <header className="desktop-modal-header">
                 <div className="modal-header-titles">
                   <span className="modal-tag-badge">COMMUNITY SHOWCASE</span>
@@ -320,77 +344,269 @@ export function Projects() {
                 </button>
               </header>
 
+              {/* Wizard Step Tabs */}
+              <div className="modal-tab-bar" style={{ display: "flex", borderBottom: "1px solid var(--border-color)", padding: "0 24px", background: "var(--bg-surface-subtle)" }}>
+                <button
+                  type="button"
+                  onClick={() => setModalTab("basics")}
+                  style={{
+                    padding: "12px 18px",
+                    fontWeight: 600,
+                    fontSize: "13px",
+                    border: "none",
+                    borderBottom: modalTab === "basics" ? "2px solid var(--primary)" : "2px solid transparent",
+                    background: "none",
+                    color: modalTab === "basics" ? "var(--primary)" : "var(--text-muted)",
+                    cursor: "pointer",
+                  }}
+                >
+                  1. Basics & Links
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalTab("media")}
+                  style={{
+                    padding: "12px 18px",
+                    fontWeight: 600,
+                    fontSize: "13px",
+                    border: "none",
+                    borderBottom: modalTab === "media" ? "2px solid var(--primary)" : "2px solid transparent",
+                    background: "none",
+                    color: modalTab === "media" ? "var(--primary)" : "var(--text-muted)",
+                    cursor: "pointer",
+                  }}
+                >
+                  2. Visuals & Media
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalTab("engineering")}
+                  style={{
+                    padding: "12px 18px",
+                    fontWeight: 600,
+                    fontSize: "13px",
+                    border: "none",
+                    borderBottom: modalTab === "engineering" ? "2px solid var(--primary)" : "2px solid transparent",
+                    background: "none",
+                    color: modalTab === "engineering" ? "var(--primary)" : "var(--text-muted)",
+                    cursor: "pointer",
+                  }}
+                >
+                  3. Engineering Story
+                </button>
+              </div>
+
               <form onSubmit={handleSubmitProject} className="desktop-modal-form">
-                <div className="desktop-modal-body">
-                  <div className="modal-col">
-                    <div className="form-group">
-                      <label>Project Title *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Distributed Task Scheduler"
-                        value={form.title}
-                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                        required
-                      />
-                    </div>
+                <div className="desktop-modal-body" style={{ maxHeight: "65vh", overflowY: "auto", padding: "24px" }}>
+                  {modalTab === "basics" && (
+                    <div className="modal-col" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div className="form-group">
+                        <label>Project Title *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. INGRIS Chatbot or FleetWatch Telemetry"
+                          value={form.title}
+                          onChange={(e) => setForm({ ...form, title: e.target.value })}
+                          required
+                        />
+                      </div>
 
-                    <div className="form-group">
-                      <label>Category *</label>
-                      <select
-                        value={form.category}
-                        onChange={(e) => setForm({ ...form, category: e.target.value })}
-                      >
-                        <option value="Web Development">Web Development</option>
-                        <option value="Mobile">Mobile</option>
-                        <option value="AI/ML">AI/ML</option>
-                        <option value="DevOps">DevOps</option>
-                        <option value="Tools">Tools</option>
-                        <option value="UI/UX">UI/UX</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
+                      <div className="form-group">
+                        <label>Tagline / One-Liner</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. AI-Driven Groundwater & Hydrogeological Assistant"
+                          value={form.tagline}
+                          onChange={(e) => setForm({ ...form, tagline: e.target.value })}
+                        />
+                      </div>
 
-                    <div className="form-group">
-                      <label>Technologies (Comma separated) *</label>
-                      <input
-                        type="text"
-                        placeholder="React, Node.js, MongoDB, Tailwind CSS"
-                        value={form.technologies}
-                        onChange={(e) => setForm({ ...form, technologies: e.target.value })}
-                        required
-                      />
-                    </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                        <div className="form-group">
+                          <label>Category *</label>
+                          <select
+                            value={form.category}
+                            onChange={(e) => setForm({ ...form, category: e.target.value })}
+                          >
+                            <option value="Web Development">Web Development</option>
+                            <option value="Mobile">Mobile</option>
+                            <option value="AI/ML">AI/ML</option>
+                            <option value="DevOps">DevOps</option>
+                            <option value="Tools">Tools</option>
+                            <option value="UI/UX">UI/UX</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
 
-                    <div className="form-group">
-                      <label>Description *</label>
-                      <textarea
-                        rows={3}
-                        placeholder="A concise synopsis of what this application does..."
-                        value={form.description}
-                        onChange={(e) => setForm({ ...form, description: e.target.value })}
-                        required
-                      />
-                    </div>
+                        <div className="form-group">
+                          <label>Project Status</label>
+                          <select
+                            value={form.status}
+                            onChange={(e) => setForm({ ...form, status: e.target.value })}
+                          >
+                            <option value="Active">Active</option>
+                            <option value="Production">Production</option>
+                            <option value="Beta">Beta</option>
+                            <option value="In Development">In Development</option>
+                          </select>
+                        </div>
+                      </div>
 
-                    <div className="form-group">
-                      <ImageUploader
-                        label="Cover Image (Optional)"
-                        hint="Visual snapshot of software UI (Recommended: 1200x630px)"
-                        value={form.coverImage}
-                        onChange={(url) => setForm({ ...form, coverImage: url })}
-                        aspectRatio="16/9"
-                      />
+                      <div className="form-group">
+                        <label>Technologies (Comma separated) *</label>
+                        <input
+                          type="text"
+                          placeholder="React, Spring Boot, PostgreSQL, Docker, TensorFlow"
+                          value={form.technologies}
+                          onChange={(e) => setForm({ ...form, technologies: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                        <div className="form-group">
+                          <label>GitHub Repository URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://github.com/username/project"
+                            value={form.githubUrl}
+                            onChange={(e) => setForm({ ...form, githubUrl: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>Live Demo URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://my-app.vercel.app"
+                            value={form.liveDemoUrl}
+                            onChange={(e) => setForm({ ...form, liveDemoUrl: e.target.value })}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {modalTab === "media" && (
+                    <div className="modal-col" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div className="form-group">
+                        <ImageUploader
+                          label="Cover Image / High-Res Screenshot"
+                          hint="Visual snapshot of software UI (Recommended: 1200x630px)"
+                          value={form.coverImage}
+                          onChange={(url) => setForm({ ...form, coverImage: url })}
+                          aspectRatio="16/9"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Or Image URL</label>
+                        <input
+                          type="text"
+                          placeholder="/images/projects/my-screenshot.png or https://..."
+                          value={form.coverImage}
+                          onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Video Walkthrough / Demo URL (Optional)</label>
+                        <input
+                          type="url"
+                          placeholder="https://www.youtube.com/watch?v=... or Loom URL"
+                          value={form.videoDemoUrl}
+                          onChange={(e) => setForm({ ...form, videoDemoUrl: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {modalTab === "engineering" && (
+                    <div className="modal-col" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div className="form-group">
+                        <label>The Problem Statement (What friction does this solve?)</label>
+                        <textarea
+                          rows={2}
+                          placeholder="e.g. Ground water level data was trapped in fragmented static PDF reports, preventing hydrologists and farmers from making real-time extraction decisions."
+                          value={form.problemStatement}
+                          onChange={(e) => setForm({ ...form, problemStatement: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Proposed Solution & Architecture</label>
+                        <textarea
+                          rows={2}
+                          placeholder="e.g. An AI-powered hydrogeological assistant ingesting CGWB district water tables with a hybrid retrieval pipeline and interactive spatial analytics."
+                          value={form.proposedSolution}
+                          onChange={(e) => setForm({ ...form, proposedSolution: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Key Features & Capabilities (1 per line)</label>
+                        <textarea
+                          rows={3}
+                          placeholder="• Real-time Central Ground Water Board report synthesis&#10;• Seasonal water table depth monitoring&#10;• Multi-provider AI reasoning&#10;• Interactive GIS district telemetry"
+                          value={form.keyFeatures}
+                          onChange={(e) => setForm({ ...form, keyFeatures: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Quickstart Run Command</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. docker compose up -d or npm install && npm run dev"
+                          value={form.quickstartCmd}
+                          onChange={(e) => setForm({ ...form, quickstartCmd: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Technical Description / Architecture Notes *</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Detailed overview of technical architecture, libraries used, and deployment pipeline..."
+                          value={form.description}
+                          onChange={(e) => setForm({ ...form, description: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <footer className="desktop-modal-footer">
-                  <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="primary" isLoading={submitting}>
-                    Publish Project
-                  </Button>
+                <footer className="desktop-modal-footer" style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderTop: "1px solid var(--border-color)" }}>
+                  <div>
+                    {modalTab !== "basics" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setModalTab(modalTab === "engineering" ? "media" : "basics")}
+                      >
+                        ← Back
+                      </Button>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                      Cancel
+                    </Button>
+                    {modalTab !== "engineering" ? (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => setModalTab(modalTab === "basics" ? "media" : "engineering")}
+                      >
+                        Next Step →
+                      </Button>
+                    ) : (
+                      <Button type="submit" variant="primary" isLoading={submitting}>
+                        Publish Project 🚀
+                      </Button>
+                    )}
+                  </div>
                 </footer>
               </form>
             </div>

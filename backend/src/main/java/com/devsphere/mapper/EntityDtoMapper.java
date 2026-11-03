@@ -86,6 +86,9 @@ public class EntityDtoMapper {
         res.setProblemStatement(project.getProblemStatement());
         res.setProposedSolution(project.getProposedSolution());
         res.setArchitectureSummary(project.getArchitectureSummary());
+        res.setKeyFeatures(project.getKeyFeatures());
+        res.setQuickstartCmd(project.getQuickstartCmd());
+        res.setVideoDemoUrl(project.getVideoDemoUrl());
         res.setBookmarks(project.getBookmarks());
         res.setBookmarked(isBookmarked);
         res.setOwner(isOwner);

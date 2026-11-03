@@ -19,6 +19,9 @@ public class ProjectResponse {
     private String problemStatement;
     private String proposedSolution;
     private String architectureSummary;
+    private String keyFeatures;
+    private String quickstartCmd;
+    private String videoDemoUrl;
     private String author;
     private List<String> technologies;
     private int likes;
@@ -147,6 +150,30 @@ public class ProjectResponse {
 
     public void setArchitectureSummary(String architectureSummary) {
         this.architectureSummary = architectureSummary;
+    }
+
+    public String getKeyFeatures() {
+        return keyFeatures;
+    }
+
+    public void setKeyFeatures(String keyFeatures) {
+        this.keyFeatures = keyFeatures;
+    }
+
+    public String getQuickstartCmd() {
+        return quickstartCmd;
+    }
+
+    public void setQuickstartCmd(String quickstartCmd) {
+        this.quickstartCmd = quickstartCmd;
+    }
+
+    public String getVideoDemoUrl() {
+        return videoDemoUrl;
+    }
+
+    public void setVideoDemoUrl(String videoDemoUrl) {
+        this.videoDemoUrl = videoDemoUrl;
     }
 
     public String getAuthor() {

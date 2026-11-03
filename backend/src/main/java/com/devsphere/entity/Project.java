@@ -57,6 +57,15 @@ public class Project {
     @Column(name = "architecture_summary", columnDefinition = "TEXT")
     private String architectureSummary;
 
+    @Column(name = "key_features", columnDefinition = "TEXT")
+    private String keyFeatures;
+
+    @Column(name = "quickstart_cmd", length = 255)
+    private String quickstartCmd;
+
+    @Column(name = "video_demo_url", length = 500)
+    private String videoDemoUrl;
+
     @Column(nullable = false)
     private int likes = 0;
 
@@ -222,6 +231,30 @@ public class Project {
 
     public void setArchitectureSummary(String architectureSummary) {
         this.architectureSummary = architectureSummary;
+    }
+
+    public String getKeyFeatures() {
+        return keyFeatures;
+    }
+
+    public void setKeyFeatures(String keyFeatures) {
+        this.keyFeatures = keyFeatures;
+    }
+
+    public String getQuickstartCmd() {
+        return quickstartCmd;
+    }
+
+    public void setQuickstartCmd(String quickstartCmd) {
+        this.quickstartCmd = quickstartCmd;
+    }
+
+    public String getVideoDemoUrl() {
+        return videoDemoUrl;
+    }
+
+    public void setVideoDemoUrl(String videoDemoUrl) {
+        this.videoDemoUrl = videoDemoUrl;
     }
 
     public int getLikes() {

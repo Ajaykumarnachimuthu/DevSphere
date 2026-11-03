@@ -31,6 +31,16 @@ public class CreateProjectRequest {
 
     private String problemStatement;
 
+    private String proposedSolution;
+
+    private String architectureSummary;
+
+    private String keyFeatures;
+
+    private String quickstartCmd;
+
+    private String videoDemoUrl;
+
     public CreateProjectRequest() {}
 
     public CreateProjectRequest(String title, String category, String description, List<String> technologies) {
@@ -118,5 +128,45 @@ public class CreateProjectRequest {
 
     public void setProblemStatement(String problemStatement) {
         this.problemStatement = problemStatement;
+    }
+
+    public String getProposedSolution() {
+        return proposedSolution;
+    }
+
+    public void setProposedSolution(String proposedSolution) {
+        this.proposedSolution = proposedSolution;
+    }
+
+    public String getArchitectureSummary() {
+        return architectureSummary;
+    }
+
+    public void setArchitectureSummary(String architectureSummary) {
+        this.architectureSummary = architectureSummary;
+    }
+
+    public String getKeyFeatures() {
+        return keyFeatures;
+    }
+
+    public void setKeyFeatures(String keyFeatures) {
+        this.keyFeatures = keyFeatures;
+    }
+
+    public String getQuickstartCmd() {
+        return quickstartCmd;
+    }
+
+    public void setQuickstartCmd(String quickstartCmd) {
+        this.quickstartCmd = quickstartCmd;
+    }
+
+    public String getVideoDemoUrl() {
+        return videoDemoUrl;
+    }
+
+    public void setVideoDemoUrl(String videoDemoUrl) {
+        this.videoDemoUrl = videoDemoUrl;
     }
 }

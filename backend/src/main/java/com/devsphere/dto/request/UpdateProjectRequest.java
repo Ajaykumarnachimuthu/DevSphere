@@ -32,6 +32,12 @@ public class UpdateProjectRequest {
 
     private String architectureSummary;
 
+    private String keyFeatures;
+
+    private String quickstartCmd;
+
+    private String videoDemoUrl;
+
     public UpdateProjectRequest() {
     }
 
@@ -129,5 +135,29 @@ public class UpdateProjectRequest {
 
     public void setArchitectureSummary(String architectureSummary) {
         this.architectureSummary = architectureSummary;
+    }
+
+    public String getKeyFeatures() {
+        return keyFeatures;
+    }
+
+    public void setKeyFeatures(String keyFeatures) {
+        this.keyFeatures = keyFeatures;
+    }
+
+    public String getQuickstartCmd() {
+        return quickstartCmd;
+    }
+
+    public void setQuickstartCmd(String quickstartCmd) {
+        this.quickstartCmd = quickstartCmd;
+    }
+
+    public String getVideoDemoUrl() {
+        return videoDemoUrl;
+    }
+
+    public void setVideoDemoUrl(String videoDemoUrl) {
+        this.videoDemoUrl = videoDemoUrl;
     }
 }

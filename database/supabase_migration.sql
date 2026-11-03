@@ -272,3 +272,46 @@ SET cover_image = '/images/projects/fleetwatch-telemetry.png',
     tagline = 'FleetWatch: Real-time vehicle telemetry monitoring with AI-powered fault detection and live interactive controls.',
     updated_at = CURRENT_TIMESTAMP
 WHERE title ILIKE '%Vehicle Telemetry%';
+
+
+-- =============================================================================
+-- PART 5: V7 UPDATE — STRUCTURED PROJECT PRESENTATION ATTRIBUTES & BACKFILL
+-- =============================================================================
+
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS key_features TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS quickstart_cmd VARCHAR(255);
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS video_demo_url VARCHAR(500);
+
+UPDATE projects
+SET problem_statement = 'Hydrogeological data published by the Central Ground Water Board (CGWB) exists across thousands of heterogeneous PDF surveys, static tables, and regional monitoring wells, making it difficult for researchers, farmers, and policymakers to assess local water table depletion in real time.',
+    proposed_solution = 'An AI-powered hydrogeological assistant combining Retrieval-Augmented Generation (RAG) with low-latency LLM inference (Groq Llama-3-70B, OpenRouter, and Gemini fallback) to deliver grounded aquifer analytics, seasonal water table depth (m bgl), and statutory extraction compliance metrics.',
+    key_features = '• Multi-provider LLM priority fallback matrix (Groq LPU primary, OpenRouter secondary, Gemini multimodal fallback)
+• Real-time Central Ground Water Board (CGWB) statutory report synthesis
+• Automated District Extraction Stress classification (Safe, Semi-Critical, Critical, Over-Exploited)
+• Geospatial water table variance estimation across seasonal pre/post-monsoon telemetry
+• Interactive hydrogeological knowledge explorer with citation grounding',
+    quickstart_cmd = 'git clone https://github.com/Ajaykumarnachimuthu/INGRIS-CHATBOT.git && cd INGRIS-CHATBOT && pip install -r requirements.txt',
+    live_demo_url = 'https://ingris-chatbot.vercel.app',
+    github_url = 'https://github.com/Ajaykumarnachimuthu/INGRIS-CHATBOT',
+    architecture_summary = 'FastAPI asynchronous core routing queries through BGE-small vector embeddings in Supabase pgvector, with table-aware chunking for dense hydrological data and WebSocket streaming responses.',
+    updated_at = CURRENT_TIMESTAMP
+WHERE title ILIKE '%INGRIS%';
+
+UPDATE projects
+SET problem_statement = 'Connected vehicle fleets suffer from catastrophic mechanical breakdowns and safety violations because traditional OBD-II telematics systems rely either on slow post-trip batch processing or simplistic hardcoded alerts that produce high false-alarm rates.',
+    proposed_solution = 'A high-velocity streaming telemetry platform that unites deterministic physical boundaries (instant overheat and overspeed safety triggers) with unsupervised Machine Learning (Isolation Forest anomaly score estimation) for sub-50ms fault detection.',
+    key_features = '• Sub-50ms CAN-bus sensor packet evaluation over bidirectional WebSockets
+• Dual-layer anomaly detection: physical threshold gates + multivariate Isolation Forest scoring
+• Interactive simulation control center with live speed, temperature, RPM, battery, and fuel sliders
+• Priority incident logging (Critical, High, Medium, Low) with statistical confidence metrics
+• Automated automated emergency warning alerts before mechanical engine seizure',
+    quickstart_cmd = 'git clone https://github.com/Ajaykumarnachimuthu/AI-Based-Vehicle-Telemetry-Alert-Fault-Detection-System.git && docker-compose up --build',
+    github_url = 'https://github.com/Ajaykumarnachimuthu/AI-Based-Vehicle-Telemetry-Alert-Fault-Detection-System',
+    architecture_summary = 'Event-driven reactive telemetry pipeline built with Python FastAPI, scikit-learn Isolation Forest model, and React dashboard with visual gauge telemetry and state management.',
+    updated_at = CURRENT_TIMESTAMP
+WHERE title ILIKE '%Vehicle Telemetry%';
+
+-- Synchronize user password for ajaykumar / ajaykumarnachimuthu37@gmail.com
+UPDATE users 
+SET password = '$2a$10$MSg2FlscHXqhVYH/KlBYeujqT0BePTF4qFxIjht4Su7r5shpZGp7y'
+WHERE email = 'ajaykumarnachimuthu37@gmail.com' OR username = 'ajaykumar';

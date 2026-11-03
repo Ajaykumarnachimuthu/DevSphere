@@ -175,6 +175,21 @@ public class ProjectServiceImpl implements ProjectService {
         if (request.getProblemStatement() != null && !request.getProblemStatement().trim().isEmpty()) {
             project.setProblemStatement(request.getProblemStatement().trim());
         }
+        if (request.getProposedSolution() != null && !request.getProposedSolution().trim().isEmpty()) {
+            project.setProposedSolution(request.getProposedSolution().trim());
+        }
+        if (request.getArchitectureSummary() != null && !request.getArchitectureSummary().trim().isEmpty()) {
+            project.setArchitectureSummary(request.getArchitectureSummary().trim());
+        }
+        if (request.getKeyFeatures() != null && !request.getKeyFeatures().trim().isEmpty()) {
+            project.setKeyFeatures(request.getKeyFeatures().trim());
+        }
+        if (request.getQuickstartCmd() != null && !request.getQuickstartCmd().trim().isEmpty()) {
+            project.setQuickstartCmd(request.getQuickstartCmd().trim());
+        }
+        if (request.getVideoDemoUrl() != null && !request.getVideoDemoUrl().trim().isEmpty()) {
+            project.setVideoDemoUrl(request.getVideoDemoUrl().trim());
+        }
 
         Project saved = projectRepository.save(project);
         return mapper.toProjectResponse(saved, false, false, true);
@@ -214,6 +229,9 @@ public class ProjectServiceImpl implements ProjectService {
         if (request.getProblemStatement() != null) project.setProblemStatement(request.getProblemStatement().trim());
         if (request.getProposedSolution() != null) project.setProposedSolution(request.getProposedSolution().trim());
         if (request.getArchitectureSummary() != null) project.setArchitectureSummary(request.getArchitectureSummary().trim());
+        if (request.getKeyFeatures() != null) project.setKeyFeatures(request.getKeyFeatures().trim());
+        if (request.getQuickstartCmd() != null) project.setQuickstartCmd(request.getQuickstartCmd().trim());
+        if (request.getVideoDemoUrl() != null) project.setVideoDemoUrl(request.getVideoDemoUrl().trim());
 
         Project updated = projectRepository.save(project);
         boolean isLiked = projectLikeRepository.existsByProjectIdAndUserId(id, currentUserId);
