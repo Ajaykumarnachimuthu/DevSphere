@@ -22,6 +22,7 @@ SET tagline = 'Modern developer community platform for technical blogging, inter
     github_url = 'https://github.com/Ajaykumarnachimuthu/DevSphere',
     architecture_summary = 'Multi-tier architecture: Spring Boot 3 REST controllers receive validated DTOs, service layer enforces transaction boundaries and optimistic locking, and Spring Data JPA executes index-optimized SQL queries on Supabase PostgreSQL. Frontend is built with React and Vite, utilizing context-driven state management and accessible WCAG-compliant styling.',
     description = 'DevSphere is an end-to-end community platform engineered for developers to articulate their software architecture, author rich technical publications, and collaborate through peer code reviews. Built on Spring Boot 3 and React, the system emphasizes developer experience with instantaneous search, dark/light theme switching, and live markdown preview.',
+    cover_image = '/images/devsphere-logo.png',
     author_name = 'AJAYKUMAR N',
     category = 'Web Development',
     updated_at = CURRENT_TIMESTAMP

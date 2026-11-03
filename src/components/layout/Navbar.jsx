@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../context/ThemeContext";
-import devsphereLogo from "/images/devsphere-logo.png";
+import devsphereLogoLight from "/images/devsphere-logo-light.png";
+import devsphereLogoDark from "/images/devsphere-logo-dark.png";
 
 const navItems = [
   ["/", "Home"],
@@ -68,7 +69,7 @@ export function Navbar() {
     <header className="navbar">
       <NavLink className="logo-brand-link" to="/" aria-label="DevSphere Home">
         <img
-          src={devsphereLogo}
+          src={theme === "dark" ? devsphereLogoDark : devsphereLogoLight}
           alt="DevSphere Logo"
           className="navbar-brand-logo"
         />
