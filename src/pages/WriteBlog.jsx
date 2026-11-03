@@ -36,17 +36,41 @@ export function WriteBlog() {
     const el = contentRef.current;
     if (!el) return;
 
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
+    const start = el.selectionStart ?? form.content.length;
+    const end = el.selectionEnd ?? form.content.length;
     const selected = form.content.substring(start, end);
+
+    const isBlock =
+      prefix.startsWith("#") ||
+      prefix.startsWith(">") ||
+      prefix.startsWith("-") ||
+      prefix.startsWith("1.") ||
+      prefix.trim().startsWith("|") ||
+      prefix.trim().startsWith("```");
+
+    let lead = "";
+    let trail = "";
+
+    if (isBlock) {
+      if (start > 0) {
+        if (form.content[start - 1] === "\n") {
+          if (start > 1 && form.content[start - 2] !== "\n") {
+            lead = "\n";
+          }
+        } else {
+          lead = "\n\n";
+        }
+      }
+      if (end < form.content.length && form.content[end] !== "\n") {
+        trail = "\n";
+      }
+    }
+
     const textToInsert = selected || defaultPlaceholder;
+    const cleanPrefix = prefix.replace(/^\n+/, "");
+    const cleanSuffix = suffix.replace(/\n+$/, "");
 
-    // Detect if block formatting needs leading or trailing newline
-    const isBlock = prefix.startsWith("#") || prefix.startsWith(">") || prefix.startsWith("-") || prefix.startsWith("1.") || prefix.startsWith("\n");
-    const needsLeadingNewline = isBlock && start > 0 && form.content[start - 1] !== "\n";
-    const lead = needsLeadingNewline ? "\n" : "";
-
-    const replacement = `${lead}${prefix}${textToInsert}${suffix}`;
+    const replacement = `${lead}${cleanPrefix}${textToInsert}${cleanSuffix}${trail}`;
 
     const newContent =
       form.content.substring(0, start) +
@@ -56,11 +80,12 @@ export function WriteBlog() {
     setForm((prev) => ({ ...prev, content: newContent }));
 
     setTimeout(() => {
-      el.focus();
-      const selStart = start + lead.length + prefix.length;
+      if (!contentRef.current) return;
+      contentRef.current.focus();
+      const selStart = start + lead.length + cleanPrefix.length;
       const selEnd = selStart + textToInsert.length;
-      el.setSelectionRange(selStart, selEnd);
-    }, 10);
+      contentRef.current.setSelectionRange(selStart, selEnd);
+    }, 20);
   };
 
   const handleFormatHeading = (headingLevel) => {

@@ -74,8 +74,8 @@ class AuthServiceTest {
     void register_Success() {
         RegisterRequest request = new RegisterRequest("testuser", "test@devsphere.io", "password123");
 
-        when(userRepository.existsByEmail("test@devsphere.io")).thenReturn(false);
-        when(userRepository.existsByUsername("testuser")).thenReturn(false);
+        when(userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase("test@devsphere.io", "testuser"))
+                .thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         User savedUser = new User("testuser", "test@devsphere.io", "encodedPassword", Role.ROLE_USER);
@@ -101,7 +101,9 @@ class AuthServiceTest {
     void register_DuplicateEmail_ThrowsException() {
         RegisterRequest request = new RegisterRequest("testuser", "existing@devsphere.io", "password123");
 
-        when(userRepository.existsByEmail("existing@devsphere.io")).thenReturn(true);
+        User existingUser = new User("otheruser", "existing@devsphere.io", "hash", Role.ROLE_USER);
+        when(userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase("existing@devsphere.io", "testuser"))
+                .thenReturn(Optional.of(existingUser));
 
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(DuplicateResourceException.class)

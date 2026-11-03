@@ -409,9 +409,11 @@ export function ProjectDetail() {
               </span>
               <code style={{
                 fontFamily: "var(--font-mono, monospace)",
-                fontSize: "14px",
+                fontSize: "13.5px",
                 color: "var(--text-primary)",
-                fontWeight: 600
+                fontWeight: 600,
+                wordBreak: "break-all",
+                minWidth: 0
               }}>
                 $ {project.quickstartCmd}
               </code>
@@ -423,7 +425,7 @@ export function ProjectDetail() {
                 navigator.clipboard.writeText(project.quickstartCmd);
                 alert("Quickstart command copied to clipboard!");
               }}
-              style={{ padding: "6px 16px", fontSize: "12px" }}
+              style={{ padding: "6px 16px", fontSize: "12px", flexShrink: 0 }}
             >
               📋 Copy Command
             </button>
@@ -436,19 +438,22 @@ export function ProjectDetail() {
             className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
             onClick={() => setActiveTab("overview")}
           >
-            📋 Overview & Narrative
+            <span className="tab-icon">📋</span>
+            <span>Overview & Narrative</span>
           </button>
           <button
             className={`tab-btn ${activeTab === "architecture" ? "active" : ""}`}
             onClick={() => setActiveTab("architecture")}
           >
-            🏛️ Architecture & Decisions
+            <span className="tab-icon">🏛️</span>
+            <span>Architecture & Decisions</span>
           </button>
           <button
             className={`tab-btn ${activeTab === "discussion" ? "active" : ""}`}
             onClick={() => setActiveTab("discussion")}
           >
-            💬 Peer Feedback ({comments.length})
+            <span className="tab-icon">💬</span>
+            <span>Peer Feedback ({comments.length})</span>
           </button>
         </nav>
 
@@ -513,7 +518,7 @@ export function ProjectDetail() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
                   {project.keyFeatures
                     .split("\n")
-                    .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+                    .map((line) => line.replace(/^[-*•\ufffd\u2022]\s*/, "").trim())
                     .filter(Boolean)
                     .map((feature, idx) => (
                       <div

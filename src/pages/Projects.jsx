@@ -28,6 +28,7 @@ export function Projects() {
   const [loading, setLoading] = useState(true);
   const [likedIds, setLikedIds] = useState([]);
   const [notice, setNotice] = useState("");
+  const [modalError, setModalError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,49 +150,77 @@ export function Projects() {
     }
   };
 
+  const handleNextStep = () => {
+    setModalError("");
+    if (modalTab === "basics") {
+      if (!form.title.trim()) {
+        setModalError("Please enter a Project Title before proceeding.");
+        return;
+      }
+      if (!form.technologies.trim()) {
+        setModalError("Please specify at least one technology (e.g. React, Spring Boot).");
+        return;
+      }
+      setModalTab("media");
+    } else if (modalTab === "media") {
+      setModalTab("engineering");
+    }
+  };
+
   const handleSubmitProject = async (e) => {
     e.preventDefault();
+    setModalError("");
+
     if (!isAuthenticated) {
-      setNotice("Please log in to submit a project.");
+      setModalError("Please sign in to publish your project to the DevSphere showcase.");
       return;
     }
 
     if (!form.title.trim()) {
       setModalTab("basics");
-      setNotice("Project title is required.");
+      setModalError("Project title is required.");
       return;
     }
 
     setSubmitting(true);
-    setNotice("");
 
     try {
       const techs = form.technologies
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
+        ? form.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+        : [];
 
-      const created = await projectsApi.create({
+      // Backend requires description not blank. Fallback safely if left empty
+      const finalDescription =
+        form.description?.trim() ||
+        form.proposedSolution?.trim() ||
+        form.problemStatement?.trim() ||
+        form.tagline?.trim() ||
+        form.title.trim();
+
+      const payload = {
         title: form.title.trim(),
         tagline: form.tagline?.trim() || "",
-        coverImage: form.coverImage || "",
-        category: form.category,
-        status: form.status,
+        coverImage: form.coverImage?.trim() || "",
+        category: form.category || "Web Development",
+        status: form.status || "Active",
         liveDemoUrl: form.liveDemoUrl?.trim() || "",
         githubUrl: form.githubUrl?.trim() || "",
-        description: form.description?.trim() || (form.proposedSolution ? form.proposedSolution.slice(0, 300) : form.title),
+        description: finalDescription,
         technologies: techs,
         problemStatement: form.problemStatement?.trim() || "",
         proposedSolution: form.proposedSolution?.trim() || "",
-        architectureSummary: form.description?.trim() || "",
+        architectureSummary: form.description?.trim() || form.proposedSolution?.trim() || "",
         keyFeatures: form.keyFeatures?.trim() || "",
         quickstartCmd: form.quickstartCmd?.trim() || "",
         videoDemoUrl: form.videoDemoUrl?.trim() || "",
-      });
+      };
+
+      const created = await projectsApi.create(payload);
 
       setItems((prev) => [created, ...prev]);
       setIsModalOpen(false);
       setModalTab("basics");
+      setModalError("");
       setForm({
         title: "",
         tagline: "",
@@ -208,9 +237,9 @@ export function Projects() {
         description: "",
         status: "Active",
       });
-      setNotice("Project published successfully to DevSphere!");
+      setNotice("🎉 Project published successfully to DevSphere!");
     } catch (err) {
-      setNotice(err.message || "Failed to submit project. Please try again.");
+      setModalError(err.message || "Failed to submit project. Please verify all required fields.");
     } finally {
       setSubmitting(false);
     }
@@ -286,12 +315,9 @@ export function Projects() {
               variant="primary"
               className="projects-submit-btn"
               onClick={() => {
-                if (!isAuthenticated) {
-                  setNotice("Please log in to submit a project.");
-                } else {
-                  setIsModalOpen(true);
-                  setNotice("");
-                }
+                setIsModalOpen(true);
+                setModalError("");
+                setNotice("");
               }}
             >
               + Submit Project
@@ -348,7 +374,10 @@ export function Projects() {
               <div className="modal-tab-bar" style={{ display: "flex", borderBottom: "1px solid var(--border-color)", padding: "0 24px", background: "var(--bg-surface-subtle)" }}>
                 <button
                   type="button"
-                  onClick={() => setModalTab("basics")}
+                  onClick={() => {
+                    setModalError("");
+                    setModalTab("basics");
+                  }}
                   style={{
                     padding: "12px 18px",
                     fontWeight: 600,
@@ -364,7 +393,10 @@ export function Projects() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalTab("media")}
+                  onClick={() => {
+                    setModalError("");
+                    setModalTab("media");
+                  }}
                   style={{
                     padding: "12px 18px",
                     fontWeight: 600,
@@ -380,7 +412,10 @@ export function Projects() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalTab("engineering")}
+                  onClick={() => {
+                    setModalError("");
+                    setModalTab("engineering");
+                  }}
                   style={{
                     padding: "12px 18px",
                     fontWeight: 600,
@@ -398,6 +433,46 @@ export function Projects() {
 
               <form onSubmit={handleSubmitProject} className="desktop-modal-form">
                 <div className="desktop-modal-body" style={{ maxHeight: "65vh", overflowY: "auto", padding: "24px" }}>
+                  {!isAuthenticated && (
+                    <div style={{
+                      background: "rgba(99, 102, 241, 0.1)",
+                      border: "1px solid var(--primary)",
+                      color: "var(--text-primary)",
+                      padding: "12px 16px",
+                      borderRadius: "8px",
+                      marginBottom: "16px",
+                      fontSize: "13.5px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "12px"
+                    }}>
+                      <span>🔒 You are browsing as a guest. Please sign in to publish your project.</span>
+                      <a href="/login?redirect=/projects" className="btn-primary" style={{ padding: "6px 14px", fontSize: "12px", textDecoration: "none" }}>
+                        Sign In ↗
+                      </a>
+                    </div>
+                  )}
+
+                  {modalError && (
+                    <div style={{
+                      background: "rgba(239, 68, 68, 0.12)",
+                      border: "1px solid var(--danger, #ef4444)",
+                      color: "var(--danger, #ef4444)",
+                      padding: "12px 16px",
+                      borderRadius: "8px",
+                      marginBottom: "16px",
+                      fontSize: "13.5px",
+                      fontWeight: 500,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px"
+                    }}>
+                      <span>⚠️</span>
+                      <span>{modalError}</span>
+                    </div>
+                  )}
+
                   {modalTab === "basics" && (
                     <div className="modal-col" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                       <div className="form-group">
@@ -407,7 +482,6 @@ export function Projects() {
                           placeholder="e.g. INGRIS Chatbot or FleetWatch Telemetry"
                           value={form.title}
                           onChange={(e) => setForm({ ...form, title: e.target.value })}
-                          required
                         />
                       </div>
 
@@ -459,7 +533,6 @@ export function Projects() {
                           placeholder="React, Spring Boot, PostgreSQL, Docker, TensorFlow"
                           value={form.technologies}
                           onChange={(e) => setForm({ ...form, technologies: e.target.value })}
-                          required
                         />
                       </div>
 
@@ -564,13 +637,12 @@ export function Projects() {
                       </div>
 
                       <div className="form-group">
-                        <label>Technical Description / Architecture Notes *</label>
+                        <label>Technical Description / Architecture Notes (Optional)</label>
                         <textarea
                           rows={3}
-                          placeholder="Detailed overview of technical architecture, libraries used, and deployment pipeline..."
+                          placeholder="Detailed overview of technical architecture, libraries used, and deployment pipeline... (Auto-filled from proposed solution if blank)"
                           value={form.description}
                           onChange={(e) => setForm({ ...form, description: e.target.value })}
-                          required
                         />
                       </div>
                     </div>
@@ -583,27 +655,37 @@ export function Projects() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setModalTab(modalTab === "engineering" ? "media" : "basics")}
+                        onClick={() => {
+                          setModalError("");
+                          setModalTab(modalTab === "engineering" ? "media" : "basics");
+                        }}
                       >
                         ← Back
                       </Button>
                     )}
                   </div>
                   <div style={{ display: "flex", gap: "10px" }}>
-                    <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setModalError("");
+                      }}
+                    >
                       Cancel
                     </Button>
                     {modalTab !== "engineering" ? (
                       <Button
                         type="button"
                         variant="primary"
-                        onClick={() => setModalTab(modalTab === "basics" ? "media" : "engineering")}
+                        onClick={handleNextStep}
                       >
                         Next Step →
                       </Button>
                     ) : (
                       <Button type="submit" variant="primary" isLoading={submitting}>
-                        Publish Project 🚀
+                        {submitting ? "Publishing..." : "Publish Project 🚀"}
                       </Button>
                     )}
                   </div>
