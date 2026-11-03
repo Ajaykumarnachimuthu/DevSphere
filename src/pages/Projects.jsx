@@ -26,7 +26,7 @@ export function Projects() {
   const [sort, setSort] = useState("Latest");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [likedTitles, setLikedTitles] = useState([]);
+  const [likedIds, setLikedIds] = useState([]);
   const [notice, setNotice] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -56,10 +56,10 @@ export function Projects() {
       if (list && list.length > 0) {
         setItems(list);
         const backendLiked = list
-          .filter((p) => p.likedByCurrentUser)
-          .map((p) => p.title);
+          .filter((p) => p.liked || p.likedByCurrentUser)
+          .map((p) => p.id || p.title);
         if (backendLiked.length > 0) {
-          setLikedTitles((prev) => Array.from(new Set([...prev, ...backendLiked])));
+          setLikedIds((prev) => Array.from(new Set([...prev, ...backendLiked])));
         }
       } else {
         setItems([]);
@@ -102,39 +102,41 @@ export function Projects() {
     return result;
   }, [items, category, query, sort]);
 
-  const handleLike = async (title) => {
-    const targetProject = items.find((p) => p.title === title);
-    const currentlyLiked = likedTitles.includes(title);
+  const handleLike = async (idOrTitle) => {
+    const targetProject = items.find((p) => p.id === idOrTitle || p.title === idOrTitle);
+    if (!targetProject) return;
+    const targetKey = targetProject.id || targetProject.title;
+    const currentlyLiked = likedIds.includes(targetKey);
 
     // Optimistic UI update
-    setLikedTitles((prev) =>
-      currentlyLiked ? prev.filter((t) => t !== title) : [...prev, title]
+    setLikedIds((prev) =>
+      currentlyLiked ? prev.filter((id) => id !== targetKey) : [...prev, targetKey]
     );
     setItems((prev) =>
       prev.map((project) =>
-        project.title === title
+        (project.id === targetKey || project.title === targetKey)
           ? { ...project, likes: Math.max(0, (project.likes || 0) + (currentlyLiked ? -1 : 1)) }
           : project
       )
     );
 
     // Backend synchronization
-    if (targetProject?.id) {
+    if (targetProject.id) {
       try {
         await projectsApi.toggleLike(targetProject.id);
       } catch (err) {
         // Rollback on network/auth error
-        setLikedTitles((prev) =>
-          currentlyLiked ? [...prev, title] : prev.filter((t) => t !== title)
+        setLikedIds((prev) =>
+          currentlyLiked ? [...prev, targetKey] : prev.filter((id) => id !== targetKey)
         );
         setItems((prev) =>
           prev.map((project) =>
-            project.title === title
+            (project.id === targetKey || project.title === targetKey)
               ? { ...project, likes: Math.max(0, (project.likes || 0) + (currentlyLiked ? 1 : -1)) }
               : project
           )
         );
-        if (err.status === 401) {
+        if (err.status === 401 || err.status === 403) {
           setNotice("Please log in to like community projects.");
         }
       }
@@ -411,7 +413,7 @@ export function Projects() {
               <ProjectCard
                 key={project.id || project.title}
                 project={project}
-                isLiked={likedTitles.includes(project.title)}
+                isLiked={likedIds.includes(project.id || project.title)}
                 onLike={handleLike}
               />
             ))

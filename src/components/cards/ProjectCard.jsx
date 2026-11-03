@@ -78,7 +78,7 @@ export function ProjectCard({ project, onLike, isLiked }) {
             <button
               type="button"
               className={`project-stat-btn ${isLiked ? "active" : ""}`}
-              onClick={() => onLike && onLike(project.title)}
+              onClick={() => onLike && onLike(projectId || project.id)}
               title={isLiked ? "Unlike project" : "Like this project"}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill={isLiked ? "#EF4444" : "none"} stroke={isLiked ? "#EF4444" : "#64748B"} strokeWidth="2">
