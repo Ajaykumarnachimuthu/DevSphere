@@ -85,3 +85,4 @@ SET problem_statement = 'Travelers struggle with disconnected multi-modal transi
     architecture_summary = 'Microservices architecture with Node.js and Python optimization engines interfacing with travel schedule APIs and graph-based route search.',
     updated_at = CURRENT_TIMESTAMP
 WHERE title ILIKE '%YatraAI%';
+

@@ -4,6 +4,7 @@ import { projectsApi } from "../services/api";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
 import { Button } from "../components/ui/Button";
+import { MarkdownRenderer } from "../components/ui/MarkdownRenderer";
 
 export function ProjectDetail() {
   const { id } = useParams();
@@ -472,9 +473,7 @@ export function ProjectDetail() {
                         The Problem Statement
                       </h3>
                     </div>
-                    <p style={{ margin: 0, lineHeight: "1.7", color: "var(--text-secondary)", fontSize: "14px" }}>
-                      {project.problemStatement}
-                    </p>
+                    <MarkdownRenderer content={project.problemStatement} />
                   </div>
                 )}
 
@@ -493,9 +492,7 @@ export function ProjectDetail() {
                         The Proposed Solution
                       </h3>
                     </div>
-                    <p style={{ margin: 0, lineHeight: "1.7", color: "var(--text-secondary)", fontSize: "14px" }}>
-                      {project.proposedSolution}
-                    </p>
+                    <MarkdownRenderer content={project.proposedSolution} />
                   </div>
                 )}
               </div>
@@ -600,15 +597,7 @@ export function ProjectDetail() {
               <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
                 Technical Overview & System Description
               </h3>
-              <p style={{
-                margin: 0,
-                lineHeight: "1.75",
-                color: "var(--text-secondary)",
-                fontSize: "14.5px",
-                whiteSpace: "pre-line"
-              }}>
-                {project.description}
-              </p>
+              <MarkdownRenderer content={project.description} />
             </div>
           </div>
         )}
@@ -626,15 +615,7 @@ export function ProjectDetail() {
               <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
                 System Architecture & Design Decisions
               </h3>
-              <p style={{
-                margin: 0,
-                lineHeight: "1.8",
-                color: "var(--text-secondary)",
-                fontSize: "14.5px",
-                whiteSpace: "pre-line"
-              }}>
-                {project.architectureSummary || project.documentation || project.description}
-              </p>
+              <MarkdownRenderer content={project.architectureSummary || project.documentation || project.description} />
             </div>
 
             {/* Active Technology Stack Summary */}

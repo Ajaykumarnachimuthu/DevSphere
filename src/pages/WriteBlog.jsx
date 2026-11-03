@@ -4,6 +4,7 @@ import { Shell } from "../components/layout/Shell";
 import { Button } from "../components/ui/Button";
 import { useDevSphere } from "../context/DevSphereContext";
 import { blogsApi, filesApi } from "../services/api";
+import { MarkdownRenderer } from "../components/ui/MarkdownRenderer";
 
 export function WriteBlog() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export function WriteBlog() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [editorMode, setEditorMode] = useState("write"); // 'write' | 'preview' | 'split'
 
   const fileInputRef = useRef(null);
   const contentRef = useRef(null);
@@ -29,15 +31,22 @@ export function WriteBlog() {
   // Word count helper
   const wordCount = form.content.trim() ? form.content.trim().split(/\s+/).length : 0;
 
-  // Insert markdown formatting at cursor position
-  const insertFormatting = (prefix, suffix = "") => {
+  // Insert markdown formatting at cursor position with clean newlines and contextual placeholders
+  const insertFormatting = (prefix, suffix = "", defaultPlaceholder = "text") => {
     const el = contentRef.current;
     if (!el) return;
 
     const start = el.selectionStart;
     const end = el.selectionEnd;
-    const selected = form.content.substring(start, end) || "text";
-    const replacement = `${prefix}${selected}${suffix}`;
+    const selected = form.content.substring(start, end);
+    const textToInsert = selected || defaultPlaceholder;
+
+    // Detect if block formatting needs leading or trailing newline
+    const isBlock = prefix.startsWith("#") || prefix.startsWith(">") || prefix.startsWith("-") || prefix.startsWith("1.") || prefix.startsWith("\n");
+    const needsLeadingNewline = isBlock && start > 0 && form.content[start - 1] !== "\n";
+    const lead = needsLeadingNewline ? "\n" : "";
+
+    const replacement = `${lead}${prefix}${textToInsert}${suffix}`;
 
     const newContent =
       form.content.substring(0, start) +
@@ -48,15 +57,17 @@ export function WriteBlog() {
 
     setTimeout(() => {
       el.focus();
-      el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+      const selStart = start + lead.length + prefix.length;
+      const selEnd = selStart + textToInsert.length;
+      el.setSelectionRange(selStart, selEnd);
     }, 10);
   };
 
   const handleFormatHeading = (headingLevel) => {
-    if (headingLevel === "h1") insertFormatting("# ", "");
-    else if (headingLevel === "h2") insertFormatting("## ", "");
-    else if (headingLevel === "h3") insertFormatting("### ", "");
-    else if (headingLevel === "p") insertFormatting("\n", "\n");
+    if (headingLevel === "h1") insertFormatting("# ", "", "Main Heading");
+    else if (headingLevel === "h2") insertFormatting("## ", "", "Section Heading");
+    else if (headingLevel === "h3") insertFormatting("### ", "", "Subsection Heading");
+    else if (headingLevel === "p") insertFormatting("\n\n", "", "Start typing paragraph...");
   };
 
   // Cover image upload handling
@@ -318,7 +329,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("**", "**")}
+                    onClick={() => insertFormatting("**", "**", "bold text")}
                     title="Bold"
                   >
                     <strong>B</strong>
@@ -328,7 +339,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("*", "*")}
+                    onClick={() => insertFormatting("*", "*", "italic text")}
                     title="Italic"
                   >
                     <em>I</em>
@@ -338,7 +349,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("# ", "")}
+                    onClick={() => insertFormatting("# ", "", "Main Heading")}
                     title="Heading 1"
                   >
                     H1
@@ -348,7 +359,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("## ", "")}
+                    onClick={() => insertFormatting("## ", "", "Subheading")}
                     title="Heading 2"
                   >
                     H2
@@ -358,7 +369,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("`", "`")}
+                    onClick={() => insertFormatting("`", "`", "code")}
                     title="Inline Code"
                   >
                     &lt;/&gt;
@@ -368,7 +379,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("> ", "")}
+                    onClick={() => insertFormatting("> ", "", "Quote or note...")}
                     title="Blockquote"
                   >
                     “
@@ -378,7 +389,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("- ", "")}
+                    onClick={() => insertFormatting("- ", "", "List item")}
                     title="Bulleted List"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -391,7 +402,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("1. ", "")}
+                    onClick={() => insertFormatting("1. ", "", "Ordered item")}
                     title="Numbered List"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -404,7 +415,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("[", "](https://)")}
+                    onClick={() => insertFormatting("[", "](https://example.com)", "Link text")}
                     title="Link"
                   >
                     🔗
@@ -414,7 +425,7 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("![Image](", ")")}
+                    onClick={() => insertFormatting("![Image](", ")", "https://images.unsplash.com/photo-1555066931-4365d14bab8c")}
                     title="Insert Image"
                   >
                     🖼
@@ -424,35 +435,137 @@ export function WriteBlog() {
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("\n| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |\n")}
+                    onClick={() => insertFormatting("\n| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| Row 1 Data | Detail | Value |\n| Row 2 Data | Detail | Value |\n", "", "")}
                     title="Table"
                   >
                     ▦
                   </button>
 
-                  {/* More */}
+                  {/* Code Block */}
                   <button
                     type="button"
                     className="toolbar-btn"
-                    onClick={() => insertFormatting("\n```javascript\n// code snippet\n```\n")}
+                    onClick={() => insertFormatting("\n```javascript\n// Write code here\nconsole.log('Hello DevSphere');\n```\n", "", "")}
                     title="Code Block"
                   >
                     ...
                   </button>
+
+                  {/* Mode Toggles: Edit, Preview, Split */}
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <button
+                      type="button"
+                      className={`toolbar-btn ${editorMode === "write" ? "active" : ""}`}
+                      onClick={() => setEditorMode("write")}
+                      title="Write Markdown"
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: editorMode === "write" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
+                        color: editorMode === "write" ? "var(--primary)" : "var(--text-secondary)",
+                        borderRadius: "6px"
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      type="button"
+                      className={`toolbar-btn ${editorMode === "preview" ? "active" : ""}`}
+                      onClick={() => setEditorMode("preview")}
+                      title="Preview Formatted Output"
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: editorMode === "preview" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
+                        color: editorMode === "preview" ? "var(--primary)" : "var(--text-secondary)",
+                        borderRadius: "6px"
+                      }}
+                    >
+                      👁️ Preview
+                    </button>
+                    <button
+                      type="button"
+                      className={`toolbar-btn ${editorMode === "split" ? "active" : ""}`}
+                      onClick={() => setEditorMode("split")}
+                      title="Side-by-Side Split View"
+                      style={{
+                        padding: "4px 10px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        background: editorMode === "split" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
+                        color: editorMode === "split" ? "var(--primary)" : "var(--text-secondary)",
+                        borderRadius: "6px"
+                      }}
+                    >
+                      ◫ Split
+                    </button>
+                  </div>
                 </div>
 
-                {/* Textarea */}
-                <textarea
-                  ref={contentRef}
-                  className="write-editor-textarea"
-                  placeholder="Write your blog content here..."
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                />
+                {/* Editor Content Area based on Mode */}
+                {editorMode === "write" && (
+                  <textarea
+                    ref={contentRef}
+                    className="write-editor-textarea"
+                    placeholder="Write your blog content here using Markdown (# headings, **bold**, tables, code blocks)..."
+                    value={form.content}
+                    onChange={(e) => setForm({ ...form, content: e.target.value })}
+                  />
+                )}
+
+                {editorMode === "preview" && (
+                  <div
+                    className="write-editor-preview"
+                    style={{
+                      padding: "24px",
+                      minHeight: "360px",
+                      maxHeight: "650px",
+                      overflowY: "auto",
+                      background: "var(--bg-surface)",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: "0 0 var(--radius-md) var(--radius-md)"
+                    }}
+                  >
+                    <MarkdownRenderer
+                      content={form.content || "*Nothing written yet. Click 'Edit' above to write Markdown content or use toolbar items.*"}
+                    />
+                  </div>
+                )}
+
+                {editorMode === "split" && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "var(--border-color)" }}>
+                    <textarea
+                      ref={contentRef}
+                      className="write-editor-textarea"
+                      style={{ border: "none", borderRadius: 0, height: "450px" }}
+                      placeholder="Write your markdown here on the left..."
+                      value={form.content}
+                      onChange={(e) => setForm({ ...form, content: e.target.value })}
+                    />
+                    <div
+                      style={{
+                        padding: "20px",
+                        height: "450px",
+                        overflowY: "auto",
+                        background: "var(--bg-surface)",
+                        borderRadius: 0
+                      }}
+                    >
+                      <MarkdownRenderer
+                        content={form.content || "*Formatted preview will render live as you type on the left...*"}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Footer Status Bar with Word Count */}
                 <div className="write-editor-statusbar">
                   <span>{wordCount} words</span>
+                  <span style={{ marginLeft: "auto", fontSize: "12px", color: "var(--text-muted)" }}>
+                    Markdown & GFM Supported • Click 'Preview' to view formatted output
+                  </span>
                 </div>
               </div>
             </div>
