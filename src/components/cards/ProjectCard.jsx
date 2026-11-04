@@ -10,6 +10,12 @@ export function ProjectCard({ project, onLike, isLiked }) {
     ? `${(project.views / 1000).toFixed(1)}K`
     : project.views || 0;
 
+  const techList = Array.isArray(project.technologies)
+    ? project.technologies.filter(Boolean)
+    : typeof project.technologies === "string"
+    ? project.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
+
   return (
     <article className="project-reference-card">
       {/* Top Media Thumbnail Box */}
@@ -51,14 +57,14 @@ export function ProjectCard({ project, onLike, isLiked }) {
 
         {/* Tech Stack Pills */}
         <div className="project-tech-stack">
-          {project.technologies?.slice(0, 4).map((tech) => (
+          {techList.slice(0, 4).map((tech) => (
             <span key={tech} className="project-tech-pill">
               {tech}
             </span>
           ))}
-          {project.technologies?.length > 4 && (
+          {techList.length > 4 && (
             <span className="project-tech-pill tech-more">
-              +{project.technologies.length - 4}
+              +{techList.length - 4}
             </span>
           )}
         </div>

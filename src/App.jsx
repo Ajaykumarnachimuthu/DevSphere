@@ -12,26 +12,29 @@ import { Projects } from "./pages/Projects";
 import { ProjectDetail } from "./pages/ProjectDetail";
 import { WriteProject } from "./pages/WriteProject";
 import { About } from "./pages/About";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 import "./styles.css";
 
 export function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/blogs" element={<Blogs />} />
-        <Route path="/blogs/:id" element={<BlogDetail />} />
-        <Route path="/knowledge-trails" element={<KnowledgeTrails />} />
-        <Route path="/write-blog" element={<WriteBlog />} />
-        <Route path="/developers" element={<Developers />} />
-        <Route path="/developer-profile" element={<DeveloperProfile />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:id" element={<ProjectDetail />} />
-        <Route path="/write-project" element={<WriteProject />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/blogs/:id" element={<BlogDetail />} />
+          <Route path="/knowledge-trails" element={<KnowledgeTrails />} />
+          <Route path="/write-blog" element={<WriteBlog />} />
+          <Route path="/developers" element={<Developers />} />
+          <Route path="/developer-profile" element={<DeveloperProfile />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/write-project" element={<WriteProject />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

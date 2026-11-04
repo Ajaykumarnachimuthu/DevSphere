@@ -178,6 +178,12 @@ export function ProjectDetail() {
     },
   ];
 
+  const techList = Array.isArray(project.technologies)
+    ? project.technologies.filter(Boolean)
+    : typeof project.technologies === "string"
+    ? project.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -216,7 +222,7 @@ export function ProjectDetail() {
 
             {/* Tech Badges */}
             <div className="hero-tech-badges">
-              {project.technologies?.map((tech) => (
+              {techList.map((tech) => (
                 <span key={tech} className="hero-tech-pill">
                   {tech}
                 </span>
@@ -646,7 +652,7 @@ export function ProjectDetail() {
                 Core Technology Stack & Runtime Modules
               </h4>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                {project.technologies?.map((tech) => (
+                {techList.map((tech) => (
                   <span
                     key={tech}
                     style={{

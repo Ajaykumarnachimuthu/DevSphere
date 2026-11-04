@@ -862,7 +862,7 @@ export function Projects() {
                         <label>The Problem Statement (What friction does this solve?)</label>
                         <textarea
                           rows={2}
-                          placeholder="e.g. Ground water level data was trapped in fragmented static PDF reports, preventing hydrologists and farmers from making real-time extraction decisions."
+                          placeholder="e.g. Traditional monitoring relies on manual data collection with high latency, preventing timely hazard forecasting and risk mitigation."
                           value={form.problemStatement}
                           onChange={(e) => setForm({ ...form, problemStatement: e.target.value })}
                         />
@@ -872,7 +872,7 @@ export function Projects() {
                         <label>Proposed Solution & Architecture</label>
                         <textarea
                           rows={2}
-                          placeholder="e.g. An AI-powered hydrogeological assistant ingesting CGWB district water tables with a hybrid retrieval pipeline and interactive spatial analytics."
+                          placeholder="e.g. An automated early-warning intelligence platform combining real-time IoT/satellite telemetry with machine-learning predictive classification."
                           value={form.proposedSolution}
                           onChange={(e) => setForm({ ...form, proposedSolution: e.target.value })}
                         />
@@ -882,7 +882,7 @@ export function Projects() {
                         <label>Key Features & Capabilities (1 per line)</label>
                         <textarea
                           rows={3}
-                          placeholder="• Real-time Central Ground Water Board report synthesis&#10;• Seasonal water table depth monitoring&#10;• Multi-provider AI reasoning&#10;• Interactive GIS district telemetry"
+                          placeholder="• Real-time predictive telemetry & ML risk modeling&#10;• Automated multi-channel emergency alert dispatch&#10;• High-performance async data pipeline with background scheduler&#10;• Modern interactive dashboard with geospatial GIS telemetry"
                           value={form.keyFeatures}
                           onChange={(e) => setForm({ ...form, keyFeatures: e.target.value })}
                         />
@@ -892,7 +892,7 @@ export function Projects() {
                         <label>Quickstart Run Command</label>
                         <input
                           type="text"
-                          placeholder="e.g. docker compose up -d or npm install && npm run dev"
+                          placeholder="e.g. git clone https://github.com/org/repo.git && cd repo && npm install && npm run dev"
                           value={form.quickstartCmd}
                           onChange={(e) => setForm({ ...form, quickstartCmd: e.target.value })}
                         />

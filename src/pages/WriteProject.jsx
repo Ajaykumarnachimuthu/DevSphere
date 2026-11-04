@@ -619,12 +619,12 @@ export function WriteProject() {
               <textarea
                 className="write-text-input"
                 style={{
-                  minHeight: "110px",
+                  minHeight: "130px",
                   lineHeight: "1.6",
                   fontFamily: "var(--font-sans)",
                   resize: "vertical"
                 }}
-                placeholder="• Real-time Central Ground Water Board report synthesis&#10;• Seasonal water table depth monitoring&#10;• Multi-provider AI reasoning (Gemini & Llama)&#10;• Resilient offline caching"
+                placeholder="• Real-time predictive telemetry & ML risk modeling&#10;• Automated multi-channel emergency alert dispatch&#10;• High-performance async data pipeline with background scheduler&#10;• Modern interactive dashboard with geospatial GIS telemetry"
                 value={form.keyFeatures}
                 onChange={(e) => setForm({ ...form, keyFeatures: e.target.value })}
               />
@@ -636,13 +636,13 @@ export function WriteProject() {
                 <span>⚡</span>
                 <span>Quickstart CLI Command</span>
               </label>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", width: "100%" }}>
                 <span style={{ position: "absolute", left: "14px", color: "var(--text-muted)", fontFamily: "monospace", fontWeight: 700 }}>$</span>
                 <input
                   type="text"
                   className="write-text-input"
-                  style={{ paddingLeft: "32px", fontFamily: "var(--font-mono, monospace)", fontSize: "13.5px" }}
-                  placeholder="docker compose up -d or npm install && npm run dev"
+                  style={{ paddingLeft: "32px", fontFamily: "var(--font-mono, monospace)", fontSize: "13.5px", width: "100%" }}
+                  placeholder="git clone https://github.com/org/repo.git && cd repo && npm install && npm run dev"
                   value={form.quickstartCmd}
                   onChange={(e) => setForm({ ...form, quickstartCmd: e.target.value })}
                 />
@@ -1141,3 +1141,4 @@ export function WriteProject() {
     </Shell>
   );
 }
+
