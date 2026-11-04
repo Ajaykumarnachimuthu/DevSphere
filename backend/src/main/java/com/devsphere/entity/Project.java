@@ -24,10 +24,10 @@ public class Project {
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "TEXT")
     private String tagline;
 
-    @Column(name = "cover_image", length = 500)
+    @Column(name = "cover_image", columnDefinition = "TEXT")
     private String coverImage;
 
     @Column(nullable = false, length = 50)
@@ -60,7 +60,7 @@ public class Project {
     @Column(name = "key_features", columnDefinition = "TEXT")
     private String keyFeatures;
 
-    @Column(name = "quickstart_cmd", length = 255)
+    @Column(name = "quickstart_cmd", columnDefinition = "TEXT")
     private String quickstartCmd;
 
     @Column(name = "video_demo_url", length = 500)

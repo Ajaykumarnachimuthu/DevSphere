@@ -1,6 +1,45 @@
 import React, { useState, useRef } from "react";
 import { filesApi } from "../../services/api";
 
+// Client-side image compression helper to keep payloads light and fast
+function compressImage(file, maxWidth = 1280, quality = 0.82) {
+  return new Promise((resolve) => {
+    // Keep SVGs, GIFs, and already compact files as-is
+    if (file.type === "image/svg+xml" || file.type === "image/gif" || file.size < 150 * 1024) {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedDataUrl);
+      };
+      img.onerror = () => resolve(event.target.result);
+      img.src = event.target.result;
+    };
+    reader.onerror = () => resolve("");
+    reader.readAsDataURL(file);
+  });
+}
+
 export function ImageUploader({
   value,
   onChange,
@@ -38,13 +77,12 @@ export function ImageUploader({
         throw new Error("No URL returned from server");
       }
     } catch (err) {
-      console.warn("Server upload fallback to local Base64 URL:", err);
-      // 2. Resilient fallback to local base64 Data URL if backend is unavailable
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        onChange(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      console.warn("Server upload fallback to optimized Base64 URL:", err);
+      // 2. High-performance fallback: compress image client-side to keep DB fast
+      const compressedUrl = await compressImage(file);
+      if (compressedUrl) {
+        onChange(compressedUrl);
+      }
     } finally {
       setUploading(false);
     }
