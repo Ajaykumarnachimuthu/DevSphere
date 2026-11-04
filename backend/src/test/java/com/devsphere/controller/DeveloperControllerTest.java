@@ -35,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DeveloperController.class)
+@org.springframework.test.context.ContextConfiguration(classes = com.devsphere.DevSphereApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DeveloperControllerTest {
 

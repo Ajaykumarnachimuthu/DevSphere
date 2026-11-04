@@ -22,6 +22,8 @@ public class UpdateProjectRequest {
 
     private String liveDemoUrl;
 
+    private String coverImage;
+
     private String githubUrl;
 
     private String documentation;
@@ -95,6 +97,14 @@ public class UpdateProjectRequest {
 
     public void setLiveDemoUrl(String liveDemoUrl) {
         this.liveDemoUrl = liveDemoUrl;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 
     public String getGithubUrl() {

@@ -164,7 +164,15 @@ export function Navbar() {
 
                 <div className="dropdown-divider" />
 
-                <NavLink to="/developer-profile" className="dropdown-item" role="menuitem">
+                <NavLink
+                  to="/profile"
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    try { localStorage.removeItem("selectedDeveloper"); } catch {}
+                    setDropdownOpen(false);
+                  }}
+                >
                   <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -281,7 +289,15 @@ export function Navbar() {
                   <p>{currentUser}</p>
                 </div>
               </div>
-              <NavLink to="/developer-profile" className="btn-secondary btn-full btn-sm" style={{ marginTop: "12px", textDecoration: "none" }}>
+              <NavLink
+                to="/profile"
+                className="btn-secondary btn-full btn-sm"
+                style={{ marginTop: "12px", textDecoration: "none" }}
+                onClick={() => {
+                  try { localStorage.removeItem("selectedDeveloper"); } catch {}
+                  setMobileMenuOpen(false);
+                }}
+              >
                 View My Profile
               </NavLink>
               <button

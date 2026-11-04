@@ -6,6 +6,7 @@ import { BlogCard } from "../components/cards/BlogCard";
 import { BlogCardSkeleton } from "../components/ui/Skeleton";
 import { EmptyState } from "../components/ui/EmptyState";
 import { blogsApi } from "../services/api";
+import { getLikedBlogs, toggleBlogLikedLocal, recordBlogLiked } from "../utils/likesStorage";
 
 const CATEGORIES = [
   "All",
@@ -22,6 +23,7 @@ export function Blogs() {
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("Latest");
   const [backendBlogs, setBackendBlogs] = useState([]);
+  const [likedBlogIds, setLikedBlogIds] = useState(() => getLikedBlogs());
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -38,21 +40,28 @@ export function Blogs() {
         });
         const list = res?.content || (Array.isArray(res) ? res : null);
         if (list && list.length > 0 && isMounted) {
-          const mapped = list.map((b) => ({
-            id: b.id,
-            title: b.title,
-            category: b.category,
-            description: b.content,
-            author: b.authorName || b.author || "DevSphere Author",
-            readTime: b.readTime || "5 min read",
-            tech: b.tech || b.category,
-            status: b.status,
-            coverImage: b.coverImage,
-            likes: b.likes ?? 0,
-            views: b.views ?? 0,
-            tags: Array.isArray(b.tags) ? b.tags : Array.from(b.tags || []),
-          }));
+          const localLiked = getLikedBlogs();
+          const mapped = list.map((b) => {
+            const isLiked = localLiked.includes(String(b.id)) || Boolean(b.liked);
+            if (b.liked) recordBlogLiked(b.id, true);
+            return {
+              id: b.id,
+              title: b.title,
+              category: b.category,
+              description: b.content,
+              author: b.authorName || b.author || "DevSphere Author",
+              readTime: b.readTime || "5 min read",
+              tech: b.tech || b.category,
+              status: b.status,
+              coverImage: b.coverImage,
+              likes: b.likes ?? 0,
+              liked: isLiked,
+              views: b.views ?? 0,
+              tags: Array.isArray(b.tags) ? b.tags : Array.from(b.tags || []),
+            };
+          });
           setBackendBlogs(mapped);
+          setLikedBlogIds(getLikedBlogs());
         } else if (isMounted) {
           setBackendBlogs([]);
         }
@@ -71,6 +80,25 @@ export function Blogs() {
       clearTimeout(timer);
     };
   }, [category, query]);
+
+  const handleLikeBlog = async (blogId) => {
+    if (!blogId) return;
+    const { isLiked: nowLiked, delta } = toggleBlogLikedLocal(blogId);
+    setLikedBlogIds(getLikedBlogs());
+    setBackendBlogs((prev) =>
+      prev.map((b) => (String(b.id) === String(blogId) ? { ...b, likes: Math.max(0, (b.likes || 0) + delta) } : b))
+    );
+    try {
+      const updated = await blogsApi.toggleLike(blogId);
+      if (updated && typeof updated.likes === "number") {
+        setBackendBlogs((prev) =>
+          prev.map((b) => (String(b.id) === String(blogId) ? { ...b, likes: updated.likes } : b))
+        );
+      }
+    } catch {
+      // Keep optimistic update and localStorage intact for guests / network issues
+    }
+  };
 
   const filteredBlogs = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -199,6 +227,8 @@ export function Blogs() {
               <BlogCard
                 key={blog.id || `${blog.title}-${index}`}
                 blog={blog}
+                isLiked={likedBlogIds.includes(String(blog.id))}
+                onLike={handleLikeBlog}
               />
             ))
           ) : (

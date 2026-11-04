@@ -23,6 +23,8 @@ public class ProjectResponse {
     private String quickstartCmd;
     private String videoDemoUrl;
     private String author;
+    private String authorName;
+    private UUID authorId;
     private List<String> technologies;
     private int likes;
     private int views;
@@ -177,11 +179,29 @@ public class ProjectResponse {
     }
 
     public String getAuthor() {
-        return author;
+        return author != null ? author : (authorName != null ? authorName : "AJAYKUMAR N");
     }
 
     public void setAuthor(String author) {
         this.author = author;
+        if (this.authorName == null) this.authorName = author;
+    }
+
+    public String getAuthorName() {
+        return authorName != null ? authorName : (author != null ? author : "AJAYKUMAR N");
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+        if (this.author == null) this.author = authorName;
+    }
+
+    public UUID getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(UUID authorId) {
+        this.authorId = authorId;
     }
 
     public List<String> getTechnologies() {

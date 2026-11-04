@@ -1,9 +1,14 @@
 package com.devsphere;
 
+import com.devsphere.client.BlogServiceClient;
+import com.devsphere.client.ProjectServiceClient;
 import com.devsphere.dto.request.CreateBlogRequest;
 import com.devsphere.dto.request.LoginRequest;
 import com.devsphere.dto.request.RegisterRequest;
 import com.devsphere.dto.response.AuthResponse;
+import com.devsphere.dto.response.BlogResponse;
+import com.devsphere.dto.response.PagedResponse;
+import com.devsphere.entity.BlogStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,18 +16,26 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = DevSphereApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class DevSphereIntegrationTest {
@@ -32,6 +45,12 @@ class DevSphereIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private BlogServiceClient blogServiceClient;
+
+    @MockitoBean
+    private ProjectServiceClient projectServiceClient;
 
     @Test
     void fullApplicationEndToEndFlow() throws Exception {
@@ -63,7 +82,25 @@ class DevSphereIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("integ@devsphere.io"));
 
-        // 4. Create a blog post using JWT
+        // 4. Create a blog post using JWT (Delegated through Gateway to BlogServiceClient)
+        UUID blogId = UUID.randomUUID();
+        BlogResponse mockBlogResponse = new BlogResponse(
+                blogId,
+                "Integration Testing with Spring Boot",
+                "Web Development",
+                "Step-by-step tutorial on building production-ready test suites.",
+                "integrationUser",
+                "1 min read",
+                "Spring Boot",
+                Set.of("java", "spring", "testing"),
+                BlogStatus.PUBLISHED,
+                Instant.now(),
+                true
+        );
+        when(blogServiceClient.createBlog(any(), any())).thenReturn(mockBlogResponse);
+        when(blogServiceClient.getBlogs(isNull(), eq("Integration Testing"), any(), any()))
+                .thenReturn(new PagedResponse<>(List.of(mockBlogResponse), 0, 10, 1, 1, true));
+
         CreateBlogRequest blogReq = new CreateBlogRequest(
                 "Integration Testing with Spring Boot",
                 "Web Development",

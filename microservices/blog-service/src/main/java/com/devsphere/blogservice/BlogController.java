@@ -1,129 +1,227 @@
 package com.devsphere.blogservice;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.devsphere.blogservice.dto.*;
+import com.devsphere.blogservice.security.InternalTokenVerifier;
+import com.devsphere.blogservice.security.InternalUserPrincipal;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:8080"})
 @RestController
 @RequestMapping("/api/v1/blogs")
 public class BlogController {
 
     private final BlogService blogService;
-    private final String internalSecret;
+    private final InternalTokenVerifier tokenVerifier;
 
-    public BlogController(
-            BlogService blogService,
-            @Value("${devsphere.internal.secret:devsphere-hybrid-internal-key-2026}") String internalSecret
-    ) {
+    public BlogController(BlogService blogService, InternalTokenVerifier tokenVerifier) {
         this.blogService = blogService;
-        this.internalSecret = internalSecret;
+        this.tokenVerifier = tokenVerifier;
+    }
+
+    private InternalUserPrincipal resolvePrincipal(String internalToken, String authHeader) {
+        String token = (internalToken != null && !internalToken.isBlank()) ? internalToken : authHeader;
+        return tokenVerifier.verify(token);
     }
 
     @GetMapping
-    public List<Blog> getBlogs(
+    public ResponseEntity<PagedResponse<BlogResponse>> getBlogs(
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
     ) {
-        return blogService.getBlogs(category, search);
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        UUID currentUserId = principal != null ? principal.getId() : null;
+        return ResponseEntity.ok(blogService.getBlogs(category, search, page, size, currentUserId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Blog> getBlogById(
+    public ResponseEntity<BlogResponse> getBlogById(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-Auth-User-Id", required = false) String authUserId,
-            @RequestHeader(value = "X-Auth-User-Role", required = false) String authUserRole
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
     ) {
-        return blogService.getBlogById(id).map(blog -> {
-            if ("DRAFT".equalsIgnoreCase(blog.getStatus())) {
-                boolean isAuthor = authUserId != null && blog.getAuthorId() != null && authUserId.equals(blog.getAuthorId().toString());
-                boolean isAdmin = "ROLE_ADMIN".equalsIgnoreCase(authUserRole);
-                if (!isAuthor && !isAdmin) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).<Blog>build();
-                }
-            }
-            return ResponseEntity.ok(blog);
-        }).orElse(ResponseEntity.notFound().build());
-    }
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        UUID currentUserId = principal != null ? principal.getId() : null;
+        boolean isAdmin = principal != null && principal.isAdmin();
 
-    @GetMapping("/drafts")
-    public ResponseEntity<List<Blog>> getDrafts(
-            @RequestHeader(value = "X-Auth-User-Id", required = false) String authUserId
-    ) {
-        if (authUserId == null || authUserId.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         try {
-            UUID authorUuid = UUID.fromString(authUserId);
-            List<Blog> drafts = blogService.getDraftsByAuthorId(authorUuid);
-            return ResponseEntity.ok(drafts);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            return blogService.getBlogById(id, currentUserId, isAdmin)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<Blog> createBlog(
-            @RequestBody Blog blog,
-            @RequestHeader(value = "X-Auth-User-Id", required = false) String authUserId,
-            @RequestHeader(value = "X-Auth-User-Name", required = false) String authUserName
+    public ResponseEntity<BlogResponse> createBlog(
+            @Valid @RequestBody CreateBlogRequest request,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
     ) {
-        if (authUserId != null && !authUserId.isBlank()) {
-            try {
-                blog.setAuthorId(UUID.fromString(authUserId));
-            } catch (IllegalArgumentException ignored) {}
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        if (authUserName != null && !authUserName.isBlank()) {
-            blog.setAuthorName(authUserName);
-        }
-        if (blog.getAuthorName() == null || blog.getAuthorName().isBlank()) {
-            blog.setAuthorName("Community Member");
-        }
-
-        Blog saved = blogService.createBlog(blog);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        BlogResponse created = blogService.createBlog(request, principal.getId(), principal.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    public ResponseEntity<Blog> createBlog(Blog blog) {
-        return createBlog(blog, null, null);
+    @GetMapping("/drafts")
+    public ResponseEntity<List<BlogResponse>> getDrafts(
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(blogService.getDrafts(principal.getId()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Blog> updateBlog(
+    public ResponseEntity<BlogResponse> updateBlog(
             @PathVariable UUID id,
-            @RequestBody Blog blog,
-            @RequestHeader(value = "X-Auth-User-Id", required = false) String authUserId,
-            @RequestHeader(value = "X-Auth-User-Role", required = false) String authUserRole
+            @Valid @RequestBody UpdateBlogRequest request,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
     ) {
-        return blogService.getBlogById(id).map(existing -> {
-            boolean isAuthor = authUserId != null && existing.getAuthorId() != null && authUserId.equals(existing.getAuthorId().toString());
-            boolean isAdmin = "ROLE_ADMIN".equalsIgnoreCase(authUserRole);
-            if (!isAuthor && !isAdmin) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).<Blog>build();
-            }
-            Blog updated = blogService.updateBlog(id, blog).orElse(existing);
-            return ResponseEntity.ok(updated);
-        }).orElse(ResponseEntity.notFound().build());
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            return blogService.updateBlog(id, request, principal.getId(), principal.isAdmin())
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBlog(
             @PathVariable UUID id,
-            @RequestHeader(value = "X-Auth-User-Id", required = false) String authUserId,
-            @RequestHeader(value = "X-Auth-User-Role", required = false) String authUserRole
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
     ) {
-        return blogService.getBlogById(id).map(existing -> {
-            boolean isAuthor = authUserId != null && existing.getAuthorId() != null && authUserId.equals(existing.getAuthorId().toString());
-            boolean isAdmin = "ROLE_ADMIN".equalsIgnoreCase(authUserRole);
-            if (!isAuthor && !isAdmin) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).<Void>build();
-            }
-            blogService.deleteBlog(id);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            boolean deleted = blogService.deleteBlog(id, principal.getId(), principal.isAdmin());
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @PostMapping("/{id}/like")
+    public ResponseEntity<BlogResponse> toggleLike(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            return ResponseEntity.ok(blogService.toggleLike(id, principal.getId()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id}/bookmark")
+    public ResponseEntity<BlogResponse> toggleBookmark(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            return ResponseEntity.ok(blogService.toggleBookmark(id, principal.getId()));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<List<CommentResponse>> getComments(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        UUID currentUserId = principal != null ? principal.getId() : null;
+        return ResponseEntity.ok(blogService.getComments(id, currentUserId));
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentResponse> addComment(
+            @PathVariable UUID id,
+            @Valid @RequestBody CommentRequest request,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            CommentResponse response = blogService.addComment(id, request, principal.getId(), principal.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable UUID commentId,
+            @RequestHeader(value = "X-Internal-Token", required = false) String internalToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        InternalUserPrincipal principal = resolvePrincipal(internalToken, authHeader);
+        if (principal == null || principal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            boolean deleted = blogService.deleteComment(commentId, principal.getId(), principal.isAdmin());
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @GetMapping("/trails")
+    public ResponseEntity<List<KnowledgeTrailResponse>> getKnowledgeTrails() {
+        return ResponseEntity.ok(blogService.getKnowledgeTrails());
+    }
+
+    @GetMapping("/trails/{id}")
+    public ResponseEntity<KnowledgeTrailResponse> getKnowledgeTrailById(@PathVariable UUID id) {
+        try {
+            return ResponseEntity.ok(blogService.getKnowledgeTrailById(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

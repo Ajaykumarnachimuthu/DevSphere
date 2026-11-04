@@ -46,7 +46,16 @@ export function WriteBlog() {
       prefix.startsWith("-") ||
       prefix.startsWith("1.") ||
       prefix.trim().startsWith("|") ||
-      prefix.trim().startsWith("```");
+      prefix.trim().startsWith("```") ||
+      prefix.trim().startsWith("$$");
+
+    // Don't nest markers if user selected an unedited placeholder or another markdown tag
+    const isPlaceholder =
+      !selected ||
+      /^(text|bold text|italic text|code|Main Heading|Subheading|Subsection Heading|List item|Ordered item|Link text|Start typing paragraph\.\.\.|https:\/\/[^\s]+)$/i.test(selected.trim()) ||
+      /^[*#`>|\[]/.test(selected.trim());
+
+    const textToInsert = isPlaceholder ? defaultPlaceholder : selected;
 
     let lead = "";
     let trail = "";
@@ -62,11 +71,10 @@ export function WriteBlog() {
         }
       }
       if (end < form.content.length && form.content[end] !== "\n") {
-        trail = "\n";
+        trail = "\n\n";
       }
     }
 
-    const textToInsert = selected || defaultPlaceholder;
     const cleanPrefix = prefix.replace(/^\n+/, "");
     const cleanSuffix = suffix.replace(/\n+$/, "");
 
@@ -511,6 +519,16 @@ export function WriteBlog() {
                       <line x1="8" y1="21" x2="16" y2="21" />
                       <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
+                  </button>
+
+                  {/* Math / KaTeX Formula */}
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={() => insertFormatting("\n$$\n\\hat{y} = f(\\mathbf{x}; \\mathbf{\\theta})\n$$\n", "", "")}
+                    title="Math Formula (KaTeX)"
+                  >
+                    <span style={{ fontWeight: 800, fontSize: "14px", fontFamily: "serif" }}>∑</span>
                   </button>
 
                   {/* Mode Toggles: Edit, Preview, Split */}

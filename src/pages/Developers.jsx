@@ -52,7 +52,11 @@ export function Developers() {
 
   const handleSelectDeveloper = (dev) => {
     setSelectedDeveloper(dev);
-    navigate("/developer-profile");
+    if (dev?.id) {
+      navigate(`/developers/${dev.id}`);
+    } else {
+      navigate("/developer-profile");
+    }
   };
 
   return (

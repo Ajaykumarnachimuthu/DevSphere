@@ -30,7 +30,7 @@ public class DeveloperProfile {
     @Column(length = 100)
     private String location;
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String avatar;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -122,6 +122,14 @@ public class DeveloperProfile {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getAvatarUrl() {
+        return avatar;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatar = avatarUrl;
     }
 
     public Set<String> getSkills() {

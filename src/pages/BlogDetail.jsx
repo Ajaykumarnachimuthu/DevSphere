@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { blogsApi } from "../services/api";
+import { useDevSphere } from "../context/DevSphereContext";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
 import { Button } from "../components/ui/Button";
+import { isBlogLiked, toggleBlogLikedLocal, recordBlogLiked } from "../utils/likesStorage";
 
 // Helper to parse inline markdown (bold, italic, code, links)
 function parseInlineMarkdown(text) {
@@ -83,6 +85,7 @@ function highlightCodeTokens(code) {
 export function BlogDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useDevSphere();
 
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +97,7 @@ export function BlogDetail() {
   const [activeHeadingId, setActiveHeadingId] = useState("");
 
   // Engagement state
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(() => isBlogLiked(id));
   const [likesCount, setLikesCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
@@ -185,7 +188,10 @@ export function BlogDetail() {
       };
 
       setBlog(finalBlog);
-      setIsLiked(finalBlog.liked || false);
+      const locallyLiked = isBlogLiked(id);
+      const activeLiked = Boolean(finalBlog.liked || locallyLiked);
+      if (finalBlog.liked) recordBlogLiked(id, true);
+      setIsLiked(activeLiked);
       setLikesCount(finalBlog.likes ?? 0);
       setIsBookmarked(finalBlog.bookmarked || false);
 
@@ -223,13 +229,19 @@ export function BlogDetail() {
   };
 
   const handleToggleLike = async () => {
-    try {
-      const updated = await blogsApi.toggleLike(id);
-      setIsLiked(updated.liked);
-      setLikesCount(updated.likes);
-    } catch (err) {
-      if (err.status === 401 || err.status === 403) {
-        navigate("/login");
+    const { isLiked: nowLiked, delta } = toggleBlogLikedLocal(id);
+    setIsLiked(nowLiked);
+    setLikesCount((prev) => Math.max(0, prev + delta));
+
+    if (isAuthenticated) {
+      try {
+        const updated = await blogsApi.toggleLike(id);
+        if (updated && typeof updated.likes === "number") {
+          setLikesCount(updated.likes);
+          setIsLiked(Boolean(updated.liked));
+        }
+      } catch (err) {
+        console.warn("Blog like sync failed:", err);
       }
     }
   };

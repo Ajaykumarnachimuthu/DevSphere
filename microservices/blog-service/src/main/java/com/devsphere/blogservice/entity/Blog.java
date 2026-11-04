@@ -1,18 +1,6 @@
-package com.devsphere.blogservice;
+package com.devsphere.blogservice.entity;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +23,12 @@ public class Blog {
     @Column(nullable = false, length = 255)
     private String title;
 
+    @Column(columnDefinition = "TEXT")
+    private String subtitle;
+
+    @Column(name = "cover_image", columnDefinition = "TEXT")
+    private String coverImage;
+
     @Column(nullable = false, length = 50)
     private String category;
 
@@ -44,8 +38,23 @@ public class Blog {
     @Column(name = "read_time", nullable = false, length = 30)
     private String readTime = "5 min read";
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String tech;
+
+    @Column(length = 30)
+    private String difficulty = "Intermediate";
+
+    @Column(columnDefinition = "TEXT")
+    private String prerequisites;
+
+    @Column(columnDefinition = "TEXT")
+    private String takeaways;
+
+    @Column(nullable = false)
+    private int likes = 0;
+
+    @Column(nullable = false)
+    private int bookmarks = 0;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "blog_tags", joinColumns = @JoinColumn(name = "blog_id"))
@@ -56,32 +65,35 @@ public class Blog {
     private String status = "PUBLISHED";
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    private Instant updatedAt = Instant.now();
 
     public Blog() {
     }
 
-    public Blog(String title, String category, String content, String authorName, String tech, String readTime, String status) {
+    public Blog(String title, String category, String content, String authorName, String tech, String readTime,
+            String status) {
         this.title = title;
         this.category = category;
         this.content = content;
         this.authorName = authorName;
         this.tech = tech;
-        if (readTime != null) {
+        if (readTime != null)
             this.readTime = readTime;
-        }
-        if (status != null) {
+        if (status != null)
             this.status = status;
-        }
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+        if (this.createdAt == null)
+            this.createdAt = Instant.now();
+        if (this.updatedAt == null)
+            this.updatedAt = Instant.now();
     }
 
     @PreUpdate
@@ -113,12 +125,36 @@ public class Blog {
         this.authorName = authorName;
     }
 
+    public String getAuthor() {
+        return authorName;
+    }
+
+    public void setAuthor(String author) {
+        this.authorName = author;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 
     public String getCategory() {
@@ -151,6 +187,46 @@ public class Blog {
 
     public void setTech(String tech) {
         this.tech = tech;
+    }
+
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public String getPrerequisites() {
+        return prerequisites;
+    }
+
+    public void setPrerequisites(String prerequisites) {
+        this.prerequisites = prerequisites;
+    }
+
+    public String getTakeaways() {
+        return takeaways;
+    }
+
+    public void setTakeaways(String takeaways) {
+        this.takeaways = takeaways;
+    }
+
+    public int getLikes() {
+        return likes;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
+
+    public int getBookmarks() {
+        return bookmarks;
+    }
+
+    public void setBookmarks(int bookmarks) {
+        this.bookmarks = bookmarks;
     }
 
     public Set<String> getTags() {

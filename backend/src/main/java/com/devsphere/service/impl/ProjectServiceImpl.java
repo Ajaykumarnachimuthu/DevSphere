@@ -223,6 +223,7 @@ public class ProjectServiceImpl implements ProjectService {
             project.setTechnologies(new ArrayList<>(request.getTechnologies()));
         }
         if (request.getStatus() != null) project.setStatus(request.getStatus().trim());
+        if (request.getCoverImage() != null) project.setCoverImage(request.getCoverImage().trim());
         if (request.getLiveDemoUrl() != null) project.setLiveDemoUrl(request.getLiveDemoUrl().trim());
         if (request.getGithubUrl() != null) project.setGithubUrl(request.getGithubUrl().trim());
         if (request.getDocumentation() != null) project.setDocumentation(request.getDocumentation().trim());
@@ -349,17 +350,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectResponse incrementViews(UUID projectId) {
-        int updatedRows = projectRepository.incrementViewsDirect(projectId);
-        if (updatedRows == 0) {
-            if (!projectRepository.existsById(projectId)) {
-                throw new ResourceNotFoundException("Project not found with id: " + projectId);
-            }
-        }
-
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
-
-        return mapper.toProjectResponse(project, false, false, false);
+        project.setViews(project.getViews() + 1);
+        Project saved = projectRepository.saveAndFlush(project);
+        return mapper.toProjectResponse(saved, false, false, false);
     }
 
     @Override

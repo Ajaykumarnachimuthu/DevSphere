@@ -9,6 +9,7 @@ import { ImageUploader } from "../components/ui/ImageUploader";
 import { projectsApi } from "../services/api";
 import { useDevSphere } from "../context/DevSphereContext";
 import { parseReadmeToProject } from "../utils/readmeParser";
+import { getLikedProjects, toggleProjectLikedLocal, recordProjectLiked } from "../utils/likesStorage";
 
 const CATEGORIES = [
   "All",
@@ -28,7 +29,7 @@ export function Projects() {
   const [sort, setSort] = useState("Latest");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [likedIds, setLikedIds] = useState([]);
+  const [likedIds, setLikedIds] = useState(() => getLikedProjects());
   const [notice, setNotice] = useState("");
   const [modalError, setModalError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,21 +69,23 @@ export function Projects() {
     }
 
     let count = 0;
-    const newForm = { ...form };
-    if (extracted.title) { newForm.title = extracted.title; count++; }
-    if (extracted.tagline) { newForm.tagline = extracted.tagline; count++; }
-    if (extracted.category) { newForm.category = extracted.category; count++; }
-    if (extracted.technologies) { newForm.technologies = extracted.technologies; count++; }
-    if (extracted.githubUrl) { newForm.githubUrl = extracted.githubUrl; count++; }
-    if (extracted.liveDemoUrl) { newForm.liveDemoUrl = extracted.liveDemoUrl; count++; }
-    if (extracted.problemStatement) { newForm.problemStatement = extracted.problemStatement; count++; }
-    if (extracted.proposedSolution) { newForm.proposedSolution = extracted.proposedSolution; count++; }
-    if (extracted.keyFeatures) { newForm.keyFeatures = extracted.keyFeatures; count++; }
-    if (extracted.quickstartCmd) { newForm.quickstartCmd = extracted.quickstartCmd; count++; }
-    if (extracted.description) { newForm.description = extracted.description; count++; }
+    setForm((prev) => {
+      const updated = { ...prev };
+      if (extracted.title) { updated.title = extracted.title; count++; }
+      if (extracted.tagline) { updated.tagline = extracted.tagline; count++; }
+      if (extracted.category) { updated.category = extracted.category; count++; }
+      if (extracted.technologies) { updated.technologies = extracted.technologies; count++; }
+      if (extracted.githubUrl) { updated.githubUrl = extracted.githubUrl; count++; }
+      if (extracted.liveDemoUrl) { updated.liveDemoUrl = extracted.liveDemoUrl; count++; }
+      if (extracted.problemStatement) { updated.problemStatement = extracted.problemStatement; count++; }
+      if (extracted.proposedSolution) { updated.proposedSolution = extracted.proposedSolution; count++; }
+      if (extracted.keyFeatures) { updated.keyFeatures = extracted.keyFeatures; count++; }
+      if (extracted.quickstartCmd) { updated.quickstartCmd = extracted.quickstartCmd; count++; }
+      if (extracted.description) { updated.description = extracted.description; count++; }
+      return updated;
+    });
 
-    setForm(newForm);
-    setImportStatus(`✨ Successfully extracted ${count} fields from README! Check Basics, Media, and Engineering Story tabs.`);
+    setImportStatus(`✨ Successfully extracted all fields from README! Check Basics, Media, and Engineering Story tabs.`);
   };
 
   const handleExtractFromText = () => {
@@ -179,13 +182,18 @@ export function Projects() {
       });
       const list = data?.content || (Array.isArray(data) ? data : null);
       if (list && list.length > 0) {
-        setItems(list);
-        const backendLiked = list
-          .filter((p) => p.liked || p.likedByCurrentUser)
-          .map((p) => p.id || p.title);
-        if (backendLiked.length > 0) {
-          setLikedIds((prev) => Array.from(new Set([...prev, ...backendLiked])));
-        }
+        const localLiked = getLikedProjects();
+        const normalized = list.map((p) => {
+          const isLiked = localLiked.includes(String(p.id)) || Boolean(p.liked || p.likedByCurrentUser);
+          if (p.liked || p.likedByCurrentUser) recordProjectLiked(p.id, true);
+          return {
+            ...p,
+            likes: p.likes || 0,
+            liked: isLiked,
+          };
+        });
+        setItems(normalized);
+        setLikedIds(getLikedProjects());
       } else {
         setItems([]);
       }
@@ -231,39 +239,35 @@ export function Projects() {
     const targetProject = items.find((p) => p.id === idOrTitle || p.title === idOrTitle);
     if (!targetProject) return;
     const targetKey = targetProject.id || targetProject.title;
-    const currentlyLiked = likedIds.includes(targetKey);
+
+    // Toggle in universal storage
+    const { isLiked, delta } = toggleProjectLikedLocal(targetKey);
+    setLikedIds(getLikedProjects());
 
     // Optimistic UI update
-    setLikedIds((prev) =>
-      currentlyLiked ? prev.filter((id) => id !== targetKey) : [...prev, targetKey]
-    );
     setItems((prev) =>
       prev.map((project) =>
         (project.id === targetKey || project.title === targetKey)
-          ? { ...project, likes: Math.max(0, (project.likes || 0) + (currentlyLiked ? -1 : 1)) }
+          ? { ...project, likes: Math.max(0, (project.likes || 0) + delta) }
           : project
       )
     );
 
-    // Backend synchronization
-    if (targetProject.id) {
+    // Backend synchronization if authenticated
+    if (targetProject.id && isAuthenticated) {
       try {
-        await projectsApi.toggleLike(targetProject.id);
-      } catch (err) {
-        // Rollback on network/auth error
-        setLikedIds((prev) =>
-          currentlyLiked ? [...prev, targetKey] : prev.filter((id) => id !== targetKey)
-        );
-        setItems((prev) =>
-          prev.map((project) =>
-            (project.id === targetKey || project.title === targetKey)
-              ? { ...project, likes: Math.max(0, (project.likes || 0) + (currentlyLiked ? 1 : -1)) }
-              : project
-          )
-        );
-        if (err.status === 401 || err.status === 403) {
-          setNotice("Please log in to like community projects.");
+        const updated = await projectsApi.toggleLike(targetProject.id);
+        if (updated && typeof updated.likes === "number") {
+          setItems((prev) =>
+            prev.map((project) =>
+              (project.id === targetKey || project.title === targetKey)
+                ? { ...project, likes: updated.likes }
+                : project
+            )
+          );
         }
+      } catch (err) {
+        console.warn("Backend project like sync failed, kept locally:", err);
       }
     }
   };
@@ -275,7 +279,12 @@ export function Projects() {
         setModalError("Please enter a Project Title before proceeding.");
         return;
       }
-      if (!form.technologies.trim()) {
+      const techStr = typeof form.technologies === "string"
+        ? form.technologies.trim()
+        : Array.isArray(form.technologies)
+        ? form.technologies.join(", ").trim()
+        : "";
+      if (!techStr) {
         setModalError("Please specify at least one technology (e.g. React, Spring Boot).");
         return;
       }
@@ -303,9 +312,9 @@ export function Projects() {
     setSubmitting(true);
 
     try {
-      const techs = form.technologies
-        ? form.technologies.split(",").map((t) => t.trim()).filter(Boolean)
-        : [];
+      const techs = Array.isArray(form.technologies)
+        ? form.technologies.filter(Boolean)
+        : (form.technologies || "").split(",").map((t) => t.trim()).filter(Boolean);
 
       // Backend requires description not blank. Fallback safely if left empty
       const finalDescription =

@@ -11,6 +11,11 @@ public class UpdateBlogRequest {
     @Size(max = 255, message = "Title cannot exceed 255 characters")
     private String title;
 
+    private String subtitle;
+    private String coverImage;
+    private String difficulty;
+    private String readTime;
+
     @NotBlank(message = "Category is required")
     @Size(max = 50, message = "Category cannot exceed 50 characters")
     private String category;
@@ -31,6 +36,38 @@ public class UpdateBlogRequest {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public String getReadTime() {
+        return readTime;
+    }
+
+    public void setReadTime(String readTime) {
+        this.readTime = readTime;
     }
 
     public String getCategory() {

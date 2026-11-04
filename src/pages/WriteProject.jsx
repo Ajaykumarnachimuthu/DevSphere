@@ -7,6 +7,7 @@ import { MarkdownRenderer } from "../components/ui/MarkdownRenderer";
 import { useDevSphere } from "../context/DevSphereContext";
 import { projectsApi } from "../services/api";
 import { parseReadmeToProject } from "../utils/readmeParser";
+import { MermaidDiagram } from "../components/ui/MermaidDiagram";
 
 const CATEGORIES = [
   "Web Development",
@@ -33,6 +34,7 @@ export function WriteProject() {
     videoDemoUrl: "",
     problemStatement: "",
     proposedSolution: "",
+    architectureDiagram: "",
     keyFeatures: "",
     quickstartCmd: "",
     description: "",
@@ -69,7 +71,16 @@ export function WriteProject() {
       prefix.startsWith("-") ||
       prefix.startsWith("1.") ||
       prefix.trim().startsWith("|") ||
-      prefix.trim().startsWith("```");
+      prefix.trim().startsWith("```") ||
+      prefix.trim().startsWith("$$");
+
+    // Don't nest markers if user selected an unedited placeholder or another markdown tag
+    const isPlaceholder =
+      !selected ||
+      /^(text|bold text|italic text|code|Main Heading|Subheading|Subsection Heading|List item|Ordered item|Link text|Start typing paragraph\.\.\.|https:\/\/[^\s]+)$/i.test(selected.trim()) ||
+      /^[*#`>|\[]/.test(selected.trim());
+
+    const textToInsert = isPlaceholder ? defaultPlaceholder : selected;
 
     let lead = "";
     let trail = "";
@@ -85,11 +96,10 @@ export function WriteProject() {
         }
       }
       if (end < form.description.length && form.description[end] !== "\n") {
-        trail = "\n";
+        trail = "\n\n";
       }
     }
 
-    const textToInsert = selected || defaultPlaceholder;
     const cleanPrefix = prefix.replace(/^\n+/, "");
     const cleanSuffix = suffix.replace(/\n+$/, "");
 
@@ -124,22 +134,28 @@ export function WriteProject() {
       return;
     }
 
-    let count = 0;
-    const newForm = { ...form };
-    if (extracted.title) { newForm.title = extracted.title; count++; }
-    if (extracted.tagline) { newForm.tagline = extracted.tagline; count++; }
-    if (extracted.category) { newForm.category = extracted.category; count++; }
-    if (extracted.technologies) { newForm.technologies = extracted.technologies; count++; }
-    if (extracted.githubUrl) { newForm.githubUrl = extracted.githubUrl; count++; }
-    if (extracted.liveDemoUrl) { newForm.liveDemoUrl = extracted.liveDemoUrl; count++; }
-    if (extracted.problemStatement) { newForm.problemStatement = extracted.problemStatement; count++; }
-    if (extracted.proposedSolution) { newForm.proposedSolution = extracted.proposedSolution; count++; }
-    if (extracted.keyFeatures) { newForm.keyFeatures = extracted.keyFeatures; count++; }
-    if (extracted.quickstartCmd) { newForm.quickstartCmd = extracted.quickstartCmd; count++; }
-    if (extracted.description) { newForm.description = extracted.description; count++; }
+    setForm((prev) => {
+      const updated = { ...prev };
+      if (extracted.title) updated.title = extracted.title;
+      if (extracted.tagline) updated.tagline = extracted.tagline;
+      if (extracted.category) updated.category = extracted.category;
+      if (extracted.technologies) updated.technologies = extracted.technologies;
+      if (extracted.githubUrl) updated.githubUrl = extracted.githubUrl;
+      if (extracted.liveDemoUrl) updated.liveDemoUrl = extracted.liveDemoUrl;
+      updated.problemStatement = extracted.problemStatement || "";
+      updated.proposedSolution = extracted.proposedSolution || "";
+      if (extracted.architectureDiagram) updated.architectureDiagram = extracted.architectureDiagram;
+      if (extracted.keyFeatures) updated.keyFeatures = extracted.keyFeatures;
+      if (extracted.quickstartCmd) updated.quickstartCmd = extracted.quickstartCmd;
+      if (extracted.description) updated.description = extracted.description;
+      return updated;
+    });
 
-    setForm(newForm);
-    setImportStatus(`✨ Successfully extracted ${count} sections from README into the desktop editor!`);
+    if (!extracted.problemStatement || !extracted.proposedSolution) {
+      setImportStatus("ℹ️ README imported! No dedicated Problem Statement or Solution detected — please enter them manually in the fields below.");
+    } else {
+      setImportStatus("✨ Successfully extracted all sections from README into the desktop editor!");
+    }
   };
 
   const handleExtractFromText = () => {
@@ -243,7 +259,13 @@ export function WriteProject() {
       return;
     }
 
-    if (!form.technologies.trim()) {
+    const techString = typeof form.technologies === "string"
+      ? form.technologies.trim()
+      : Array.isArray(form.technologies)
+      ? form.technologies.join(", ").trim()
+      : "";
+
+    if (!techString) {
       setMessage("Please specify at least one technology (e.g. React, Spring Boot).");
       setIsSuccess(false);
       return;
@@ -252,16 +274,20 @@ export function WriteProject() {
     setSubmitting(true);
 
     try {
-      const techs = form.technologies
-        ? form.technologies.split(",").map((t) => t.trim()).filter(Boolean)
-        : [];
+      const techs = Array.isArray(form.technologies)
+        ? form.technologies.filter(Boolean)
+        : techString.split(",").map((t) => t.trim()).filter(Boolean);
 
-      const finalDescription =
+      let finalDescription =
         form.description?.trim() ||
         form.proposedSolution?.trim() ||
         form.problemStatement?.trim() ||
         form.tagline?.trim() ||
         form.title.trim();
+
+      if (form.architectureDiagram?.trim() && !finalDescription.includes(form.architectureDiagram.trim())) {
+        finalDescription = `${finalDescription}\n\n### System Architecture\n\`\`\`mermaid\n${form.architectureDiagram.trim()}\n\`\`\``;
+      }
 
       const payload = {
         title: form.title.trim(),
@@ -275,7 +301,10 @@ export function WriteProject() {
         technologies: techs,
         problemStatement: form.problemStatement?.trim() || "",
         proposedSolution: form.proposedSolution?.trim() || "",
-        architectureSummary: form.description?.trim() || form.proposedSolution?.trim() || "",
+        architectureDiagram: form.architectureDiagram?.trim() || "",
+        architectureSummary: form.architectureDiagram?.trim()
+          ? `\`\`\`mermaid\n${form.architectureDiagram.trim()}\n\`\`\`\n\n${form.description?.trim() || ""}`
+          : form.description?.trim() || form.proposedSolution?.trim() || "",
         keyFeatures: form.keyFeatures?.trim() || "",
         quickstartCmd: form.quickstartCmd?.trim() || "",
         videoDemoUrl: form.videoDemoUrl?.trim() || "",
@@ -573,6 +602,24 @@ export function WriteProject() {
                 </label>
                 <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Markdown enabled</span>
               </div>
+              {!form.problemStatement && (
+                <div style={{
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  color: "#dc2626",
+                  fontSize: "12.5px",
+                  fontWeight: 500,
+                  marginBottom: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  <span>⚠️</span>
+                  <span>No problem statement detected in README. Please enter your project's problem statement manually.</span>
+                </div>
+              )}
               <textarea
                 className="write-text-input"
                 style={{
@@ -592,10 +639,28 @@ export function WriteProject() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <label className="write-field-label" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span>💡</span>
-                  <span>Proposed Solution & Architecture Overview</span>
+                  <span>Proposed Solution & Narrative</span>
                 </label>
                 <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Markdown enabled</span>
               </div>
+              {!form.proposedSolution && (
+                <div style={{
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  background: "rgba(245, 158, 11, 0.08)",
+                  border: "1px solid rgba(245, 158, 11, 0.25)",
+                  color: "#d97706",
+                  fontSize: "12.5px",
+                  fontWeight: 500,
+                  marginBottom: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  <span>ℹ️</span>
+                  <span>No proposed solution detected in README. Please describe how your project solves the problem manually.</span>
+                </div>
+              )}
               <textarea
                 className="write-text-input"
                 style={{
@@ -608,6 +673,35 @@ export function WriteProject() {
                 value={form.proposedSolution}
                 onChange={(e) => setForm({ ...form, proposedSolution: e.target.value })}
               />
+            </div>
+
+            {/* Big Section 2b: System Architecture Diagram (Mermaid.js Flowchart) */}
+            <div className="write-field-group">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <label className="write-field-label" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span>🗺️</span>
+                  <span>System Architecture Flowchart (Mermaid.js)</span>
+                </label>
+                <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: 600 }}>Interactive Flowchart Preview</span>
+              </div>
+              <textarea
+                className="write-text-input"
+                style={{
+                  minHeight: "120px",
+                  lineHeight: "1.5",
+                  fontFamily: "monospace",
+                  fontSize: "13px",
+                  resize: "vertical"
+                }}
+                placeholder="graph TD;&#10;  Client[Frontend: React/Vite] --> |REST API| API[Spring Boot Gateway]&#10;  API --> Service[Project & Blog Microservices]&#10;  Service --> DB[(PostgreSQL Database)]"
+                value={form.architectureDiagram}
+                onChange={(e) => setForm({ ...form, architectureDiagram: e.target.value })}
+              />
+              {form.architectureDiagram && (
+                <div style={{ marginTop: "12px" }}>
+                  <MermaidDiagram chart={form.architectureDiagram} title="Live Architecture Flowchart Preview" />
+                </div>
+              )}
             </div>
 
             {/* Big Section 3: Key Features & Capabilities */}
@@ -821,6 +915,16 @@ export function WriteProject() {
                       <line x1="8" y1="21" x2="16" y2="21" />
                       <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
+                  </button>
+
+                  {/* Math / KaTeX Formula */}
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={() => insertFormatting("\n$$\n\\hat{y}_{nj} = f(\\mathbf{x}_{nj}; \\mathbf{\\theta}) \\in \\{0, 1\\}\n$$\n", "", "")}
+                    title="Math Formula (KaTeX)"
+                  >
+                    <span style={{ fontWeight: 800, fontSize: "14px", fontFamily: "serif" }}>∑</span>
                   </button>
 
                   {/* Mode Toggles */}

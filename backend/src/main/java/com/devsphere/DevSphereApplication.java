@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DevSphereApplication {
 
     public static void main(String[] args) {
+        System.setProperty("spring.classformat.ignore", "true");
         SpringApplication.run(DevSphereApplication.class, args);
     }
 }

@@ -81,6 +81,14 @@ public class DeveloperResponse {
         this.avatar = avatar;
     }
 
+    public String getAvatarUrl() {
+        return avatar;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatar = avatarUrl;
+    }
+
     public Set<String> getSkills() {
         return skills;
     }

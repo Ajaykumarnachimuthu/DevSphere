@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export function BlogCard({ blog }) {
+export function BlogCard({ blog, onLike, isLiked }) {
   const blogId = blog.id;
   const authorName = blog.author || blog.authorName || "DevSphere Author";
   const authorInitial = authorName.charAt(0).toUpperCase();
@@ -85,12 +85,28 @@ export function BlogCard({ blog }) {
           </div>
 
           <div className="sample-card-metrics">
-            <span className="sample-card-likes" title="Likes" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" strokeWidth="1.5">
+            <button
+              type="button"
+              className={`sample-card-likes-btn ${isLiked ? "active" : ""}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onLike && onLike(blogId || blog.id);
+              }}
+              title={isLiked ? "Unlike article" : "Like this article"}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill={isLiked ? "#ef4444" : "none"}
+                stroke={isLiked ? "#ef4444" : "#64748B"}
+                strokeWidth="2"
+              >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
               <span>{likesCount}</span>
-            </span>
+            </button>
             <span className="sample-card-reads" title="Read time" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />

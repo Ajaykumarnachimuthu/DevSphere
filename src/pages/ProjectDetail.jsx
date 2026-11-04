@@ -1,21 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { projectsApi } from "../services/api";
+import { useDevSphere } from "../context/DevSphereContext";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
 import { Button } from "../components/ui/Button";
 import { MarkdownRenderer } from "../components/ui/MarkdownRenderer";
+import { MermaidDiagram } from "../components/ui/MermaidDiagram";
+import { EditProjectModal } from "../components/project/EditProjectModal";
+import { isProjectLiked, toggleProjectLikedLocal, recordProjectLiked } from "../utils/likesStorage";
 
 export function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, userProfile, currentUser } = useDevSphere();
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Determine if current authenticated user owns this project
+  const isAuthor = React.useMemo(() => {
+    if (!isAuthenticated || !project) return false;
+    const author = (project.authorName || "").toLowerCase().trim();
+    if (!author) return false;
+    const myUsername = (userProfile?.username || "").toLowerCase().trim();
+    const myName = (userProfile?.name || "").toLowerCase().trim();
+    const myEmail = (currentUser || userProfile?.email || "").split("@")[0].toLowerCase().trim();
+    return author === myUsername || author === myName || author === myEmail;
+  }, [isAuthenticated, project, userProfile, currentUser]);
 
   // Engagement state
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(() => isProjectLiked(id));
   const [likesCount, setLikesCount] = useState(0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [viewsCount, setViewsCount] = useState(0);
@@ -33,20 +50,64 @@ export function ProjectDetail() {
   const [selectedScreenshot, setSelectedScreenshot] = useState(null);
   const [activeTourIndex, setActiveTourIndex] = useState(0);
 
+  // Automatically detect any Mermaid architecture flowchart across fields
+  const detectedMermaidCode = React.useMemo(() => {
+    if (!project) return "";
+    const sources = [
+      project.architectureDiagram,
+      project.architectureSummary,
+      project.description,
+      project.proposedSolution,
+      project.problemStatement,
+    ];
+    for (const src of sources) {
+      if (!src || typeof src !== "string") continue;
+      const match = src.match(/```(?:mermaid|flowchart)[\s\r\n]+([\s\S]+?)```/i);
+      if (match) return match[1].trim();
+      const rawGraph = src.match(/(?:^|\n)((?:graph\s+(?:TD|TB|LR|RL|BT)|flowchart\s+(?:TD|TB|LR|RL|BT)|sequenceDiagram)[\s\S]+?)(?=\n#{1,4}\s|\n\n\n|$)/i);
+      if (rawGraph) return rawGraph[1].trim();
+    }
+    return "";
+  }, [project]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     loadProjectDetails();
     fetchComments();
-    recordView();
   }, [id]);
 
   const loadProjectDetails = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await projectsApi.getById(id);
+      let data = await projectsApi.getById(id);
+
+      // Session-based unique view recording:
+      // Prevents artificial inflation from rapid reloads while reliably incrementing for genuine views
+      const sessionViewKey = `devsphere_viewed_project_${id}`;
+      const hasViewedInSession = typeof window !== "undefined" && Boolean(sessionStorage.getItem(sessionViewKey));
+
+      if (!hasViewedInSession && id) {
+        try {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(sessionViewKey, "true");
+          }
+          const viewRes = await projectsApi.incrementView(id);
+          if (viewRes && typeof viewRes.views === "number") {
+            data = { ...data, views: viewRes.views };
+          } else {
+            data = { ...data, views: (data.views || 0) + 1 };
+          }
+        } catch (e) {
+          console.warn("View tracking sync non-blocking:", e);
+        }
+      }
+
       setProject(data);
-      setIsLiked(data.liked || false);
+      const locallyLiked = isProjectLiked(id);
+      const activeLiked = Boolean(data.liked || locallyLiked);
+      if (data.liked) recordProjectLiked(id, true);
+      setIsLiked(activeLiked);
       setLikesCount(data.likes || 0);
       setIsBookmarked(data.bookmarked || false);
       setViewsCount(data.views || 0);
@@ -54,17 +115,6 @@ export function ProjectDetail() {
       setError(err.message || "Failed to load project details");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const recordView = async () => {
-    try {
-      const updated = await projectsApi.incrementView(id);
-      if (updated?.views) {
-        setViewsCount(updated.views);
-      }
-    } catch (e) {
-      // Non-blocking view tracking
     }
   };
 
@@ -78,13 +128,19 @@ export function ProjectDetail() {
   };
 
   const handleToggleLike = async () => {
-    try {
-      const updated = await projectsApi.toggleLike(id);
-      setIsLiked(updated.liked);
-      setLikesCount(updated.likes);
-    } catch (err) {
-      if (err.status === 401 || err.status === 403) {
-        navigate("/login");
+    const { isLiked: nowLiked, delta } = toggleProjectLikedLocal(id);
+    setIsLiked(nowLiked);
+    setLikesCount((prev) => Math.max(0, prev + delta));
+
+    if (isAuthenticated) {
+      try {
+        const updated = await projectsApi.toggleLike(id);
+        if (updated && typeof updated.likes === "number") {
+          setLikesCount(updated.likes);
+          setIsLiked(Boolean(updated.liked));
+        }
+      } catch (err) {
+        console.warn("Project like sync failed:", err);
       }
     }
   };
@@ -231,6 +287,27 @@ export function ProjectDetail() {
 
             {/* Action Bar */}
             <div className="hero-action-buttons">
+              {isAuthor && (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{
+                    backgroundColor: "#4f46e5",
+                    borderColor: "#4338ca",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontWeight: 700,
+                    boxShadow: "0 2px 8px rgba(79, 70, 229, 0.35)",
+                  }}
+                  onClick={() => setIsEditing(true)}
+                  title="Full access project studio: edit narrative, architecture, tech, links, and docs"
+                >
+                  <span>✏️</span>
+                  <span>Edit Project</span>
+                </button>
+              )}
+
               {project.liveDemoUrl && (
                 <a
                   href={project.liveDemoUrl}
@@ -538,39 +615,51 @@ export function ProjectDetail() {
                     .split("\n")
                     .map((line) => line.replace(/^[-*•\ufffd\u2022]\s*/, "").trim())
                     .filter(Boolean)
-                    .map((feature, idx) => (
-                      <div
-                        key={idx}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "12px",
-                          padding: "14px 16px",
-                          background: "var(--bg-surface-subtle)",
-                          borderRadius: "var(--radius-md)",
-                          border: "1px solid var(--border-subtle)"
-                        }}
-                      >
-                        <span style={{
-                          color: "#10b981",
-                          fontWeight: 800,
-                          fontSize: "14px",
-                          background: "rgba(16, 185, 129, 0.15)",
-                          width: "22px",
-                          height: "22px",
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0
-                        }}>
-                          ✓
-                        </span>
-                        <span style={{ fontSize: "13.5px", lineHeight: "1.5", color: "var(--text-primary)", fontWeight: 500 }}>
-                          {feature}
-                        </span>
-                      </div>
-                    ))}
+                    .map((feature, idx) => {
+                      const boldMatch = feature.match(/^\*\*([^*]+)\*\*[:\s]*(.*)$/);
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "12px",
+                            padding: "14px 16px",
+                            background: "var(--bg-surface-subtle)",
+                            borderRadius: "var(--radius-md)",
+                            border: "1px solid var(--border-subtle)"
+                          }}
+                        >
+                          <span style={{
+                            color: "#10b981",
+                            fontWeight: 800,
+                            fontSize: "14px",
+                            background: "rgba(16, 185, 129, 0.15)",
+                            width: "22px",
+                            height: "22px",
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0
+                          }}>
+                            ✓
+                          </span>
+                          <span style={{ fontSize: "13.5px", lineHeight: "1.5", color: "var(--text-primary)", fontWeight: 500 }}>
+                            {boldMatch ? (
+                              <>
+                                <strong style={{ color: "var(--text-primary)", fontWeight: 700 }}>
+                                  {boldMatch[1]}:{" "}
+                                </strong>
+                                <span>{boldMatch[2]}</span>
+                              </>
+                            ) : (
+                              feature.replace(/\*\*/g, "")
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -628,6 +717,22 @@ export function ProjectDetail() {
         {/* Tab 2: Architecture & Decisions */}
         {activeTab === "architecture" && (
           <div className="tab-pane-container" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            {/* Interactive Mermaid Architecture Flowchart */}
+            {detectedMermaidCode && (
+              <div style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-color)",
+                borderRadius: "var(--radius-lg)",
+                padding: "24px",
+                boxShadow: "var(--shadow-sm)"
+              }}>
+                <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
+                  🗺️ Interactive System Architecture Flowchart
+                </h3>
+                <MermaidDiagram chart={detectedMermaidCode} title="Full End-to-End System Flow" />
+              </div>
+            )}
+
             <div style={{
               background: "var(--bg-surface)",
               border: "1px solid var(--border-color)",
@@ -828,6 +933,16 @@ export function ProjectDetail() {
           </section>
         )}
       </main>
+
+      {/* Full Access Project Edit Studio Modal */}
+      <EditProjectModal
+        project={project}
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        onSave={(updated) => {
+          setProject(updated);
+        }}
+      />
 
       <Footer />
     </div>

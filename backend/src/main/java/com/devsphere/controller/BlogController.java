@@ -1,5 +1,6 @@
 package com.devsphere.controller;
 
+import com.devsphere.client.BlogServiceClient;
 import com.devsphere.dto.request.CommentRequest;
 import com.devsphere.dto.request.CreateBlogRequest;
 import com.devsphere.dto.request.UpdateBlogRequest;
@@ -8,7 +9,6 @@ import com.devsphere.dto.response.CommentResponse;
 import com.devsphere.dto.response.KnowledgeTrailResponse;
 import com.devsphere.dto.response.PagedResponse;
 import com.devsphere.security.UserPrincipal;
-import com.devsphere.service.BlogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,68 +25,61 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/blogs")
-@Tag(name = "Blogs", description = "Endpoints for reading, searching, drafting, publishing, and interacting with blogs")
+@Tag(name = "Blogs Facade", description = "Core API Facade delegating to authoritative Blog Microservice (Port 8081)")
 public class BlogController {
 
-    private final BlogService blogService;
+    private final BlogServiceClient blogServiceClient;
 
-    public BlogController(BlogService blogService) {
-        this.blogService = blogService;
+    public BlogController(BlogServiceClient blogServiceClient) {
+        this.blogServiceClient = blogServiceClient;
     }
 
     @GetMapping
-    @Operation(summary = "Get published blogs with category filter, search query, and pagination")
+    @Operation(summary = "Get published blogs (Delegated to Blog Service)")
     public ResponseEntity<PagedResponse<BlogResponse>> getBlogs(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        PagedResponse<BlogResponse> response = blogService.getBlogs(category, search, pageable, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(blogServiceClient.getBlogs(category, search, pageable, principal));
     }
 
     @GetMapping("/trails")
-    @Operation(summary = "Get all published developer knowledge trails")
+    @Operation(summary = "Get all developer knowledge trails (Delegated to Blog Service)")
     public ResponseEntity<List<KnowledgeTrailResponse>> getKnowledgeTrails() {
-        return ResponseEntity.ok(blogService.getKnowledgeTrails());
+        return ResponseEntity.ok(blogServiceClient.getKnowledgeTrails());
     }
 
     @GetMapping("/trails/{id}")
-    @Operation(summary = "Get a knowledge trail with its ordered articles")
+    @Operation(summary = "Get a knowledge trail by ID (Delegated to Blog Service)")
     public ResponseEntity<KnowledgeTrailResponse> getKnowledgeTrailById(@PathVariable UUID id) {
-        return ResponseEntity.ok(blogService.getKnowledgeTrailById(id));
+        return ResponseEntity.ok(blogServiceClient.getKnowledgeTrailById(id));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get blog by ID")
+    @Operation(summary = "Get blog by ID (Delegated to Blog Service)")
     public ResponseEntity<BlogResponse> getBlogById(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        BlogResponse response = blogService.getBlogById(id, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(blogServiceClient.getBlogById(id, principal));
     }
 
     @PostMapping
-    @Operation(summary = "Create a new blog or save draft (Authenticated)")
+    @Operation(summary = "Create a new blog or save draft (Authenticated Facade)")
     public ResponseEntity<BlogResponse> createBlog(
             @Valid @RequestBody CreateBlogRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        BlogResponse response = blogService.createBlog(request, currentUserId);
+        BlogResponse response = blogServiceClient.createBlog(request, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/drafts")
-    @Operation(summary = "Get drafts created by authenticated user")
+    @Operation(summary = "Get drafts created by authenticated user (Delegated to Blog Service)")
     public ResponseEntity<List<BlogResponse>> getDrafts(@AuthenticationPrincipal UserPrincipal principal) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        List<BlogResponse> drafts = blogService.getDrafts(currentUserId);
-        return ResponseEntity.ok(drafts);
+        return ResponseEntity.ok(blogServiceClient.getDrafts(principal));
     }
 
     @PutMapping("/{id}")
@@ -96,9 +89,7 @@ public class BlogController {
             @Valid @RequestBody UpdateBlogRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        BlogResponse response = blogService.updateBlog(id, request, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(blogServiceClient.updateBlog(id, request, principal));
     }
 
     @DeleteMapping("/{id}")
@@ -107,39 +98,40 @@ public class BlogController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        blogService.deleteBlog(id, currentUserId);
+        blogServiceClient.deleteBlog(id, principal);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/like")
-    @Operation(summary = "Toggle like on a blog post (Authenticated)")
+    @Operation(summary = "Toggle like/unlike on a blog post (Authenticated)")
     public ResponseEntity<BlogResponse> toggleLike(
             @PathVariable UUID id,
-            @AuthenticationPrincipal UserPrincipal principal
+            @AuthenticationPrincipal UserPrincipal principal,
+            org.springframework.security.core.Authentication authentication
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(blogService.toggleLike(id, currentUserId));
+        UserPrincipal user = principal;
+        if (user == null && authentication != null && authentication.getPrincipal() instanceof UserPrincipal p) {
+            user = p;
+        }
+        return ResponseEntity.ok(blogServiceClient.toggleLike(id, user));
     }
 
     @PostMapping("/{id}/bookmark")
-    @Operation(summary = "Toggle bookmark on a blog post (Authenticated)")
+    @Operation(summary = "Toggle bookmark/unbookmark on a blog post (Authenticated)")
     public ResponseEntity<BlogResponse> toggleBookmark(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(blogService.toggleBookmark(id, currentUserId));
+        return ResponseEntity.ok(blogServiceClient.toggleBookmark(id, principal));
     }
 
     @GetMapping("/{id}/comments")
-    @Operation(summary = "Get comments for a blog post")
+    @Operation(summary = "Get comments for a blog post (Delegated to Blog Service)")
     public ResponseEntity<List<CommentResponse>> getComments(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(blogService.getComments(id, currentUserId));
+        return ResponseEntity.ok(blogServiceClient.getComments(id, principal));
     }
 
     @PostMapping("/{id}/comments")
@@ -149,8 +141,7 @@ public class BlogController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.status(HttpStatus.CREATED).body(blogService.addComment(id, request, currentUserId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(blogServiceClient.addComment(id, request, principal));
     }
 
     @DeleteMapping("/comments/{commentId}")
@@ -159,8 +150,7 @@ public class BlogController {
             @PathVariable UUID commentId,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        blogService.deleteComment(commentId, currentUserId);
+        blogServiceClient.deleteComment(commentId, principal);
         return ResponseEntity.noContent().build();
     }
 }

@@ -24,10 +24,10 @@ public class Blog {
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 255)
+    @Column(columnDefinition = "TEXT")
     private String subtitle;
 
-    @Column(name = "cover_image", length = 500)
+    @Column(name = "cover_image", columnDefinition = "TEXT")
     private String coverImage;
 
     @Column(nullable = false, length = 50)
@@ -39,7 +39,7 @@ public class Blog {
     @Column(name = "read_time", nullable = false, length = 30)
     private String readTime = "5 min read";
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String tech;
 
     @Column(length = 30)

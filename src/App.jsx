@@ -28,7 +28,9 @@ export function App() {
           <Route path="/knowledge-trails" element={<KnowledgeTrails />} />
           <Route path="/write-blog" element={<WriteBlog />} />
           <Route path="/developers" element={<Developers />} />
+          <Route path="/developers/:id" element={<DeveloperProfile />} />
           <Route path="/developer-profile" element={<DeveloperProfile />} />
+          <Route path="/profile" element={<DeveloperProfile />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/write-project" element={<WriteProject />} />

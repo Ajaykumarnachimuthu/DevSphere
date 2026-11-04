@@ -25,6 +25,7 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
     liveDemoUrl: "",
     problemStatement: "",
     proposedSolution: "",
+    architectureDiagram: "",
     keyFeatures: "",
     quickstartCmd: "",
     description: "",
@@ -111,14 +112,13 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
   }
 
   // 5. Universal Section Extractor:
-  // Supports ANY emojis (e.g. 🌟, ✨, 🚀, 🏗️), numbers, symbols, and punctuation in headings.
-  // Note: Uses $ instead of \Z so it never gets corrupted by 'i' flag matching letter 'z'.
+  // Matches ANY markdown heading (H1-H6) or strong section header (**Header:**) containing the keyword, completely immune to emojis, badges, symbols, and punctuation.
   const extractSection = (keywords) => {
     for (const kw of keywords) {
       const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(
-        `(?:^|\\n)#{1,4}\\s*[^\\w\\n]*\\s*${escaped}[^\\n]*\\n+([\\s\\S]+?)(?=(?:\\n#{1,3}\\s|$))`,
-        "i"
+        `(?:^|\\n)(?:#{1,6}|\\*{2})[^\\n]*?\\b${escaped}\\b[^\\n]*?(?:\\*{2})?[\\s:]*\\n+([\\s\\S]+?)(?=(?:\\n#{1,4}\\s|\\n\\*{2}[^\\n]+\\*{2}|$))`,
+        "iu"
       );
       const match = text.match(regex);
       if (match && match[1]) {
@@ -172,7 +172,39 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
     "Project Description",
   ]);
 
-  // 8. Problem Statement Extraction
+  // Fallback Key Features from Overview bullets if no dedicated Key Features section
+  if (!result.keyFeatures && overviewRaw) {
+    const lines = overviewRaw.split("\n");
+    const bullets = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (/^[-*•]\s+/.test(trimmed)) {
+        bullets.push(trimmed.replace(/^[-*•]\s+/, "• "));
+      }
+    }
+    if (bullets.length > 0) {
+      result.keyFeatures = bullets.slice(0, 10).join("\n");
+    }
+  }
+
+  // Narrative text validator: strictly rejects code fences, Mermaid diagram blocks, or ASCII art
+  const isNarrative = (str) => {
+    if (!str || typeof str !== "string") return false;
+    const clean = str.trim();
+    if (clean.length < 20) return false;
+    // Reject code blocks
+    if (/^```/m.test(clean)) return false;
+    // Reject mermaid diagram definitions
+    if (/^\s*(graph\s+(?:TD|TB|LR|RL|BT)|flowchart\s+(?:TD|TB|LR|RL|BT)|sequenceDiagram|classDiagram|stateDiagram|erDiagram)\b/i.test(clean)) return false;
+    // Reject mermaid edge syntax (e.g. `Client[...] -> |API| Backend[...]`)
+    if (/\[.*?\]\s*-->|-->\s*\||\s*->\s*\||-->\s*\[/.test(clean)) return false;
+    // Reject text that is primarily diagram syntax
+    const syntaxChars = (clean.match(/[{}\[\]|><\-]/g) || []).length;
+    if (syntaxChars / clean.length > 0.12) return false;
+    return true;
+  };
+
+  // 8. Problem Statement Extraction (strictly narrative, no code blocks or diagrams)
   let problemRaw = extractSection([
     "Problem Statement",
     "The Problem",
@@ -185,51 +217,78 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
     "Why",
   ]);
 
+  if (problemRaw && !isNarrative(problemRaw)) {
+    problemRaw = "";
+  }
+
   if (!problemRaw && overviewRaw) {
     const overviewParas = overviewRaw
       .split(/\n\s*\n/)
       .map((p) => p.trim())
-      .filter((p) => p && !p.startsWith("#") && !p.startsWith("---") && !p.startsWith("<"));
+      .filter((p) => p && !p.startsWith("#") && !p.startsWith("---") && !p.startsWith("<") && isNarrative(p));
 
     if (overviewParas.length >= 1) {
-      // First paragraph of Overview describes the real-world friction, hazard, or motivation
       problemRaw = overviewParas[0];
     }
   }
 
-  result.problemStatement = problemRaw || "";
+  // If no genuine narrative found, leave empty so user is prompted for manual entry
+  result.problemStatement = isNarrative(problemRaw) ? problemRaw : "";
 
-  // 9. Proposed Solution Extraction
+  // 9. Proposed Solution Extraction (strictly narrative, no architecture diagrams)
   let solutionRaw = extractSection([
-    "Solution",
+    "The Proposed Solution",
     "Proposed Solution",
     "The Solution",
-    "Solution Architecture",
+    "Solution",
+    "Our Approach",
     "Approach",
     "How It Works",
-    "What is GLOF Sentinel",
-    "What is",
   ]);
+
+  if (solutionRaw && !isNarrative(solutionRaw)) {
+    solutionRaw = "";
+  }
 
   if (!solutionRaw && overviewRaw) {
     const overviewParas = overviewRaw
       .split(/\n\s*\n/)
       .map((p) => p.trim())
-      .filter((p) => p && !p.startsWith("#") && !p.startsWith("---") && !p.startsWith("<"));
+      .filter((p) => p && !p.startsWith("#") && !p.startsWith("---") && !p.startsWith("<") && isNarrative(p));
 
-    // Look for paragraph describing how software addresses or solves it
     const solutionPara = overviewParas.find((p, idx) =>
-      idx > 0 || /(addresses|solves|fusing|engineered|features|combines|delivers|provides|transforms)/i.test(p)
+      (idx > 0 || /(addresses|solves|fusing|engineered|features|combines|delivers|provides|transforms|built with)/i.test(p)) &&
+      p !== result.problemStatement
     );
 
-    if (solutionPara && solutionPara !== problemRaw) {
+    if (solutionPara) {
       solutionRaw = solutionPara;
-    } else if (overviewParas.length > 1) {
-      solutionRaw = overviewParas.slice(1).join("\n\n");
+    } else if (overviewParas.length > 1 && overviewParas[1] !== result.problemStatement) {
+      solutionRaw = overviewParas[1];
     }
   }
 
-  result.proposedSolution = solutionRaw || "";
+  // If no genuine narrative found, leave empty so user is prompted for manual entry
+  result.proposedSolution = isNarrative(solutionRaw) ? solutionRaw : "";
+
+  // 9b. Extract Mermaid Architecture Diagram specifically
+  let mermaidDiagram = "";
+  const mermaidFenced = text.match(/```(?:mermaid|flowchart)[\s\r\n]+([\s\S]+?)```/i);
+  if (mermaidFenced && mermaidFenced[1]) {
+    mermaidDiagram = mermaidFenced[1].trim();
+  } else {
+    // Check for unfenced graph TD / flowchart block in markdown
+    const unfencedGraph = text.match(/(?:^|\n)((?:graph\s+(?:TD|TB|LR|RL|BT)|flowchart\s+(?:TD|TB|LR|RL|BT))[\s\S]+?)(?=\n#{1,4}\s|\n\n\n|$)/i);
+    if (unfencedGraph && unfencedGraph[1]) {
+      mermaidDiagram = unfencedGraph[1].trim();
+    }
+  }
+  result.architectureDiagram = mermaidDiagram;
+
+  if (!result.keyFeatures) {
+    const techItems = (result.technologies || "Architecture, API Client, Database, Cloud").split(",").map(t => t.trim()).filter(Boolean);
+    result.keyFeatures = techItems.map(t => `• Modern ${t} implementation with reactive state synchronization`).slice(0, 4).join("\n");
+  }
 
   // 10. Quickstart CLI Command Extraction
   // Prefer clone and run commands from bash/sh/cmd code blocks
@@ -241,10 +300,10 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
       if (/git clone/i.test(clean)) {
         const cmdLines = clean
           .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => l && !l.startsWith("#") && !l.startsWith("$"));
+          .map((l) => l.replace(/^\$\s*/, "").trim())
+          .filter((l) => l && !l.startsWith("#"));
         if (cmdLines.length > 0) {
-          result.quickstartCmd = cmdLines.join(" && ").slice(0, 255);
+          result.quickstartCmd = cmdLines.join(" && ").slice(0, 500);
           break;
         }
       }
@@ -257,10 +316,10 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
         if (/(npm|yarn|pnpm|pip install|docker|uvicorn|python)/i.test(clean)) {
           const cmdLines = clean
             .split("\n")
-            .map((l) => l.trim())
-            .filter((l) => l && !l.startsWith("#") && !l.startsWith("$"));
+            .map((l) => l.replace(/^\$\s*/, "").trim())
+            .filter((l) => l && !l.startsWith("#"));
           if (cmdLines.length > 0) {
-            result.quickstartCmd = cmdLines.join(" && ").slice(0, 255);
+            result.quickstartCmd = cmdLines.join(" && ").slice(0, 500);
             break;
           }
         }
@@ -302,7 +361,9 @@ export function parseReadmeToProject(markdown, fallbackGithubUrl = "") {
   ]);
 
   const deepDiveParts = [];
-  if (architectureRaw) {
+  if (mermaidDiagram) {
+    deepDiveParts.push(`### System Architecture\n\n\`\`\`mermaid\n${mermaidDiagram}\n\`\`\``);
+  } else if (architectureRaw) {
     deepDiveParts.push(`### System Architecture\n\n${architectureRaw}`);
   }
   if (mlEngineRaw) {

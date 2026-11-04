@@ -149,6 +149,10 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.devsphere.DevSphereApplication</mainClass>
+                    <jvmArguments>-Dspring.classformat.ignore=true</jvmArguments>
+                    <systemPropertyVariables>
+                        <spring.classformat.ignore>true</spring.classformat.ignore>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>

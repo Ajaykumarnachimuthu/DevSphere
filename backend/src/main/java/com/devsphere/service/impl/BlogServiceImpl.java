@@ -187,6 +187,15 @@ public class BlogServiceImpl implements BlogService {
         verifyOwnershipOrAdmin(blog, currentUserId);
 
         blog.setTitle(request.getTitle().trim());
+        if (request.getSubtitle() != null) {
+            blog.setSubtitle(request.getSubtitle().trim());
+        }
+        if (request.getCoverImage() != null) {
+            blog.setCoverImage(request.getCoverImage().trim());
+        }
+        if (request.getDifficulty() != null) {
+            blog.setDifficulty(request.getDifficulty().trim());
+        }
         blog.setCategory(request.getCategory().trim());
         blog.setContent(request.getContent().trim());
         blog.setReadTime(calculateReadTime(request.getContent()));

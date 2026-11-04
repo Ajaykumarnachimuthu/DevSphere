@@ -1,5 +1,6 @@
 package com.devsphere.controller;
 
+import com.devsphere.client.ProjectServiceClient;
 import com.devsphere.dto.request.CommentRequest;
 import com.devsphere.dto.request.CreateProjectRequest;
 import com.devsphere.dto.request.UpdateProjectRequest;
@@ -9,11 +10,11 @@ import com.devsphere.dto.response.PagedResponse;
 import com.devsphere.dto.response.ProjectResponse;
 import com.devsphere.security.UserPrincipal;
 import com.devsphere.service.GitHubImportService;
-import com.devsphere.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,50 +27,45 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/projects")
-@Tag(name = "Projects", description = "Endpoints for discovering, submitting, liking, bookmarking, and discussing projects")
+@Tag(name = "Projects Facade", description = "Core API Facade delegating to authoritative Project Microservice (Port 8082)")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectServiceClient projectServiceClient;
     private final GitHubImportService gitHubImportService;
 
-    public ProjectController(ProjectService projectService, GitHubImportService gitHubImportService) {
-        this.projectService = projectService;
+    public ProjectController(ProjectServiceClient projectServiceClient, GitHubImportService gitHubImportService) {
+        this.projectServiceClient = projectServiceClient;
         this.gitHubImportService = gitHubImportService;
     }
 
     @GetMapping
-    @Operation(summary = "Get community projects with filtering, search, sorting, and pagination")
+    @Operation(summary = "Get project showcases with category filter, search query, sorting, and pagination (Delegated to Project Service)")
     public ResponseEntity<PagedResponse<ProjectResponse>> getProjects(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false, defaultValue = "Latest") String sort,
-            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(required = false) String sort,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        PagedResponse<ProjectResponse> response = projectService.getProjects(category, search, sort, pageable, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(projectServiceClient.getProjects(category, search, sort, pageable, principal));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get project details by ID")
+    @Operation(summary = "Get project by ID (Delegated to Project Service)")
     public ResponseEntity<ProjectResponse> getProjectById(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        ProjectResponse response = projectService.getProjectById(id, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(projectServiceClient.getProjectById(id, principal));
     }
 
     @PostMapping
-    @Operation(summary = "Submit a new project (Authenticated)")
+    @Operation(summary = "Submit a new project showcase (Authenticated Facade)")
     public ResponseEntity<ProjectResponse> createProject(
             @Valid @RequestBody CreateProjectRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        ProjectResponse response = projectService.createProject(request, currentUserId);
+        ProjectResponse response = projectServiceClient.createProject(request, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -80,8 +76,7 @@ public class ProjectController {
             @Valid @RequestBody UpdateProjectRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(projectService.updateProject(id, request, currentUserId));
+        return ResponseEntity.ok(projectServiceClient.updateProject(id, request, principal));
     }
 
     @DeleteMapping("/{id}")
@@ -90,8 +85,7 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        projectService.deleteProject(id, currentUserId);
+        projectServiceClient.deleteProject(id, principal);
         return ResponseEntity.noContent().build();
     }
 
@@ -106,9 +100,7 @@ public class ProjectController {
         if (user == null && authentication != null && authentication.getPrincipal() instanceof UserPrincipal p) {
             user = p;
         }
-        UUID currentUserId = user != null ? user.getId() : null;
-        ProjectResponse response = projectService.toggleLike(id, currentUserId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(projectServiceClient.toggleLike(id, user));
     }
 
     @PostMapping("/{id}/bookmark")
@@ -117,21 +109,20 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(projectService.toggleBookmark(id, currentUserId));
+        return ResponseEntity.ok(projectServiceClient.toggleBookmark(id, principal));
     }
 
     @PostMapping("/{id}/view")
-    @Operation(summary = "Increment project view counter")
+    @Operation(summary = "Increment project view counter (Delegated to Project Service)")
     public ResponseEntity<ProjectResponse> incrementView(@PathVariable UUID id) {
-        ProjectResponse response = projectService.incrementViews(id);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(projectServiceClient.incrementViews(id));
     }
 
     @GetMapping("/{id}/github")
     @Operation(summary = "Fetch real-time GitHub repository metadata")
     public ResponseEntity<GitHubRepoResponse> getGitHubMetadata(@PathVariable UUID id) {
-        return ResponseEntity.ok(projectService.getGitHubMetadata(id));
+        GitHubRepoResponse res = projectServiceClient.getGitHubMetadata(id);
+        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{id}/comments")
@@ -140,8 +131,7 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.ok(projectService.getComments(id, currentUserId));
+        return ResponseEntity.ok(projectServiceClient.getComments(id, principal));
     }
 
     @PostMapping("/{id}/comments")
@@ -151,8 +141,7 @@ public class ProjectController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        return ResponseEntity.status(HttpStatus.CREATED).body(projectService.addComment(id, request, currentUserId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(projectServiceClient.addComment(id, request, principal));
     }
 
     @DeleteMapping("/comments/{commentId}")
@@ -161,8 +150,7 @@ public class ProjectController {
             @PathVariable UUID commentId,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        UUID currentUserId = principal != null ? principal.getId() : null;
-        projectService.deleteComment(commentId, currentUserId);
+        projectServiceClient.deleteComment(commentId, principal);
         return ResponseEntity.noContent().build();
     }
 

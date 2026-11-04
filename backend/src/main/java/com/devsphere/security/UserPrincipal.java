@@ -55,6 +55,12 @@ public class UserPrincipal implements UserDetails {
         return email;
     }
 
+    public String getRole() {
+        return authorities != null && !authorities.isEmpty()
+                ? authorities.iterator().next().getAuthority()
+                : "ROLE_USER";
+    }
+
     @Override
     public String getUsername() {
         return username;

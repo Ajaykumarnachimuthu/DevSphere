@@ -17,8 +17,8 @@ public class UpdateDeveloperProfileRequest {
     @Size(max = 100, message = "Location cannot exceed 100 characters")
     private String location;
 
-    @Size(max = 50, message = "Avatar cannot exceed 50 characters")
     private String avatar;
+    private String avatarUrl;
 
     private Set<String> skills;
 
@@ -66,11 +66,21 @@ public class UpdateDeveloperProfileRequest {
     }
 
     public String getAvatar() {
-        return avatar;
+        return avatar != null ? avatar : avatarUrl;
     }
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+        if (this.avatarUrl == null) this.avatarUrl = avatar;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl != null ? avatarUrl : avatar;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+        if (this.avatar == null) this.avatar = avatarUrl;
     }
 
     public Set<String> getSkills() {
