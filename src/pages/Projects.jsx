@@ -7,6 +7,7 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { ImageUploader } from "../components/ui/ImageUploader";
 import { projectsApi } from "../services/api";
 import { useDevSphere } from "../context/DevSphereContext";
+import { parseReadmeToProject } from "../utils/readmeParser";
 
 const CATEGORIES = [
   "All",
@@ -50,6 +51,122 @@ export function Projects() {
     description: "",
     status: "Active",
   });
+
+  // Smart Auto-Fill from README state
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+  const [importerTab, setImporterTab] = useState("paste"); // "paste" | "upload" | "github"
+  const [readmeText, setReadmeText] = useState("");
+  const [githubRepoUrl, setGithubRepoUrl] = useState("");
+  const [importStatus, setImportStatus] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const applyExtractedProject = (extracted) => {
+    if (!extracted) {
+      setImportStatus("❌ Could not parse any project details from the README.");
+      return;
+    }
+
+    let count = 0;
+    const newForm = { ...form };
+    if (extracted.title) { newForm.title = extracted.title; count++; }
+    if (extracted.tagline) { newForm.tagline = extracted.tagline; count++; }
+    if (extracted.category) { newForm.category = extracted.category; count++; }
+    if (extracted.technologies) { newForm.technologies = extracted.technologies; count++; }
+    if (extracted.githubUrl) { newForm.githubUrl = extracted.githubUrl; count++; }
+    if (extracted.liveDemoUrl) { newForm.liveDemoUrl = extracted.liveDemoUrl; count++; }
+    if (extracted.problemStatement) { newForm.problemStatement = extracted.problemStatement; count++; }
+    if (extracted.proposedSolution) { newForm.proposedSolution = extracted.proposedSolution; count++; }
+    if (extracted.keyFeatures) { newForm.keyFeatures = extracted.keyFeatures; count++; }
+    if (extracted.quickstartCmd) { newForm.quickstartCmd = extracted.quickstartCmd; count++; }
+    if (extracted.description) { newForm.description = extracted.description; count++; }
+
+    setForm(newForm);
+    setImportStatus(`✨ Successfully extracted ${count} fields from README! Check Basics, Media, and Engineering Story tabs.`);
+  };
+
+  const handleExtractFromText = () => {
+    if (!readmeText.trim()) {
+      setImportStatus("⚠️ Please paste README.md markdown content first.");
+      return;
+    }
+    const extracted = parseReadmeToProject(readmeText, githubRepoUrl);
+    applyExtractedProject(extracted);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (content) {
+        setReadmeText(content);
+        const extracted = parseReadmeToProject(content);
+        applyExtractedProject(extracted);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleFetchGitHub = async () => {
+    const cleanUrl = githubRepoUrl.trim();
+    if (!cleanUrl) {
+      setImportStatus("⚠️ Please enter a GitHub repository URL (e.g. https://github.com/owner/repo).");
+      return;
+    }
+
+    setImporting(true);
+    setImportStatus("⏳ Fetching README from GitHub...");
+
+    try {
+      const match = cleanUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/i);
+      let owner = "";
+      let repo = "";
+      if (match) {
+        owner = match[1];
+        repo = match[2].replace(/\.git$/, "");
+      } else if (cleanUrl.includes("/") && !cleanUrl.includes("http")) {
+        const parts = cleanUrl.split("/");
+        owner = parts[0].trim();
+        repo = parts[1].trim();
+      }
+
+      if (!owner || !repo) {
+        throw new Error("Invalid GitHub URL format. Use https://github.com/owner/repo");
+      }
+
+      const branches = ["main", "master"];
+      const filenames = ["README.md", "readme.md", "Readme.md"];
+      let foundText = "";
+
+      for (const branch of branches) {
+        for (const fname of filenames) {
+          try {
+            const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fname}`);
+            if (res.ok) {
+              foundText = await res.text();
+              break;
+            }
+          } catch {
+            // continue next branch/file
+          }
+        }
+        if (foundText) break;
+      }
+
+      if (!foundText) {
+        throw new Error(`README file not found on GitHub for ${owner}/${repo}. Please paste markdown directly.`);
+      }
+
+      setReadmeText(foundText);
+      const extracted = parseReadmeToProject(foundText, `https://github.com/${owner}/${repo}`);
+      applyExtractedProject(extracted);
+    } catch (err) {
+      setImportStatus(`❌ ${err.message || "Failed to fetch README. Please paste markdown directly."}`);
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -370,6 +487,148 @@ export function Projects() {
                 </button>
               </header>
 
+              {/* Auto-Fill from README / GitHub Accordion */}
+              <div className="readme-importer-container">
+                <div
+                  className="readme-importer-header"
+                  onClick={() => setIsImporterOpen(!isImporterOpen)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="readme-importer-brand">
+                    <div className="readme-importer-badge">⚡</div>
+                    <div className="readme-importer-text">
+                      <h4>
+                        Auto-Fill from README.md / GitHub
+                        <span style={{ fontSize: "10px", background: "var(--primary-light)", color: "var(--primary)", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>
+                          TIME SAVER
+                        </span>
+                      </h4>
+                      <p>Paste markdown, upload a .md file, or fetch a GitHub repository to auto-populate all 3 tabs.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="readme-importer-toggle-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsImporterOpen(!isImporterOpen);
+                    }}
+                  >
+                    {isImporterOpen ? "▲ Hide Importer" : "⚡ Open Auto-Fill"}
+                  </button>
+                </div>
+
+                {isImporterOpen && (
+                  <div className="readme-importer-body">
+                    <div className="readme-tabs-nav">
+                      <button
+                        type="button"
+                        className={`readme-tab-btn ${importerTab === "paste" ? "active" : ""}`}
+                        onClick={() => setImporterTab("paste")}
+                      >
+                        📋 Paste Markdown
+                      </button>
+                      <button
+                        type="button"
+                        className={`readme-tab-btn ${importerTab === "upload" ? "active" : ""}`}
+                        onClick={() => setImporterTab("upload")}
+                      >
+                        📂 Upload .md File
+                      </button>
+                      <button
+                        type="button"
+                        className={`readme-tab-btn ${importerTab === "github" ? "active" : ""}`}
+                        onClick={() => setImporterTab("github")}
+                      >
+                        🐙 GitHub Repo URL
+                      </button>
+                    </div>
+
+                    {importerTab === "paste" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <textarea
+                          className="readme-importer-textarea"
+                          placeholder="# My Awesome Project&#10;&#10;> An intelligent full-stack app...&#10;&#10;## Features&#10;- Real-time analytics&#10;- Fast indexing"
+                          value={readmeText}
+                          onChange={(e) => setReadmeText(e.target.value)}
+                        />
+                        <div className="readme-importer-actions">
+                          <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+                            Tip: Paste the raw README.md markdown from your repository.
+                          </span>
+                          <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            onClick={handleExtractFromText}
+                          >
+                            🪄 Extract & Auto-Fill
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {importerTab === "upload" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <label className="readme-upload-dropzone">
+                          <input
+                            type="file"
+                            accept=".md,.markdown,.txt"
+                            onChange={handleFileUpload}
+                            style={{ display: "none" }}
+                          />
+                          <span style={{ fontSize: "28px" }}>📄</span>
+                          <strong style={{ fontSize: "13px", color: "var(--text-primary)" }}>
+                            Click to select README.md from your computer
+                          </strong>
+                          <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+                            Supports .md, .markdown, or .txt files
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
+                    {importerTab === "github" && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <div className="readme-github-input-group">
+                          <input
+                            type="url"
+                            placeholder="https://github.com/facebook/react or username/repository"
+                            value={githubRepoUrl}
+                            onChange={(e) => setGithubRepoUrl(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleFetchGitHub();
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            isLoading={importing}
+                            onClick={handleFetchGitHub}
+                          >
+                            ⬇ Fetch & Auto-Fill
+                          </Button>
+                        </div>
+                        <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+                          Fetches markdown directly from GitHub and extracts Title, Tech Stack, Features & Story.
+                        </span>
+                      </div>
+                    )}
+
+                    {importStatus && (
+                      <div className="readme-import-success-toast">
+                        {importStatus}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Wizard Step Tabs */}
               <div className="modal-tab-bar" style={{ display: "flex", borderBottom: "1px solid var(--border-color)", padding: "0 24px", background: "var(--bg-surface-subtle)" }}>
                 <button
@@ -649,8 +908,8 @@ export function Projects() {
                   )}
                 </div>
 
-                <footer className="desktop-modal-footer" style={{ display: "flex", justifyContent: "space-between", padding: "16px 24px", borderTop: "1px solid var(--border-color)" }}>
-                  <div>
+                <div className="desktop-modal-footer">
+                  <div className="desktop-modal-footer-left">
                     {modalTab !== "basics" && (
                       <Button
                         type="button"
@@ -664,7 +923,14 @@ export function Projects() {
                       </Button>
                     )}
                   </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
+
+                  <div className="desktop-modal-step-indicator">
+                    {modalTab === "basics" && "Step 1 of 3: Basics & Links"}
+                    {modalTab === "media" && "Step 2 of 3: Visuals & Media"}
+                    {modalTab === "engineering" && "Step 3 of 3: Engineering Story"}
+                  </div>
+
+                  <div className="desktop-modal-footer-right">
                     <Button
                       type="button"
                       variant="outline"
@@ -673,7 +939,7 @@ export function Projects() {
                         setModalError("");
                       }}
                     >
-                      Cancel
+                      ✕ Cancel
                     </Button>
                     {modalTab !== "engineering" ? (
                       <Button
@@ -689,7 +955,7 @@ export function Projects() {
                       </Button>
                     )}
                   </div>
-                </footer>
+                </div>
               </form>
             </div>
           </div>

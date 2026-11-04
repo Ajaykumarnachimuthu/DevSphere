@@ -1997,7 +1997,8 @@ footer p {
   margin: 0;
 }
 
-footer span {
+footer.site-footer span,
+footer:not(.desktop-modal-footer) span {
   color: var(--primary);
   font-weight: 600;
 }
@@ -4800,10 +4801,11 @@ footer span {
 }
 
 .modal-col .form-group textarea {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.6;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
+  font-size: 13.5px;
+  line-height: 1.55;
   resize: vertical;
+  min-height: 72px;
 }
 
 .modal-col .form-group input:focus,
@@ -4813,14 +4815,269 @@ footer span {
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
+.desktop-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.desktop-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.desktop-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+.desktop-modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
 .desktop-modal-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 32px;
+  padding: 16px 28px;
   background: var(--bg-surface-subtle);
   border-top: 1px solid var(--border-color);
   gap: 16px;
+  flex-shrink: 0;
+}
+
+.desktop-modal-footer .btn-primary,
+.desktop-modal-footer .btn-primary .btn-text,
+.desktop-modal-footer .btn-primary span {
+  color: #ffffff !important;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.desktop-modal-footer .btn-outline {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  transition: var(--transition-butter);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.desktop-modal-footer .btn-outline:hover {
+  background: var(--bg-surface-subtle) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.desktop-modal-footer .btn-outline .btn-text,
+.desktop-modal-footer .btn-outline span {
+  color: inherit !important;
+}
+
+/* =============================================================================
+   DevSphere Auto-Fill from README / GitHub Drawer Styles
+   ============================================================================= */
+.readme-importer-container {
+  margin: 0 24px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.03) 100%);
+  border: 1px solid var(--primary-border, rgba(99, 102, 241, 0.25));
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.readme-importer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.readme-importer-header:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.readme-importer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.readme-importer-badge {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+  flex-shrink: 0;
+}
+
+.readme-importer-text h4 {
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.readme-importer-text p {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+
+.readme-importer-toggle-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--primary-border, rgba(99, 102, 241, 0.3));
+  border-radius: var(--radius-pill, 999px);
+  padding: 5px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-butter);
+}
+
+.readme-importer-toggle-btn:hover {
+  background: var(--primary);
+  color: #ffffff !important;
+  border-color: var(--primary);
+}
+
+.readme-importer-body {
+  padding: 16px 18px;
+  border-top: 1px solid var(--primary-border, rgba(99, 102, 241, 0.15));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-surface);
+}
+
+.readme-tabs-nav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.readme-tab-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-butter);
+}
+
+.readme-tab-btn.active {
+  background: var(--bg-surface-subtle);
+  color: var(--primary);
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.readme-importer-textarea {
+  width: 100%;
+  min-height: 110px;
+  max-height: 180px;
+  resize: vertical;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  font-family: var(--font-mono, monospace);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.readme-importer-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.readme-upload-dropzone {
+  border: 2px dashed var(--primary-border, rgba(99, 102, 241, 0.35));
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  background: var(--bg-surface-subtle);
+  cursor: pointer;
+  transition: var(--transition-butter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.readme-upload-dropzone:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.readme-github-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.readme-github-input-group input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.readme-importer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.readme-import-success-toast {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="dark"] .readme-import-success-toast {
+  color: #34d399;
 }
 
 .modal-footer-hint {
