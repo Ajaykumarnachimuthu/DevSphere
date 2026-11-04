@@ -10,6 +10,7 @@ import { Developers } from "./pages/Developers";
 import { DeveloperProfile } from "./pages/DeveloperProfile";
 import { Projects } from "./pages/Projects";
 import { ProjectDetail } from "./pages/ProjectDetail";
+import { WriteProject } from "./pages/WriteProject";
 import { About } from "./pages/About";
 import "./styles.css";
 
@@ -28,6 +29,7 @@ export function App() {
         <Route path="/developer-profile" element={<DeveloperProfile />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/:id" element={<ProjectDetail />} />
+        <Route path="/write-project" element={<WriteProject />} />
         <Route path="/about" element={<About />} />
       </Routes>
     </BrowserRouter>

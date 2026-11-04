@@ -546,8 +546,11 @@ export function BlogDetail() {
                     className={`sample-action-btn ${isLiked ? "liked" : ""}`}
                     onClick={handleToggleLike}
                     title="Like article"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                   >
-                    <span>{isLiked ? "❤️" : "🤍"}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={isLiked ? "#ef4444" : "none"} stroke={isLiked ? "#ef4444" : "currentColor"} strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
                     <span>{likesCount}</span>
                   </button>
                   <button
@@ -555,8 +558,11 @@ export function BlogDetail() {
                     className={`sample-action-btn ${isBookmarked ? "bookmarked" : ""}`}
                     onClick={handleToggleBookmark}
                     title="Bookmark article"
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                   >
-                    <span>{isBookmarked ? "🔖" : "📑"}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? "#6366f1" : "none"} stroke={isBookmarked ? "#6366f1" : "currentColor"} strokeWidth="2">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
                   </button>
                 </div>
               </div>

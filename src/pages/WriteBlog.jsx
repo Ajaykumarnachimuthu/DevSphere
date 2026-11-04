@@ -357,7 +357,10 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("**", "**", "bold text")}
                     title="Bold"
                   >
-                    <strong>B</strong>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                      <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />
+                    </svg>
                   </button>
 
                   {/* Italic */}
@@ -367,7 +370,11 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("*", "*", "italic text")}
                     title="Italic"
                   >
-                    <em>I</em>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="19" y1="4" x2="10" y2="4" />
+                      <line x1="14" y1="20" x2="5" y2="20" />
+                      <line x1="15" y1="4" x2="9" y2="20" />
+                    </svg>
                   </button>
 
                   {/* H1 */}
@@ -377,7 +384,7 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("# ", "", "Main Heading")}
                     title="Heading 1"
                   >
-                    H1
+                    <span style={{ fontWeight: 800, fontSize: "12px" }}>H1</span>
                   </button>
 
                   {/* H2 */}
@@ -387,17 +394,20 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("## ", "", "Subheading")}
                     title="Heading 2"
                   >
-                    H2
+                    <span style={{ fontWeight: 700, fontSize: "12px" }}>H2</span>
                   </button>
 
-                  {/* Code */}
+                  {/* Inline Code */}
                   <button
                     type="button"
                     className="toolbar-btn"
                     onClick={() => insertFormatting("`", "`", "code")}
                     title="Inline Code"
                   >
-                    &lt;/&gt;
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="16 18 22 12 16 6" />
+                      <polyline points="8 6 2 12 8 18" />
+                    </svg>
                   </button>
 
                   {/* Quote */}
@@ -407,7 +417,9 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("> ", "", "Quote or note...")}
                     title="Blockquote"
                   >
-                    “
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z" />
+                    </svg>
                   </button>
 
                   {/* Bullet list */}
@@ -417,9 +429,13 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("- ", "", "List item")}
                     title="Bulleted List"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-                      <line x1="3" y1="6" x2="3.01" y2="6" strokeWidth="3" /><line x1="3" y1="12" x2="3.01" y2="12" strokeWidth="3" /><line x1="3" y1="18" x2="3.01" y2="18" strokeWidth="3" />
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="9" y1="6" x2="20" y2="6" />
+                      <line x1="9" y1="12" x2="20" y2="12" />
+                      <line x1="9" y1="18" x2="20" y2="18" />
+                      <circle cx="4" cy="6" r="1.8" fill="currentColor" />
+                      <circle cx="4" cy="12" r="1.8" fill="currentColor" />
+                      <circle cx="4" cy="18" r="1.8" fill="currentColor" />
                     </svg>
                   </button>
 
@@ -430,9 +446,13 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("1. ", "", "Ordered item")}
                     title="Numbered List"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="10" y1="6" x2="21" y2="6" /><line x1="10" y1="12" x2="21" y2="12" /><line x1="10" y1="18" x2="21" y2="18" />
-                      <path d="M4 6h1v4M4 10h2M4 18h2.5M4 14.5a1.5 1.5 0 0 1 2.5 1c0 1-1.5 1.5-2.5 2.5" />
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="10" y1="6" x2="21" y2="6" />
+                      <line x1="10" y1="12" x2="21" y2="12" />
+                      <line x1="10" y1="18" x2="21" y2="18" />
+                      <path d="M4 6h1v4" />
+                      <path d="M4 10h2" />
+                      <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
                     </svg>
                   </button>
 
@@ -443,7 +463,10 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("[", "](https://example.com)", "Link text")}
                     title="Link"
                   >
-                    🔗
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
                   </button>
 
                   {/* Image */}
@@ -453,7 +476,11 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("![Image](", ")", "https://images.unsplash.com/photo-1555066931-4365d14bab8c")}
                     title="Insert Image"
                   >
-                    🖼
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
                   </button>
 
                   {/* Table */}
@@ -463,7 +490,13 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("\n| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| Row 1 Data | Detail | Value |\n| Row 2 Data | Detail | Value |\n", "", "")}
                     title="Table"
                   >
-                    ▦
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M3 9h18" />
+                      <path d="M3 15h18" />
+                      <path d="M9 3v18" />
+                      <path d="M15 3v18" />
+                    </svg>
                   </button>
 
                   {/* Code Block */}
@@ -473,26 +506,38 @@ export function WriteBlog() {
                     onClick={() => insertFormatting("\n```javascript\n// Write code here\nconsole.log('Hello DevSphere');\n```\n", "", "")}
                     title="Code Block"
                   >
-                    ...
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
                   </button>
 
                   {/* Mode Toggles: Edit, Preview, Split */}
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "6px" }}>
                     <button
                       type="button"
                       className={`toolbar-btn ${editorMode === "write" ? "active" : ""}`}
                       onClick={() => setEditorMode("write")}
                       title="Write Markdown"
                       style={{
-                        padding: "4px 10px",
+                        padding: "5px 10px",
+                        width: "auto",
                         fontSize: "12px",
                         fontWeight: 600,
                         background: editorMode === "write" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
                         color: editorMode === "write" ? "var(--primary)" : "var(--text-secondary)",
-                        borderRadius: "6px"
+                        borderRadius: "6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px"
                       }}
                     >
-                      ✏️ Edit
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                      <span>Edit</span>
                     </button>
                     <button
                       type="button"
@@ -500,15 +545,23 @@ export function WriteBlog() {
                       onClick={() => setEditorMode("preview")}
                       title="Preview Formatted Output"
                       style={{
-                        padding: "4px 10px",
+                        padding: "5px 10px",
+                        width: "auto",
                         fontSize: "12px",
                         fontWeight: 600,
                         background: editorMode === "preview" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
                         color: editorMode === "preview" ? "var(--primary)" : "var(--text-secondary)",
-                        borderRadius: "6px"
+                        borderRadius: "6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px"
                       }}
                     >
-                      👁️ Preview
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <span>Preview</span>
                     </button>
                     <button
                       type="button"
@@ -516,15 +569,23 @@ export function WriteBlog() {
                       onClick={() => setEditorMode("split")}
                       title="Side-by-Side Split View"
                       style={{
-                        padding: "4px 10px",
+                        padding: "5px 10px",
+                        width: "auto",
                         fontSize: "12px",
                         fontWeight: 600,
                         background: editorMode === "split" ? "var(--primary-light, rgba(99, 102, 241, 0.12))" : "transparent",
                         color: editorMode === "split" ? "var(--primary)" : "var(--text-secondary)",
-                        borderRadius: "6px"
+                        borderRadius: "6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px"
                       }}
                     >
-                      ◫ Split
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <line x1="12" y1="3" x2="12" y2="21" />
+                      </svg>
+                      <span>Split</span>
                     </button>
                   </div>
                 </div>

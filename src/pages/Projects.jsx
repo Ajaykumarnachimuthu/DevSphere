@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Shell } from "../components/layout/Shell";
 import { ProjectCard } from "../components/cards/ProjectCard";
 import { Button } from "../components/ui/Button";
@@ -427,18 +428,20 @@ export function Projects() {
               <option value="Most Viewed">Most Viewed</option>
             </select>
 
-            {/* Submit Project Purple Button */}
-            <Button
-              variant="primary"
-              className="projects-submit-btn"
-              onClick={() => {
-                setIsModalOpen(true);
-                setModalError("");
-                setNotice("");
+            {/* Submit Project Desktop Studio Action */}
+            <Link
+              to="/write-project"
+              className="projects-submit-btn btn-primary"
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                whiteSpace: "nowrap"
               }}
             >
-              + Submit Project
-            </Button>
+              + Submit a Project
+            </Link>
           </div>
         </header>
 

@@ -185,6 +185,13 @@ export function Navbar() {
                   Write an Article
                 </NavLink>
 
+                <NavLink to="/write-project" className="dropdown-item" role="menuitem">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Submit a Project
+                </NavLink>
+
                 <div className="dropdown-divider" />
 
                 <button
