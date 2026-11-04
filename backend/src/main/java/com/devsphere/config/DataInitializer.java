@@ -1,12 +1,10 @@
 package com.devsphere.config;
 
-import com.devsphere.service.GitHubImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -14,28 +12,14 @@ public class DataInitializer implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     private final JdbcTemplate jdbcTemplate;
-    private final GitHubImportService gitHubImportService;
 
-    public DataInitializer(
-            JdbcTemplate jdbcTemplate,
-            GitHubImportService gitHubImportService
-    ) {
+    public DataInitializer(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.gitHubImportService = gitHubImportService;
     }
 
     @Override
     public void run(String... args) {
         applySchemaUpdates();
-
-        // Perform genuine GitHub project import synchronization under the registered user account
-        try {
-            log.info("Checking and synchronizing verified GitHub projects for DevSphere showcase...");
-            gitHubImportService.syncAllQualifyingProjects(null);
-            log.info("Verified GitHub project showcase synchronized successfully.");
-        } catch (Exception ex) {
-            log.warn("Non-blocking GitHub project synchronization notice: {}", ex.getMessage());
-        }
     }
 
     private void applySchemaUpdates() {
@@ -82,37 +66,6 @@ public class DataInitializer implements CommandLineRunner {
             } catch (Exception ex) {
                 log.debug("DDL statement applied or already present: {}", ex.getMessage());
             }
-        }
-
-        cleanupTestUsers();
-    }
-
-    private void cleanupTestUsers() {
-        try {
-            log.info("Checking and pruning test user accounts, retaining ONLY authentic user 'selva'...");
-            String[] cleanupSqls = {
-                "DELETE FROM developer_skills WHERE developer_id IN (SELECT id FROM developer_profiles WHERE LOWER(name) != 'selva')",
-                "DELETE FROM developer_skills WHERE developer_id IN (SELECT id FROM developer_profiles WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva'))",
-                "DELETE FROM developer_profiles WHERE LOWER(name) != 'selva'",
-                "DELETE FROM developer_profiles WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM blog_comments WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM blog_likes WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM blog_bookmarks WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM project_comments WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM project_likes WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM project_bookmarks WHERE user_id IN (SELECT id FROM users WHERE LOWER(username) != 'selva')",
-                "DELETE FROM users WHERE LOWER(username) != 'selva'"
-            };
-            for (String sql : cleanupSqls) {
-                try {
-                    jdbcTemplate.execute(sql);
-                } catch (Exception ex) {
-                    log.debug("Cleanup statement executed: {}", ex.getMessage());
-                }
-            }
-            log.info("Test users and mock accounts pruned successfully. Only authentic account 'selva' remains.");
-        } catch (Exception e) {
-            log.warn("User cleanup skipped: {}", e.getMessage());
         }
     }
 }
