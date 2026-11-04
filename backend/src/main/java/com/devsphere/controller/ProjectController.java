@@ -8,11 +8,15 @@ import com.devsphere.dto.response.CommentResponse;
 import com.devsphere.dto.response.GitHubRepoResponse;
 import com.devsphere.dto.response.PagedResponse;
 import com.devsphere.dto.response.ProjectResponse;
+import com.devsphere.exception.ServiceUnavailableException;
 import com.devsphere.security.UserPrincipal;
 import com.devsphere.service.GitHubImportService;
+import com.devsphere.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -27,19 +31,27 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/projects")
-@Tag(name = "Projects Facade", description = "Core API Facade delegating to authoritative Project Microservice (Port 8082)")
+@Tag(name = "Projects Facade", description = "Core API Facade delegating to authoritative Project Microservice with seamless resilient fallback")
 public class ProjectController {
 
+    private static final Logger log = LoggerFactory.getLogger(ProjectController.class);
+
     private final ProjectServiceClient projectServiceClient;
+    private final ProjectService internalProjectService;
     private final GitHubImportService gitHubImportService;
 
-    public ProjectController(ProjectServiceClient projectServiceClient, GitHubImportService gitHubImportService) {
+    public ProjectController(
+            ProjectServiceClient projectServiceClient,
+            ProjectService internalProjectService,
+            GitHubImportService gitHubImportService
+    ) {
         this.projectServiceClient = projectServiceClient;
+        this.internalProjectService = internalProjectService;
         this.gitHubImportService = gitHubImportService;
     }
 
     @GetMapping
-    @Operation(summary = "Get project showcases with category filter, search query, sorting, and pagination (Delegated to Project Service)")
+    @Operation(summary = "Get project showcases with category filter, search query, sorting, and pagination")
     public ResponseEntity<PagedResponse<ProjectResponse>> getProjects(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String search,
@@ -47,26 +59,45 @@ public class ProjectController {
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(projectServiceClient.getProjects(category, search, sort, pageable, principal));
+        try {
+            return ResponseEntity.ok(projectServiceClient.getProjects(category, search, sort, pageable, principal));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, falling back to direct database service: {}", e.getMessage());
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.ok(internalProjectService.getProjects(category, search, sort, pageable, currentUserId));
+        }
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get project by ID (Delegated to Project Service)")
+    @Operation(summary = "Get project by ID")
     public ResponseEntity<ProjectResponse> getProjectById(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(projectServiceClient.getProjectById(id, principal));
+        try {
+            return ResponseEntity.ok(projectServiceClient.getProjectById(id, principal));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, falling back to direct database service for project {}", id);
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.ok(internalProjectService.getProjectById(id, currentUserId));
+        }
     }
 
     @PostMapping
-    @Operation(summary = "Submit a new project showcase (Authenticated Facade)")
+    @Operation(summary = "Submit a new project showcase")
     public ResponseEntity<ProjectResponse> createProject(
             @Valid @RequestBody CreateProjectRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        ProjectResponse response = projectServiceClient.createProject(request, principal);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        try {
+            ProjectResponse response = projectServiceClient.createProject(request, principal);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, creating project directly in database: {}", request.getTitle());
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            ProjectResponse response = internalProjectService.createProject(request, currentUserId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
     }
 
     @PutMapping("/{id}")
@@ -76,7 +107,13 @@ public class ProjectController {
             @Valid @RequestBody UpdateProjectRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(projectServiceClient.updateProject(id, request, principal));
+        try {
+            return ResponseEntity.ok(projectServiceClient.updateProject(id, request, principal));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, updating project {} directly in database", id);
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.ok(internalProjectService.updateProject(id, request, currentUserId));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -85,7 +122,13 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        projectServiceClient.deleteProject(id, principal);
+        try {
+            projectServiceClient.deleteProject(id, principal);
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, deleting project {} directly in database", id);
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            internalProjectService.deleteProject(id, currentUserId);
+        }
         return ResponseEntity.noContent().build();
     }
 
@@ -100,7 +143,13 @@ public class ProjectController {
         if (user == null && authentication != null && authentication.getPrincipal() instanceof UserPrincipal p) {
             user = p;
         }
-        return ResponseEntity.ok(projectServiceClient.toggleLike(id, user));
+        try {
+            return ResponseEntity.ok(projectServiceClient.toggleLike(id, user));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, toggling like on project {} directly in database", id);
+            UUID currentUserId = user != null ? user.getId() : null;
+            return ResponseEntity.ok(internalProjectService.toggleLike(id, currentUserId));
+        }
     }
 
     @PostMapping("/{id}/bookmark")
@@ -109,20 +158,36 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(projectServiceClient.toggleBookmark(id, principal));
+        try {
+            return ResponseEntity.ok(projectServiceClient.toggleBookmark(id, principal));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, toggling bookmark on project {} directly in database", id);
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.ok(internalProjectService.toggleBookmark(id, currentUserId));
+        }
     }
 
     @PostMapping("/{id}/view")
-    @Operation(summary = "Increment project view counter (Delegated to Project Service)")
+    @Operation(summary = "Increment project view counter")
     public ResponseEntity<ProjectResponse> incrementView(@PathVariable UUID id) {
-        return ResponseEntity.ok(projectServiceClient.incrementViews(id));
+        try {
+            return ResponseEntity.ok(projectServiceClient.incrementViews(id));
+        } catch (ServiceUnavailableException e) {
+            log.info("Project Service microservice unreachable, incrementing view on project {} directly in database", id);
+            return ResponseEntity.ok(internalProjectService.incrementViews(id));
+        }
     }
 
     @GetMapping("/{id}/github")
     @Operation(summary = "Fetch real-time GitHub repository metadata")
     public ResponseEntity<GitHubRepoResponse> getGitHubMetadata(@PathVariable UUID id) {
-        GitHubRepoResponse res = projectServiceClient.getGitHubMetadata(id);
-        return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+        try {
+            GitHubRepoResponse res = projectServiceClient.getGitHubMetadata(id);
+            return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+        } catch (ServiceUnavailableException e) {
+            GitHubRepoResponse res = internalProjectService.getGitHubMetadata(id);
+            return res != null ? ResponseEntity.ok(res) : ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/{id}/comments")
@@ -131,7 +196,12 @@ public class ProjectController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.ok(projectServiceClient.getComments(id, principal));
+        try {
+            return ResponseEntity.ok(projectServiceClient.getComments(id, principal));
+        } catch (ServiceUnavailableException e) {
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.ok(internalProjectService.getComments(id, currentUserId));
+        }
     }
 
     @PostMapping("/{id}/comments")
@@ -141,7 +211,12 @@ public class ProjectController {
             @Valid @RequestBody CommentRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(projectServiceClient.addComment(id, request, principal));
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(projectServiceClient.addComment(id, request, principal));
+        } catch (ServiceUnavailableException e) {
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            return ResponseEntity.status(HttpStatus.CREATED).body(internalProjectService.addComment(id, request, currentUserId));
+        }
     }
 
     @DeleteMapping("/comments/{commentId}")
@@ -150,7 +225,12 @@ public class ProjectController {
             @PathVariable UUID commentId,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        projectServiceClient.deleteComment(commentId, principal);
+        try {
+            projectServiceClient.deleteComment(commentId, principal);
+        } catch (ServiceUnavailableException e) {
+            UUID currentUserId = principal != null ? principal.getId() : null;
+            internalProjectService.deleteComment(commentId, currentUserId);
+        }
         return ResponseEntity.noContent().build();
     }
 

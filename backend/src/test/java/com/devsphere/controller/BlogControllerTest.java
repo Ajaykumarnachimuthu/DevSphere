@@ -10,6 +10,7 @@ import com.devsphere.exception.ServiceUnavailableException;
 import com.devsphere.security.CustomUserDetailsService;
 import com.devsphere.security.JwtAuthenticationFilter;
 import com.devsphere.security.JwtTokenProvider;
+import com.devsphere.service.BlogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,9 @@ class BlogControllerTest {
 
     @MockitoBean
     private BlogServiceClient blogServiceClient;
+
+    @MockitoBean
+    private BlogService internalBlogService;
 
     @MockitoBean
     private JwtTokenProvider jwtTokenProvider;

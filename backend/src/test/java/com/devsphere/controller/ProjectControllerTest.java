@@ -11,6 +11,7 @@ import com.devsphere.security.JwtAuthenticationFilter;
 import com.devsphere.security.JwtTokenProvider;
 import com.devsphere.security.UserPrincipal;
 import com.devsphere.service.GitHubImportService;
+import com.devsphere.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,9 @@ class ProjectControllerTest {
 
     @MockitoBean
     private ProjectServiceClient projectServiceClient;
+
+    @MockitoBean
+    private ProjectService internalProjectService;
 
     @MockitoBean
     private GitHubImportService gitHubImportService;
